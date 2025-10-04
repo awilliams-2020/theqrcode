@@ -1,0 +1,98 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript and React coding standards and best practices
+---
+
+# TypeScript & React Coding Standards
+
+## TypeScript Configuration
+
+This project uses strict TypeScript configuration. Always:
+
+- Use explicit type annotations for function parameters and return types
+- Avoid `any` type - use `unknown` or proper type definitions
+- Use interfaces for object shapes, types for unions/primitives
+- Enable strict null checks and handle undefined/null cases
+
+## React Component Standards
+
+### Component Structure
+```typescript
+// Use functional components with TypeScript
+interface ComponentProps {
+  title: string;
+  optional?: boolean;
+  onAction: () => void;
+}
+
+export default function Component({ title, optional = false, onAction }: ComponentProps) {
+  // Component logic
+  return (
+    <div>
+      {/* JSX content */}
+    </div>
+  );
+}
+```
+
+### Naming Conventions
+- **Components**: PascalCase (`QRGenerator`, `Dashboard`)
+- **Files**: PascalCase for components (`QRGenerator.tsx`)
+- **Hooks**: camelCase starting with 'use' (`useAnalytics`, `useQRCode`)
+- **Utilities**: camelCase (`generateQRCode`, `formatDate`)
+- **Constants**: UPPER_SNAKE_CASE (`API_ENDPOINTS`, `MAX_QR_CODES`)
+
+### Props and State
+- Always define interfaces for component props
+- Use optional props with default values when appropriate
+- Prefer `useState` with proper typing over `useReducer` for simple state
+- Use `useCallback` and `useMemo` for performance optimization when needed
+
+### Event Handlers
+```typescript
+// Use proper event types
+const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  // Handle click
+};
+
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setValue(e.target.value);
+};
+```
+
+## Import Organization
+```typescript
+// 1. React imports
+import React, { useState, useEffect } from 'react';
+
+// 2. Third-party libraries
+import { signIn } from 'next-auth/react';
+import { QrCode, BarChart3 } from 'lucide-react';
+
+// 3. Internal imports (use @ alias)
+import { Component } from '@/components/Component';
+import { api } from '@/lib/api';
+
+// 4. Type-only imports (use 'type' keyword)
+import type { User } from '@/types/user';
+```
+
+## Error Handling
+- Use try-catch blocks for async operations
+- Implement proper error boundaries for React components
+- Use TypeScript's Result pattern for operations that can fail
+- Always handle loading and error states in UI components
+
+## Performance Best Practices
+- Use `React.memo` for components that receive stable props
+- Implement proper dependency arrays in useEffect/useCallback
+- Lazy load components when appropriate
+- Use dynamic imports for code splitting
+
+## Code Style
+- Use semicolons consistently
+- Prefer const over let, avoid var
+- Use template literals for string interpolation
+- Format with Prettier (configured in project)
+- Follow ESLint rules defined in [eslint.config.mjs](mdc:eslint.config.mjs)

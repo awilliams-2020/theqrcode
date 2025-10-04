@@ -1,0 +1,392 @@
+---
+globs: prisma/**/*,src/lib/prisma.ts
+description: Database schema and Prisma ORM patterns
+---
+
+# Database Schema & Prisma ORM Patterns
+
+## Database Configuration
+
+### Prisma Client Setup
+```typescript
+// lib/prisma.ts - Standard Prisma client configuration
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+});
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+### Environment Variables
+```env
+# Database connection
+DATABASE_URL="postgresql://username:password@localhost:5432/qr_analytics"
+
+# Prisma configuration
+PRISMA_GENERATE_DATAPROXY="false"
+```
+
+## Schema Design Patterns
+
+### User Management
+```prisma
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  qrCodes       QRCode[]
+  subscription  Subscription?
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+```
+
+### QR Code & Analytics Schema
+```prisma
+model QRCode {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  description String?
+  qrCodeImage String?  @db.Text
+  shortCode   String   @unique
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scans Scan[]
+  
+  @@map("qr_codes")
+}
+
+model Scan {
+  id        String   @id @default(cuid())
+  qrCodeId  String
+  userAgent String?
+  ipAddress String?
+  location  String?
+  country   String?
+  timestamp DateTime @default(now())
+  
+  // Relations
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  
+  @@map("scans")
+}
+```
+
+### Subscription & Billing
+```prisma
+model Subscription {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  stripeCustomerId  String?           @unique
+  stripeSubscriptionId String?        @unique
+  stripePriceId     String?
+  stripeCurrentPeriodEnd DateTime?
+  status            SubscriptionStatus
+  plan              SubscriptionPlan
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  TRIALING
+  UNPAID
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+```
+
+## Query Patterns
+
+### Efficient Data Fetching
+```typescript
+// Get user's QR codes with scan counts
+const qrCodesWithStats = await prisma.qrCode.findMany({
+  where: { userId },
+  include: {
+    _count: {
+      select: { scans: true }
+    },
+    scans: {
+      take: 5,
+      orderBy: { timestamp: 'desc' }
+    }
+  },
+  orderBy: { createdAt: 'desc' }
+});
+
+// Get analytics data for dashboard
+const analytics = await prisma.scan.groupBy({
+  by: ['country'],
+  where: {
+    qrCode: { userId }
+  },
+  _count: { id: true },
+  orderBy: { _count: { id: 'desc' } }
+});
+```
+
+### Pagination
+```typescript
+async function getQRCodesPaginated(
+  userId: string,
+  page: number = 1,
+  limit: number = 10
+) {
+  const skip = (page - 1) * limit;
+  
+  const [qrCodes, total] = await Promise.all([
+    prisma.qrCode.findMany({
+      where: { userId },
+      skip,
+      take: limit,
+      include: {
+        _count: { select: { scans: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    }),
+    prisma.qrCode.count({ where: { userId } })
+  ]);
+  
+  return {
+    qrCodes,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  };
+}
+```
+
+### Complex Queries
+```typescript
+// Get scan analytics by time period
+async function getScanAnalytics(
+  userId: string,
+  period: 'day' | 'week' | 'month' = 'week'
+) {
+  const dateFormat = {
+    day: '%Y-%m-%d',
+    week: '%Y-%u',
+    month: '%Y-%m'
+  }[period];
+  
+  const analytics = await prisma.$queryRaw`
+    SELECT 
+      DATE_TRUNC(${period}, timestamp) as period,
+      COUNT(*) as scan_count,
+      COUNT(DISTINCT "qrCodeId") as unique_qr_codes
+    FROM scans s
+    JOIN qr_codes q ON s."qrCodeId" = q.id
+    WHERE q."userId" = ${userId}
+    GROUP BY DATE_TRUNC(${period}, timestamp)
+    ORDER BY period DESC
+    LIMIT 30
+  `;
+  
+  return analytics;
+}
+```
+
+## Transaction Patterns
+
+### Atomic Operations
+```typescript
+async function createQRCodeWithInitialScan(
+  data: CreateQRCodeData,
+  userId: string,
+  initialScanData?: ScanData
+) {
+  return await prisma.$transaction(async (tx) => {
+    // Create QR code
+    const qrCode = await tx.qrCode.create({
+      data: {
+        ...data,
+        userId,
+        shortCode: generateShortCode()
+      }
+    });
+    
+    // Create initial scan if provided
+    if (initialScanData) {
+      await tx.scan.create({
+        data: {
+          ...initialScanData,
+          qrCodeId: qrCode.id
+        }
+      });
+    }
+    
+    return qrCode;
+  });
+}
+```
+
+### Batch Operations
+```typescript
+async function bulkCreateScans(scans: Omit<Scan, 'id'>[]) {
+  return await prisma.scan.createMany({
+    data: scans,
+    skipDuplicates: true
+  });
+}
+```
+
+## Migration Patterns
+
+### Schema Changes
+```prisma
+// Example migration for adding new field
+model QRCode {
+  // ... existing fields
+  isActive     Boolean  @default(true)  // New field
+  expiresAt    DateTime?                // New optional field
+}
+```
+
+### Data Migrations
+```typescript
+// lib/migrations.ts
+export async function migrateUserData() {
+  await prisma.$transaction(async (tx) => {
+    // Update existing users with new fields
+    await tx.user.updateMany({
+      where: { subscription: null },
+      data: { 
+        subscription: {
+          create: {
+            status: 'ACTIVE',
+            plan: 'FREE'
+          }
+        }
+      }
+    });
+  });
+}
+```
+
+## Performance Optimization
+
+### Indexing Strategy
+```prisma
+model QRCode {
+  // ... fields
+  
+  @@index([userId, createdAt])  // Composite index for user queries
+  @@index([shortCode])          // Unique index for redirects
+}
+
+model Scan {
+  // ... fields
+  
+  @@index([qrCodeId, timestamp]) // Composite index for analytics
+  @@index([timestamp])           // Index for time-based queries
+}
+```
+
+### Connection Pooling
+```typescript
+// For production environments
+export const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  // Connection pool settings
+  __internal: {
+    engine: {
+      binaryTargets: ['native'],
+    },
+  },
+});
+```
+
+## Error Handling
+
+### Database Error Handling
+```typescript
+import { Prisma } from '@prisma/client';
+
+export async function handleDatabaseError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002':
+        return { error: 'Unique constraint violation' };
+      case 'P2025':
+        return { error: 'Record not found' };
+      case 'P2003':
+        return { error: 'Foreign key constraint violation' };
+      default:
+        return { error: 'Database error occurred' };
+    }
+  }
+  
+  throw error;
+}
+```

@@ -1,0 +1,227 @@
+---
+globs: src/components/**/*
+description: Component design patterns and UI/UX conventions
+---
+
+# Component Design Patterns & UI/UX Standards
+
+## Component Architecture
+
+### Component Categories
+- **Layout Components**: Structure and layout (Navbar, Dashboard layouts)
+- **Feature Components**: Business logic components (QRGenerator, QRCodeCard)
+- **UI Components**: Reusable interface elements (Toast, Modal)
+- **Page Components**: Full page implementations (LandingPage)
+
+### Component Structure Pattern
+```typescript
+// 1. Imports
+import React, { useState, useEffect } from 'react';
+import { ComponentIcon } from 'lucide-react';
+
+// 2. Types and Interfaces
+interface ComponentProps {
+  title: string;
+  data: DataType[];
+  onAction: (item: DataType) => void;
+}
+
+// 3. Component Implementation
+export default function Component({ title, data, onAction }: ComponentProps) {
+  // 4. State and hooks
+  const [loading, setLoading] = useState(false);
+  
+  // 5. Event handlers
+  const handleAction = async (item: DataType) => {
+    setLoading(true);
+    try {
+      await onAction(item);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // 6. Render
+  return (
+    <div className="component-container">
+      {/* Component JSX */}
+    </div>
+  );
+}
+```
+
+## UI/UX Design Principles
+
+### Design System
+- **Colors**: Blue primary (#2563eb), Gray neutrals, Green success, Red error
+- **Typography**: Inter font family with consistent sizing scale
+- **Spacing**: 4px base unit (Tailwind spacing scale)
+- **Border Radius**: 8px standard, 12px for cards, 4px for inputs
+
+### Component Styling Patterns
+```typescript
+// Card Components
+<div className="p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow bg-white">
+  {/* Card content */}
+</div>
+
+// Button Variants
+<button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+  Primary Button
+</button>
+
+<button className="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors font-semibold">
+  Secondary Button
+</button>
+
+// Form Inputs
+<input 
+  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  placeholder="Enter text..."
+/>
+```
+
+## Component Examples from Codebase
+
+### QR Code Card Component
+```typescript
+// Reference: QRCodeCard.tsx
+interface QRCodeCardProps {
+  qrCode: {
+    id: string;
+    name: string;
+    url: string;
+    scanCount: number;
+    createdAt: Date;
+  };
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+```
+
+### Dashboard Component
+```typescript
+// Reference: Dashboard.tsx
+// Should include:
+// - Analytics overview cards
+// - Recent QR codes list
+// - Quick actions
+// - Charts and visualizations
+```
+
+### QR Generator Component
+```typescript
+// Reference: QRGenerator.tsx
+// Should include:
+// - URL input form
+// - QR code customization options
+// - Preview functionality
+// - Generation actions
+```
+
+## State Management Patterns
+
+### Local State
+```typescript
+const [formData, setFormData] = useState({
+  url: '',
+  name: '',
+  description: ''
+});
+
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+```
+
+### Form Handling
+```typescript
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+  
+  try {
+    await submitForm(formData);
+    // Handle success
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'An error occurred');
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+## Accessibility Standards
+
+### ARIA Labels and Roles
+```typescript
+<button
+  aria-label="Delete QR code"
+  role="button"
+  onClick={handleDelete}
+>
+  <TrashIcon className="h-4 w-4" />
+</button>
+```
+
+### Keyboard Navigation
+- Ensure all interactive elements are keyboard accessible
+- Use proper tab order
+- Implement focus management for modals
+
+### Screen Reader Support
+```typescript
+<div role="status" aria-live="polite">
+  {loading && "Loading QR codes..."}
+</div>
+```
+
+## Responsive Design
+
+### Mobile-First Approach
+```typescript
+// Use Tailwind responsive prefixes
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Responsive grid */}
+</div>
+
+// Responsive text sizing
+<h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+  Responsive Heading
+</h1>
+```
+
+## Loading and Error States
+
+### Loading States
+```typescript
+{loading ? (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+) : (
+  // Content
+)}
+```
+
+### Error Handling
+```typescript
+{error && (
+  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+    {error}
+  </div>
+)}
+```
+
+## Animation and Transitions
+
+### Smooth Transitions
+```typescript
+// Hover effects
+<div className="transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+  {/* Content */}
+</div>
+
+// Loading animations
+<div className="animate-pulse bg-gray-200 rounded-lg h-4 w-3/4"></div>
+```

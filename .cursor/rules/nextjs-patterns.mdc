@@ -1,0 +1,208 @@
+---
+globs: src/app/**/*,src/middleware.ts
+description: Next.js App Router patterns and conventions
+---
+
+# Next.js App Router Patterns & Conventions
+
+## App Router Structure
+
+This project uses Next.js 15 App Router. Follow these patterns:
+
+### Page Components
+- Place page components in `src/app/` directory
+- Use `page.tsx` for route components
+- Use `layout.tsx` for shared layouts
+- Use `loading.tsx` for loading UI
+- Use `error.tsx` for error boundaries
+
+### File Conventions
+```
+app/
+├── layout.tsx          # Root layout
+├── page.tsx           # Home page
+├── globals.css        # Global styles
+├── api/               # API routes
+│   └── qr/
+│       └── route.ts   # API endpoint
+├── dashboard/         # Route group
+│   ├── layout.tsx     # Dashboard layout
+│   ├── page.tsx       # Dashboard home
+│   └── analytics/
+│       └── page.tsx   # Analytics page
+└── auth/
+    ├── signin/
+    │   └── page.tsx   # Sign in page
+    └── callback/
+        └── page.tsx   # Auth callback
+```
+
+## API Routes
+
+### Route Handlers
+```typescript
+// app/api/qr/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    // Handle request logic
+    
+    return NextResponse.json({ success: true, data: result });
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### Dynamic Routes
+```typescript
+// app/api/qr/[id]/route.ts
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+  // Handle dynamic route logic
+}
+```
+
+## Authentication & Middleware
+
+### Middleware Configuration
+```typescript
+// middleware.ts
+import { withAuth } from 'next-auth/middleware';
+
+export default withAuth(
+  function middleware(req) {
+    // Middleware logic
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        // Authorization logic
+        return !!token;
+      },
+    },
+  }
+);
+
+export const config = {
+  matcher: ['/dashboard/:path*', '/api/protected/:path*']
+};
+```
+
+### Protected Routes
+- Use middleware to protect routes
+- Implement proper redirects for unauthenticated users
+- Handle authentication state in layouts
+
+## Server vs Client Components
+
+### Server Components (Default)
+- Use for data fetching and static content
+- Cannot use browser APIs or React hooks
+- Better for SEO and performance
+
+### Client Components
+- Add `'use client'` directive at the top
+- Use for interactive features, forms, and browser APIs
+- Example: [LandingPage.tsx](mdc:src/components/LandingPage.tsx)
+
+## Data Fetching Patterns
+
+### Server-Side Data Fetching
+```typescript
+// In server components
+async function Page() {
+  const data = await fetch('https://api.example.com/data');
+  const result = await data.json();
+  
+  return <div>{/* Render data */}</div>;
+}
+```
+
+### Client-Side Data Fetching
+```typescript
+'use client';
+import { useEffect, useState } from 'react';
+
+function ClientComponent() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(setData);
+  }, []);
+  
+  return <div>{/* Render data */}</div>;
+}
+```
+
+## Styling with Tailwind CSS
+
+### Global Styles
+- Use [globals.css](mdc:src/app/globals.css) for global styles
+- Configure Tailwind in [tailwind.config.js](mdc:tailwind.config.js)
+
+### Component Styling
+```typescript
+// Use Tailwind classes directly
+<div className="flex items-center justify-center p-4 bg-blue-600 text-white">
+  Content
+</div>
+```
+
+## Environment Variables
+
+### Configuration
+- Use `.env.local` for local development
+- Use `.env.production` for production
+- Prefix with `NEXT_PUBLIC_` for client-side access
+
+### Usage
+```typescript
+// Server-side
+const dbUrl = process.env.DATABASE_URL;
+
+// Client-side
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+```
+
+## Performance Optimization
+
+### Image Optimization
+```typescript
+import Image from 'next/image';
+
+<Image
+  src="/qr-code.png"
+  alt="QR Code"
+  width={200}
+  height={200}
+  priority // For above-the-fold images
+/>
+```
+
+### Dynamic Imports
+```typescript
+import dynamic from 'next/dynamic';
+
+const DynamicComponent = dynamic(() => import('./HeavyComponent'), {
+  loading: () => <p>Loading...</p>,
+  ssr: false // If component doesn't need SSR
+});
+```

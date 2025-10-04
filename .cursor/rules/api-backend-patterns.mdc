@@ -1,0 +1,375 @@
+---
+globs: src/app/api/**/*,src/lib/**/*
+description: API routes and backend development patterns
+---
+
+# API Routes & Backend Development Patterns
+
+## API Route Structure
+
+### Route Handler Pattern
+```typescript
+// app/api/endpoint/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(request: NextRequest) {
+  try {
+    // 1. Authentication check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Extract parameters
+    const { searchParams } = new URL(request.url);
+    const param = searchParams.get('param');
+
+    // 3. Business logic
+    const data = await prisma.model.findMany({
+      where: { userId: session.user.id },
+      // ... query options
+    });
+
+    // 4. Return response
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### CRUD Operations
+```typescript
+// GET - Retrieve data
+export async function GET(request: NextRequest) {
+  // Fetch and return data
+}
+
+// POST - Create new resource
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  // Validate input
+  // Create resource
+  // Return created resource
+}
+
+// PUT/PATCH - Update existing resource
+export async function PATCH(request: NextRequest) {
+  const body = await request.json();
+  // Validate input
+  // Update resource
+  // Return updated resource
+}
+
+// DELETE - Remove resource
+export async function DELETE(request: NextRequest) {
+  // Delete resource
+  // Return success status
+}
+```
+
+## Database Patterns with Prisma
+
+### Database Client Configuration
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+### Query Patterns
+```typescript
+// Find many with filtering
+const qrCodes = await prisma.qrCode.findMany({
+  where: {
+    userId: session.user.id,
+    createdAt: {
+      gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+    },
+  },
+  include: {
+    scans: true, // Include related data
+  },
+  orderBy: {
+    createdAt: 'desc',
+  },
+  take: 50, // Limit results
+});
+
+// Create with relation
+const qrCode = await prisma.qrCode.create({
+  data: {
+    name: data.name,
+    url: data.url,
+    userId: session.user.id,
+    scans: {
+      create: {
+        // Initial scan data
+      },
+    },
+  },
+  include: {
+    scans: true,
+  },
+});
+```
+
+## Authentication & Authorization
+
+### Session Validation
+```typescript
+import { auth } from '@/lib/auth';
+
+async function validateSession(request: NextRequest) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+  
+  return session;
+}
+```
+
+### Role-Based Access
+```typescript
+async function checkUserAccess(userId: string, resourceId: string) {
+  const resource = await prisma.resource.findFirst({
+    where: {
+      id: resourceId,
+      userId: userId,
+    },
+  });
+  
+  if (!resource) {
+    throw new Error('Forbidden');
+  }
+  
+  return resource;
+}
+```
+
+## Error Handling
+
+### Standardized Error Responses
+```typescript
+// lib/api-errors.ts
+export class APIError extends Error {
+  constructor(
+    public message: string,
+    public statusCode: number = 500,
+    public code?: string
+  ) {
+    super(message);
+  }
+}
+
+export function handleAPIError(error: unknown) {
+  if (error instanceof APIError) {
+    return NextResponse.json(
+      { error: error.message, code: error.code },
+      { status: error.statusCode }
+    );
+  }
+  
+  console.error('Unexpected error:', error);
+  return NextResponse.json(
+    { error: 'Internal Server Error' },
+    { status: 500 }
+  );
+}
+```
+
+### Input Validation
+```typescript
+import { z } from 'zod';
+
+const CreateQRSchema = z.object({
+  name: z.string().min(1).max(100),
+  url: z.string().url(),
+  description: z.string().optional(),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = CreateQRSchema.parse(body);
+    // Use validatedData...
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: error.errors },
+        { status: 400 }
+      );
+    }
+    throw error;
+  }
+}
+```
+
+## QR Code Specific Patterns
+
+### QR Code Generation
+```typescript
+// lib/qr-generator.ts
+import QRCode from 'qrcode';
+import { prisma } from '@/lib/prisma';
+
+export async function generateQRCode(data: {
+  url: string;
+  name: string;
+  userId: string;
+}) {
+  // Generate QR code image
+  const qrCodeDataURL = await QRCode.toDataURL(data.url, {
+    width: 256,
+    margin: 2,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF',
+    },
+  });
+  
+  // Save to database
+  const qrCode = await prisma.qrCode.create({
+    data: {
+      ...data,
+      qrCodeImage: qrCodeDataURL,
+    },
+  });
+  
+  return qrCode;
+}
+```
+
+### Analytics Tracking
+```typescript
+// lib/analytics.ts
+export async function trackScan(qrCodeId: string, request: NextRequest) {
+  const userAgent = request.headers.get('user-agent') || '';
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || '';
+  
+  // Get location data
+  const location = await getLocationFromIP(ip);
+  
+  // Save scan record
+  await prisma.scan.create({
+    data: {
+      qrCodeId,
+      userAgent,
+      ipAddress: ip,
+      location: location?.city,
+      country: location?.country,
+      timestamp: new Date(),
+    },
+  });
+}
+```
+
+## Rate Limiting & Security
+
+### Rate Limiting
+```typescript
+// lib/rate-limit.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+export const ratelimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(10, '1 m'), // 10 requests per minute
+});
+
+export async function checkRateLimit(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+  const { success } = await ratelimit.limit(ip);
+  
+  if (!success) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded' },
+      { status: 429 }
+    );
+  }
+  
+  return null;
+}
+```
+
+### Input Sanitization
+```typescript
+import DOMPurify from 'isomorphic-dompurify';
+
+export function sanitizeInput(input: string): string {
+  return DOMPurify.sanitize(input.trim());
+}
+```
+
+## External API Integration
+
+### Stripe Integration
+```typescript
+// lib/stripe.ts
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+});
+
+export async function createCheckoutSession(priceId: string, userId: string) {
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_URL}/pricing`,
+    metadata: { userId },
+  });
+  
+  return session;
+}
+```
+
+## Testing Patterns
+
+### API Route Testing
+```typescript
+// __tests__/api/qr.test.ts
+import { POST } from '@/app/api/qr/route';
+import { NextRequest } from 'next/server';
+
+describe('/api/qr', () => {
+  it('should create a new QR code', async () => {
+    const request = new NextRequest('http://localhost/api/qr', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'Test QR',
+        url: 'https://example.com',
+      }),
+    });
+    
+    const response = await POST(request);
+    const data = await response.json();
+    
+    expect(response.status).toBe(201);
+    expect(data.qrCode).toBeDefined();
+  });
+});
+```

@@ -1,0 +1,401 @@
+---
+alwaysApply: false
+description: Development workflow, testing, and deployment guidelines
+---
+
+# Development Workflow & Best Practices
+
+## Development Environment Setup
+
+### Prerequisites
+- Node.js 18+ 
+- PostgreSQL database
+- Docker (for containerized development)
+- Git for version control
+
+### Environment Setup
+```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npx prisma db push
+
+# Start development server
+npm run dev
+```
+
+## Git Workflow
+
+### Branch Naming Convention
+- `feature/qr-code-generator` - New features
+- `bugfix/analytics-chart-fix` - Bug fixes
+- `hotfix/critical-security-patch` - Critical fixes
+- `refactor/dashboard-components` - Code refactoring
+- `docs/api-documentation` - Documentation updates
+
+### Commit Message Format
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+Examples:
+```
+feat(qr): add custom styling options for QR codes
+
+fix(api): resolve authentication issue in dashboard route
+
+docs(readme): update installation instructions
+```
+
+## Code Quality Standards
+
+### Linting and Formatting
+```bash
+# Run ESLint
+npm run lint
+
+# Fix auto-fixable issues
+npm run lint -- --fix
+
+# Check TypeScript types
+npx tsc --noEmit
+```
+
+### Pre-commit Hooks
+```json
+// package.json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
+```
+
+## Testing Strategy
+
+### Unit Testing
+```typescript
+// __tests__/lib/qr-generator.test.ts
+import { generateQRCode } from '@/lib/qr-generator';
+
+describe('QR Code Generator', () => {
+  it('should generate valid QR code data URL', async () => {
+    const result = await generateQRCode({
+      url: 'https://example.com',
+      name: 'Test QR',
+      userId: 'user123'
+    });
+    
+    expect(result.qrCodeImage).toMatch(/^data:image\/png;base64,/);
+    expect(result.shortCode).toBeDefined();
+  });
+});
+```
+
+### Integration Testing
+```typescript
+// __tests__/api/qr.test.ts
+import { POST } from '@/app/api/qr/route';
+import { NextRequest } from 'next/server';
+
+describe('/api/qr', () => {
+  it('should create QR code with valid data', async () => {
+    const request = new NextRequest('http://localhost/api/qr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Test QR',
+        url: 'https://example.com'
+      })
+    });
+    
+    const response = await POST(request);
+    expect(response.status).toBe(201);
+  });
+});
+```
+
+### Component Testing
+```typescript
+// __tests__/components/QRGenerator.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import QRGenerator from '@/components/QRGenerator';
+
+describe('QRGenerator', () => {
+  it('should render form fields', () => {
+    render(<QRGenerator />);
+    
+    expect(screen.getByLabelText(/url/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+  });
+  
+  it('should submit form with valid data', async () => {
+    render(<QRGenerator />);
+    
+    fireEvent.change(screen.getByLabelText(/url/i), {
+      target: { value: 'https://example.com' }
+    });
+    
+    fireEvent.click(screen.getByRole('button', { name: /generate/i }));
+    
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalled();
+    });
+  });
+});
+```
+
+## Performance Monitoring
+
+### Core Web Vitals
+- Monitor LCP (Largest Contentful Paint)
+- Track FID (First Input Delay) 
+- Measure CLS (Cumulative Layout Shift)
+
+### Bundle Analysis
+```bash
+# Analyze bundle size
+npm run build
+npx @next/bundle-analyzer
+```
+
+### Performance Optimization
+```typescript
+// Dynamic imports for code splitting
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
+  loading: () => <ChartSkeleton />
+});
+
+// Image optimization
+import Image from 'next/image';
+
+<Image
+  src="/qr-code.png"
+  alt="QR Code"
+  width={256}
+  height={256}
+  priority={isAboveFold}
+/>
+```
+
+## Security Best Practices
+
+### Input Validation
+```typescript
+import { z } from 'zod';
+
+const CreateQRSchema = z.object({
+  url: z.string().url('Invalid URL format'),
+  name: z.string().min(1).max(100, 'Name too long'),
+  description: z.string().max(500).optional()
+});
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const result = CreateQRSchema.safeParse(body);
+  
+  if (!result.success) {
+    return NextResponse.json(
+      { error: 'Invalid input', details: result.error.errors },
+      { status: 400 }
+    );
+  }
+}
+```
+
+### Authentication Security
+```typescript
+// Secure session configuration
+export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  }
+};
+```
+
+## Deployment Pipeline
+
+### Docker Configuration
+```dockerfile
+# Dockerfile
+FROM node:18-alpine AS base
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM base AS build
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM base AS runtime
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/prisma ./prisma
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### Environment Configuration
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/qr_analytics
+      - NEXTAUTH_SECRET=your-secret
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=qr_analytics
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+### CI/CD Pipeline
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+```
+
+## Monitoring and Logging
+
+### Error Tracking
+```typescript
+// lib/error-tracking.ts
+export function trackError(error: Error, context?: Record<string, any>) {
+  console.error('Application Error:', {
+    message: error.message,
+    stack: error.stack,
+    context,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Send to error tracking service (e.g., Sentry)
+  if (process.env.NODE_ENV === 'production') {
+    // Sentry.captureException(error, { extra: context });
+  }
+}
+```
+
+### Performance Monitoring
+```typescript
+// lib/analytics.ts
+export function trackPageView(url: string) {
+  if (typeof window !== 'undefined') {
+    // Google Analytics or similar
+    gtag('config', 'GA_MEASUREMENT_ID', {
+      page_path: url
+    });
+  }
+}
+```
+
+## Documentation Standards
+
+### Code Documentation
+```typescript
+/**
+ * Generates a QR code for the given URL with custom styling options
+ * @param url - The URL to encode in the QR code
+ * @param options - QR code generation options
+ * @returns Promise resolving to QR code data URL and metadata
+ */
+export async function generateQRCode(
+  url: string,
+  options: QROptions = {}
+): Promise<QRResult> {
+  // Implementation
+}
+```
+
+### API Documentation
+```typescript
+/**
+ * @api {post} /api/qr Create QR Code
+ * @apiName CreateQRCode
+ * @apiGroup QRCode
+ * 
+ * @apiParam {String} name QR code name
+ * @apiParam {String} url URL to encode
+ * @apiParam {String} [description] Optional description
+ * 
+ * @apiSuccess {String} id QR code ID
+ * @apiSuccess {String} shortCode Short code for redirects
+ * @apiSuccess {String} qrCodeImage Base64 encoded QR code image
+ */
+```
