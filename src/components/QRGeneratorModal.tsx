@@ -500,9 +500,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-gray-900">Frame Style</h4>
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                          Pro+
-                        </span>
+                        {!planFeatures.hasProFeatures && (
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Pro+
+                          </span>
+                        )}
                       </div>
                       <div className="space-y-3">
                         <select
@@ -573,9 +575,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-gray-900">Logo Embedding</h4>
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                          Pro+
-                        </span>
+                        {!planFeatures.hasProFeatures && (
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Pro+
+                          </span>
+                        )}
                       </div>
                       
                       {!formData.logo.enabled ? (
@@ -623,9 +627,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-gray-900">Advanced Customization</h4>
-                      <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                        Pro+
-                      </span>
+                      {!planFeatures.hasProFeatures && (
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                          Pro+
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
                       Logo embedding, frame styles, and advanced design options
@@ -730,14 +736,16 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                       </button>
                       <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                         <p className="text-sm text-gray-600 mb-2">
-                          Get SVG & PDF downloads with Pro+
+                          {planFeatures.hasProFeatures ? 'SVG & PDF downloads available' : 'Get SVG & PDF downloads with Pro+'}
                         </p>
-                        <button
-                          onClick={() => window.location.href = '/pricing'}
-                          className="text-sm text-purple-600 hover:text-purple-800 font-medium"
-                        >
-                          Upgrade to Pro →
-                        </button>
+                        {!planFeatures.hasProFeatures && (
+                          <button
+                            onClick={() => window.location.href = '/pricing'}
+                            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                          >
+                            Upgrade to Pro →
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}

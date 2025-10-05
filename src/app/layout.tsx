@@ -2,8 +2,18 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
-import ConditionalNavbar from '@/components/ConditionalNavbar'
-import ConditionalMain from '@/components/ConditionalMain'
+import dynamic from 'next/dynamic'
+
+// Import components dynamically to avoid SSR issues
+const ConditionalNavbar = dynamic(() => import('@/components/ConditionalNavbar'), {
+  ssr: true,
+  loading: () => <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-gray-200" />
+})
+
+const ConditionalMain = dynamic(() => import('@/components/ConditionalMain'), {
+  ssr: true,
+  loading: () => <main className="pt-16 bg-white min-h-screen" />
+})
 
 const inter = Inter({ subsets: ['latin'] })
 

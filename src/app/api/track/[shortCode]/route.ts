@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { URLShortener } from '@/lib/url-shortener'
 import { LocationService } from '@/lib/location-service'
+import { broadcastScan, createScanData, setSocketIO } from '@/lib/realtime-broadcast'
 
 // Helper function to generate scan tracking script
 function generateScanTrackingScript(shortCode: string): string {
@@ -114,7 +115,7 @@ async function recordScan(qrCode: any, headersList: any) {
   const locationInfo = await LocationService.getLocationFromIP(ipAddress)
 
   // Record the scan
-  await prisma.scan.create({
+  const scanRecord = await prisma.scan.create({
     data: {
       qrCodeId: qrCode.id,
       ipAddress,
@@ -127,6 +128,25 @@ async function recordScan(qrCode: any, headersList: any) {
       city: locationInfo.city
     }
   })
+
+  // Broadcast real-time scan data
+  try {
+    const scanData = createScanData(
+      scanRecord.id,
+      qrCode,
+      scanRecord,
+      deviceInfo,
+      locationInfo
+    )
+    
+    await broadcastScan(qrCode.userId, scanData)
+    console.log('Real-time scan broadcasted for QR code:', qrCode.name)
+  } catch (broadcastError) {
+    console.error('Error broadcasting real-time scan:', broadcastError)
+    // Don't fail the scan recording if broadcasting fails
+  }
+
+  return scanRecord
 }
 
 export async function GET(

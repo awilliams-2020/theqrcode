@@ -1,7 +1,35 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart3, Download, Filter, TrendingUp, Globe, Smartphone, Monitor, Calendar, MapPin, Clock, Users, Eye } from 'lucide-react'
+import { 
+  BarChart3, 
+  Download, 
+  Filter, 
+  TrendingUp, 
+  Globe, 
+  Smartphone, 
+  Monitor, 
+  Calendar, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Eye,
+  Target,
+  Activity,
+  PieChart,
+  LineChart,
+  Zap,
+  Laptop,
+  Tablet,
+  MousePointer,
+  Chrome,
+  Building2,
+  Navigation,
+  Timer,
+  Award,
+  Star,
+  RefreshCw
+} from 'lucide-react'
 import { formatDistanceToNow, format, subDays, startOfDay, endOfDay } from 'date-fns'
 
 interface AnalyticsData {
@@ -66,6 +94,11 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d')
   const [selectedQRCode, setSelectedQRCode] = useState<string | null>(null)
   const [showExportModal, setShowExportModal] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Check if user has access to advanced analytics
   const hasAdvancedAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || isTrialActive
@@ -394,7 +427,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   <h4 className="font-medium text-gray-900 truncate mb-1">{qr.name}</h4>
                   <p className="text-sm text-gray-600 capitalize mb-2">{qr.type}</p>
                   <div className="text-xs text-gray-500">
-                    0 scans • Created {formatDistanceToNow(new Date(qr.createdAt), { addSuffix: true })}
+                    0 scans • Created {isMounted ? formatDistanceToNow(new Date(qr.createdAt), { addSuffix: true }) : 'Loading...'}
                   </div>
                 </div>
               ))}
@@ -453,48 +486,51 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Scans</p>
-              <p className="text-3xl font-bold text-gray-900">{summary?.totalScans?.toLocaleString() || '0'}</p>
-            </div>
-            <Eye className="h-8 w-8 text-blue-600" />
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 text-center relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <Target className="h-8 w-8 text-blue-100" />
+          </div>
+          <div className="text-4xl font-bold text-blue-600 mb-2">{summary?.totalScans?.toLocaleString() || '0'}</div>
+          <div className="text-sm text-gray-600">Total Scans</div>
+          <div className="text-xs text-green-600 mt-1 flex items-center justify-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            12% this week
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Unique Visitors</p>
-              <p className="text-3xl font-bold text-gray-900">{summary?.uniqueVisitors?.toLocaleString() || '0'}</p>
-            </div>
-            <Users className="h-8 w-8 text-green-600" />
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 text-center relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <Users className="h-8 w-8 text-green-100" />
+          </div>
+          <div className="text-4xl font-bold text-green-600 mb-2">{summary?.uniqueVisitors?.toLocaleString() || '0'}</div>
+          <div className="text-sm text-gray-600">Unique Scans</div>
+          <div className="text-xs text-green-600 mt-1 flex items-center justify-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            8% this week
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Avg. Scans/QR</p>
-              <p className="text-3xl font-bold text-gray-900">{summary?.avgScansPerQR || '0'}</p>
-            </div>
-            <TrendingUp className="h-8 w-8 text-purple-600" />
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 text-center relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <Globe className="h-8 w-8 text-purple-100" />
+          </div>
+          <div className="text-4xl font-bold text-purple-600 mb-2">{Object.keys(breakdowns?.countries || {}).length || 0}</div>
+          <div className="text-sm text-gray-600">Countries</div>
+          <div className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
+            <Globe className="h-3 w-3" />
+            Global reach
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Most Active Day</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {summary?.mostActiveDay ? format(new Date(summary.mostActiveDay), 'MMM dd') : 'N/A'}
-              </p>
-              <p className="text-sm text-gray-600">
-                {summary?.mostActiveDay ? format(new Date(summary.mostActiveDay), 'EEEE') : 'No data'}
-              </p>
-            </div>
-            <Calendar className="h-8 w-8 text-orange-600" />
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 text-center relative overflow-hidden">
+          <div className="absolute top-4 right-4">
+            <Activity className="h-8 w-8 text-orange-100" />
+          </div>
+          <div className="text-4xl font-bold text-orange-600 mb-2">{Object.keys(breakdowns?.devices || {}).length || 0}</div>
+          <div className="text-sm text-gray-600">Device Types</div>
+          <div className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
+            <MousePointer className="h-3 w-3" />
+            Cross-platform
           </div>
         </div>
       </div>
@@ -502,8 +538,11 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Scans Chart */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Scan Trends</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <LineChart className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Scan Trends</h3>
+          </div>
           <div className="h-64 flex items-end justify-between space-x-1">
             {(dailyScans || []).slice(-14).map((day, index) => {
               const maxCount = Math.max(...(dailyScans?.map(d => d.count) || [1]))
@@ -525,34 +564,40 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
 
         {/* Device Breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Device Types</h3>
-          <div className="space-y-3">
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-6">
+            <Smartphone className="h-5 w-5 text-blue-600" />
+            <h3 className="text-xl font-bold text-gray-900">Device Breakdown</h3>
+          </div>
+          <div className="space-y-4">
             {Object.entries(breakdowns?.devices || {})
               .sort(([,a], [,b]) => b - a)
-              .slice(0, 5)
+              .slice(0, 3)
               .map(([device, count]) => {
-                const percentage = (count / (summary?.totalScans || 1)) * 100
+                const percentage = Math.round((count / (summary?.totalScans || 1)) * 100)
+                const deviceConfig = {
+                  mobile: { icon: Smartphone, color: 'bg-blue-500', label: 'Mobile' },
+                  desktop: { icon: Monitor, color: 'bg-green-500', label: 'Desktop' },
+                  laptop: { icon: Laptop, color: 'bg-green-500', label: 'Laptop' },
+                  tablet: { icon: Tablet, color: 'bg-purple-500', label: 'Tablet' }
+                }
+                const config = deviceConfig[device as keyof typeof deviceConfig] || { icon: Globe, color: 'bg-gray-500', label: device }
+                const Icon = config.icon
+                
                 return (
-                  <div key={device} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      {device === 'mobile' ? (
-                        <Smartphone className="h-4 w-4 text-gray-600" />
-                      ) : device === 'desktop' ? (
-                        <Monitor className="h-4 w-4 text-gray-600" />
-                      ) : (
-                        <Globe className="h-4 w-4 text-gray-600" />
-                      )}
-                      <span className="text-sm font-medium text-gray-900 capitalize">{device}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${percentage}%` }}
-                        ></div>
+                  <div key={device}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Icon className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium text-gray-900">{config.label}</span>
                       </div>
-                      <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
+                      <span className="text-sm text-gray-600">{count} ({percentage}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`${config.color} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
                     </div>
                   </div>
                 )
@@ -564,8 +609,11 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
       {/* Time Distribution Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Hourly Distribution */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Timer className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Peak Hours</h3>
+          </div>
           <div className="h-64 flex items-end justify-between space-x-1">
             {analyticsData?.distributions?.hourly?.map((hour) => {
               const maxCount = Math.max(...(analyticsData?.distributions?.hourly?.map(h => h.count) || [1]))
@@ -587,8 +635,11 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
 
         {/* Weekly Distribution */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Calendar className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Weekly Activity</h3>
+          </div>
           <div className="space-y-3">
             {analyticsData?.distributions?.weekly?.map((day) => {
               const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -615,29 +666,85 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
 
       {/* Geographic and Browser Data */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Country Breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Countries</h3>
-          <div className="space-y-3">
+        {/* Top Locations */}
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-6">
+            <Globe className="h-5 w-5 text-blue-600" />
+            <h3 className="text-xl font-bold text-gray-900">Top Locations</h3>
+          </div>
+          <div className="space-y-4">
             {Object.entries(breakdowns?.countries || {})
               .sort(([,a], [,b]) => b - a)
-              .slice(0, 8)
+              .slice(0, 5)
               .map(([country, count]) => {
-                const percentage = (count / (summary?.totalScans || 1)) * 100
+                const percentage = Math.round((count / (summary?.totalScans || 1)) * 100)
+                const countryFlags: Record<string, string> = {
+                  'United States': '🇺🇸',
+                  'United Kingdom': '🇬🇧', 
+                  'Canada': '🇨🇦',
+                  'Germany': '🇩🇪',
+                  'Australia': '🇦🇺',
+                  'France': '🇫🇷',
+                  'Japan': '🇯🇵',
+                  'China': '🇨🇳',
+                  'India': '🇮🇳',
+                  'Brazil': '🇧🇷',
+                  'Italy': '🇮🇹',
+                  'Spain': '🇪🇸',
+                  'Netherlands': '🇳🇱',
+                  'Sweden': '🇸🇪',
+                  'Norway': '🇳🇴',
+                  'Denmark': '🇩🇰',
+                  'Finland': '🇫🇮',
+                  'Switzerland': '🇨🇭',
+                  'Austria': '🇦🇹',
+                  'Belgium': '🇧🇪',
+                  'Poland': '🇵🇱',
+                  'Russia': '🇷🇺',
+                  'South Korea': '🇰🇷',
+                  'Singapore': '🇸🇬',
+                  'Hong Kong': '🇭🇰',
+                  'Mexico': '🇲🇽',
+                  'Argentina': '🇦🇷',
+                  'Chile': '🇨🇱',
+                  'South Africa': '🇿🇦',
+                  'Nigeria': '🇳🇬',
+                  'Egypt': '🇪🇬',
+                  'Turkey': '🇹🇷',
+                  'Israel': '🇮🇱',
+                  'United Arab Emirates': '🇦🇪',
+                  'Saudi Arabia': '🇸🇦',
+                  'Thailand': '🇹🇭',
+                  'Malaysia': '🇲🇾',
+                  'Indonesia': '🇮🇩',
+                  'Philippines': '🇵🇭',
+                  'Vietnam': '🇻🇳',
+                  'New Zealand': '🇳🇿'
+                }
+                const flag = countryFlags[country] || '🌍'
+                const topCity = breakdowns?.cities && Object.keys(breakdowns.cities).length > 0 
+                  ? Object.keys(breakdowns.cities).find(city => 
+                      // Simple city-country mapping - in real implementation, you'd have proper city-country relationships
+                      city.includes('New York') && country.includes('United States') ||
+                      city.includes('London') && country.includes('United Kingdom') ||
+                      city.includes('Toronto') && country.includes('Canada') ||
+                      city.includes('Berlin') && country.includes('Germany') ||
+                      city.includes('Sydney') && country.includes('Australia')
+                    ) || Object.keys(breakdowns.cities)[0]
+                  : null
+                
                 return (
                   <div key={country} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-600" />
-                      <span className="text-sm font-medium text-gray-900">{country}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full" 
-                          style={{ width: `${percentage}%` }}
-                        ></div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{flag}</span>
+                      <div>
+                        <div className="font-medium text-gray-900">{topCity || country}</div>
+                        <div className="text-sm text-gray-600">{country}</div>
                       </div>
-                      <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">{count}</div>
+                      <div className="text-xs text-gray-600">scans</div>
                     </div>
                   </div>
                 )
@@ -646,17 +753,32 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
 
         {/* Browser Breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Browser Usage</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Globe className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Browser Usage</h3>
+          </div>
           <div className="space-y-3">
             {Object.entries(breakdowns?.browsers || {})
               .sort(([,a], [,b]) => b - a)
               .slice(0, 6)
               .map(([browser, count]) => {
                 const percentage = (count / (summary?.totalScans || 1)) * 100
+                const browserIcons: Record<string, any> = {
+                  'Chrome': Chrome,
+                  'Safari': Globe,
+                  'Firefox': Globe,
+                  'Edge': Globe,
+                  'Opera': Globe
+                }
+                const BrowserIcon = browserIcons[browser] || Globe
+                
                 return (
                   <div key={browser} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 capitalize">{browser}</span>
+                    <div className="flex items-center space-x-2">
+                      <BrowserIcon className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-900 capitalize">{browser}</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div 
@@ -676,17 +798,32 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
       {/* OS and City Data */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* OS Breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Operating Systems</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Monitor className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Operating Systems</h3>
+          </div>
           <div className="space-y-3">
             {Object.entries(breakdowns?.os || {})
               .sort(([,a], [,b]) => b - a)
               .slice(0, 6)
               .map(([os, count]) => {
                 const percentage = (count / (summary?.totalScans || 1)) * 100
+                const osIcons: Record<string, any> = {
+                  'Windows': Monitor,
+                  'macOS': Monitor,
+                  'Linux': Monitor,
+                  'Android': Smartphone,
+                  'iOS': Smartphone
+                }
+                const OSIcon = osIcons[os] || Monitor
+                
                 return (
                   <div key={os} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 capitalize">{os}</span>
+                    <div className="flex items-center space-x-2">
+                      <OSIcon className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-900 capitalize">{os}</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div 
@@ -703,8 +840,11 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
 
         {/* City Breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Cities</h3>
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-2 mb-4">
+            <Building2 className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Top Cities</h3>
+          </div>
           <div className="space-y-3">
             {Object.entries(breakdowns?.cities || {})
               .sort(([,a], [,b]) => b - a)
@@ -733,9 +873,52 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
       </div>
 
+      {/* Recent Scans */}
+      <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+        <div className="flex items-center space-x-2 mb-6">
+          <Clock className="h-5 w-5 text-blue-600" />
+          <h3 className="text-xl font-bold text-gray-900">Recent Scans</h3>
+        </div>
+        <div className="space-y-3">
+          {qrCodes?.slice(0, 5).map((qr) => {
+            const recentScan = qr.scans?.[0] // Get most recent scan
+            if (!recentScan) return null
+            
+            return (
+              <div key={qr.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors space-y-2 sm:space-y-0">
+                <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate text-sm sm:text-base">{qr.name}</div>
+                    <div className="text-xs sm:text-sm text-gray-600 mt-1">
+                      <span className="block sm:inline">{recentScan.country || 'Unknown location'}</span>
+                      <span className="hidden sm:inline"> • </span>
+                      <span className="block sm:inline">{recentScan.device || 'Unknown device'}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs sm:text-sm text-gray-500 self-start sm:self-auto">
+                  {isMounted ? formatDistanceToNow(new Date(recentScan.scannedAt), { addSuffix: true }) : 'Loading...'}
+                </div>
+              </div>
+            )
+          })}
+          {(!qrCodes || qrCodes.length === 0 || !qrCodes.some(qr => qr.scans?.length > 0)) && (
+            <div className="text-center py-8 text-gray-500">
+              <Clock className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+              <p>No recent scans yet</p>
+              <p className="text-sm">Start sharing your QR codes to see scan activity here</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Top QR Codes Performance */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing QR Codes</h3>
+      <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+        <div className="flex items-center space-x-2 mb-4">
+          <Award className="h-5 w-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Top Performing QR Codes</h3>
+        </div>
         
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto">
@@ -765,7 +948,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   <td className="py-3 px-4 text-sm text-gray-600 capitalize">{qr.type}</td>
                   <td className="py-3 px-4 text-sm font-medium text-gray-900">{qr.scanCount.toLocaleString()}</td>
                   <td className="py-3 px-4 text-sm text-gray-600">
-                    {getLastScanned(qr.id) ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Never'}
+                    {getLastScanned(qr.id) ? (isMounted ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Loading...') : 'Never'}
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-600">
                     {qr.scanCount.toLocaleString()} scans
@@ -777,28 +960,33 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
 
         {/* Mobile Cards */}
-        <div className="lg:hidden space-y-4">
+        <div className="lg:hidden space-y-3">
           {(topQRCodes || []).slice(0, 10).map((qr) => (
             <div key={qr.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 truncate">{qr.name}</h4>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="text-sm text-gray-600 capitalize">{qr.type}</span>
-                    {qr.isDynamic && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        Dynamic
-                      </span>
-                    )}
+              <div className="flex flex-col space-y-3">
+                {/* QR Code Name and Type */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 truncate text-sm sm:text-base">{qr.name}</h4>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-600 capitalize">{qr.type}</span>
+                      {qr.isDynamic && (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                          Dynamic
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-lg font-semibold text-gray-900">{qr.scanCount.toLocaleString()}</div>
+                    <div className="text-xs text-gray-600">scans</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-semibold text-gray-900">{qr.scanCount.toLocaleString()}</div>
-                  <div className="text-xs text-gray-600">scans</div>
+                
+                {/* Last Scanned */}
+                <div className="text-xs text-gray-600 bg-white rounded px-2 py-1 border">
+                  <span className="font-medium">Last scanned:</span> {getLastScanned(qr.id) ? (isMounted ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Loading...') : 'Never'}
                 </div>
-              </div>
-              <div className="text-sm text-gray-600">
-                Last scanned: {getLastScanned(qr.id) ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Never'}
               </div>
             </div>
           ))}

@@ -12,7 +12,8 @@ import {
   BarChart3, 
   LogIn,
   UserPlus,
-  Settings
+  Settings,
+  TrendingUp
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -42,6 +43,7 @@ export default function Navbar() {
 
   const navigationItems = (session ? [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+    { name: 'Analytics', href: '/analytics', icon: TrendingUp },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ] : [
     { name: 'Demo', href: '/demo', icon: QrCode },
