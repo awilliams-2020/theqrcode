@@ -924,7 +924,7 @@ export async function GET(
                 </button>
             </div>
             
-            ${wifiData.password ? `
+            ${wifiData.password && wifiData.security !== 'nopass' ? `
             <div class="detail-item">
                 <div class="detail-icon password">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -977,7 +977,7 @@ export async function GET(
             <p>1. Go to your device's WiFi settings</p>
             <p>2. Look for "${wifiData.ssid}" in the network list</p>
             <p>3. Enter the password when prompted</p>
-            ${wifiData.password ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
+            ${wifiData.password && wifiData.security !== 'nopass' ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
         </div>
         
         <div class="footer">

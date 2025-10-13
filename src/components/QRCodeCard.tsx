@@ -462,19 +462,6 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
                 </div>
               )}
 
-              {/* Analytics Info */}
-              {qr.isDynamic && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                  <div className="flex items-center mb-1">
-                    <BarChart3 className="h-4 w-4 text-blue-600 mr-2" />
-                    <h5 className="font-medium text-blue-900">Analytics Enabled</h5>
-                  </div>
-                  <p className="text-sm text-blue-700">
-                    This QR code tracks scans and provides detailed analytics.
-                  </p>
-                </div>
-              )}
-
               {/* Action Buttons */}
               <div className="flex space-x-3">
                 <button

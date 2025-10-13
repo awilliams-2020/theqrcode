@@ -371,7 +371,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                         </div>
                         
                         {/* Password */}
-                        {wifiData.password && (
+                        {wifiData.password && wifiData.security !== 'nopass' && (
                           <div className="flex items-center py-3 border-b border-gray-100">
                             <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-4">
                               <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -432,7 +432,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                           <p>1. Go to your device's WiFi settings</p>
                           <p>2. Look for "{wifiData.ssid}" in the network list</p>
                           <p>3. Enter the password when prompted</p>
-                          {wifiData.password && (
+                          {wifiData.password && wifiData.security !== 'nopass' && (
                             <p className="mt-2 font-medium">💡 Tip: You can copy the password above to paste it easily!</p>
                           )}
                         </div>

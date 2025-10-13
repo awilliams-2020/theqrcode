@@ -8,6 +8,8 @@ import { QRCode, QRGeneratorModalProps, QRCodeFormData } from '@/types'
 import { getPlanFeatures } from '@/utils/plan-utils'
 import { QR_CODE_SIZES, FRAME_SIZES, LOGO_CONSTRAINTS } from '@/constants'
 import MenuBuilder from './MenuBuilder'
+import WiFiInput from './WiFiInput'
+import VCardInput from './VCardInput'
 
 export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan = 'free', isTrialActive = false }: QRGeneratorModalProps) {
   const [formData, setFormData] = useState({
@@ -56,9 +58,10 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     {
       title: 'WiFi Network',
       content: JSON.stringify({
-        ssid: 'My WiFi',
-        password: 'password123',
-        security: 'WPA'
+        ssid: 'Coffee Shop WiFi',
+        password: 'Welcome2024',
+        security: 'WPA',
+        hidden: false
       }),
       type: 'wifi' as const,
       description: 'Share WiFi credentials easily'
@@ -68,8 +71,10 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
       content: JSON.stringify({
         firstName: 'John',
         lastName: 'Doe',
+        phone: '+1-555-0123',
         email: 'john@example.com',
-        phone: '+1-555-0123'
+        organization: 'Example Corp',
+        title: 'CEO'
       }),
       type: 'contact' as const,
       description: 'Share contact information'
@@ -306,7 +311,22 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
 
   // Show menu builder if menu type is selected
   if (showMenuBuilder && formData.type === 'menu') {
-    const existingMenuData = formData.content ? JSON.parse(formData.content) : undefined
+    let existingMenuData: MenuData | undefined
+    
+    // Try to parse existing content as menu data
+    if (formData.content && formData.content.trim()) {
+      try {
+        const parsed = JSON.parse(formData.content)
+        // Validate it's actually menu data (has categories array)
+        if (parsed && Array.isArray(parsed.categories)) {
+          existingMenuData = parsed as MenuData
+        }
+      } catch (error) {
+        // Invalid JSON or not menu data, start fresh
+        console.log('Content is not valid menu data, starting fresh')
+      }
+    }
+    
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex flex-col">
@@ -377,6 +397,30 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     </button>
                   </div>
                 </div>
+              ) : formData.type === 'wifi' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    WiFi Configuration
+                  </label>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <WiFiInput
+                      value={formData.content}
+                      onChange={(value) => setFormData({ ...formData, content: value })}
+                    />
+                  </div>
+                </div>
+              ) : formData.type === 'contact' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Contact Card
+                  </label>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <VCardInput
+                      value={formData.content}
+                      onChange={(value) => setFormData({ ...formData, content: value })}
+                    />
+                  </div>
+                </div>
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -410,10 +454,74 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                       // Don't allow menu type for non-pro users
                       return
                     }
+                    
+                    // When switching to a different type, validate content compatibility
+                    let newContent = formData.content
+                    
                     if (newType === 'menu') {
+                      // Check if content is valid menu data
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.categories || !Array.isArray(parsed.categories)) {
+                          // Not valid menu data, clear it
+                          newContent = ''
+                        }
+                      } catch {
+                        // Invalid JSON, clear it
+                        newContent = ''
+                      }
                       setShowMenuBuilder(true)
+                    } else if (newType === 'wifi') {
+                      // Initialize empty WiFi data if content is not WiFi format
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.ssid) {
+                          newContent = JSON.stringify({
+                            ssid: '',
+                            password: '',
+                            security: 'WPA',
+                            hidden: false
+                          })
+                        }
+                      } catch {
+                        newContent = JSON.stringify({
+                          ssid: '',
+                          password: '',
+                          security: 'WPA',
+                          hidden: false
+                        })
+                      }
+                    } else if (newType === 'contact') {
+                      // Initialize empty VCard data if content is not VCard format
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.phone) {
+                          newContent = JSON.stringify({
+                            firstName: '',
+                            lastName: '',
+                            phone: '',
+                            email: '',
+                            organization: '',
+                            title: '',
+                            address: '',
+                            website: ''
+                          })
+                        }
+                      } catch {
+                        newContent = JSON.stringify({
+                          firstName: '',
+                          lastName: '',
+                          phone: '',
+                          email: '',
+                          organization: '',
+                          title: '',
+                          address: '',
+                          website: ''
+                        })
+                      }
                     }
-                    setFormData({ ...formData, type: newType })
+                    
+                    setFormData({ ...formData, type: newType, content: newContent })
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 >

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { QrCode, Download } from 'lucide-react'
 import { QRGenerator } from '@/lib/qr-generator'
+import WiFiInput from './WiFiInput'
+import VCardInput from './VCardInput'
 
 interface PublicQRGeneratorProps {
   defaultType?: 'url' | 'wifi' | 'contact' | 'text'
@@ -120,9 +122,26 @@ export default function PublicQRGenerator({
     } else if (type === 'text') {
       defaultContent = 'Hello, World!'
     } else if (type === 'wifi') {
-      defaultContent = 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;'
+      // Default WiFi JSON format
+      defaultContent = JSON.stringify({
+        ssid: '',
+        password: '',
+        security: 'WPA',
+        hidden: false
+      })
     } else if (type === 'contact') {
-      defaultContent = 'BEGIN:VCARD\nVERSION:3.0\nFN:John Doe\nTEL:+1234567890\nEMAIL:john@example.com\nEND:VCARD'
+      // Default vCard JSON format
+      defaultContent = JSON.stringify({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        organization: '',
+        title: '',
+        address: '',
+        website: '',
+        image: ''
+      })
     }
     
     setQrData({
@@ -173,36 +192,48 @@ export default function PublicQRGenerator({
           </div>
 
           {/* Content Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {qrData.type === 'url' && 'Website URL'}
-              {qrData.type === 'text' && 'Text Content'}
-              {qrData.type === 'wifi' && 'WiFi Details'}
-              {qrData.type === 'contact' && 'vCard Data'}
-            </label>
-            <textarea
-              value={qrData.content}
-              onChange={(e) => setQrData({ ...qrData, content: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-mono text-sm"
-              rows={qrData.type === 'contact' ? 5 : 3}
-              placeholder={
-                qrData.type === 'url' ? 'https://example.com' :
-                qrData.type === 'text' ? 'Enter your text here...' :
-                qrData.type === 'wifi' ? 'WIFI:T:WPA;S:NetworkName;P:Password;;' :
-                'BEGIN:VCARD...'
-              }
-            />
-            {qrData.type === 'wifi' && (
-              <p className="mt-2 text-xs text-gray-600">
-                Format: WIFI:T:WPA;S:NetworkName;P:Password;;
-              </p>
-            )}
-            {qrData.type === 'contact' && (
-              <p className="mt-2 text-xs text-gray-600">
-                vCard format required. Edit the template above.
-              </p>
-            )}
-          </div>
+          {qrData.type === 'wifi' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                WiFi Configuration
+              </label>
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                <WiFiInput
+                  value={qrData.content}
+                  onChange={(value) => setQrData({ ...qrData, content: value })}
+                />
+              </div>
+            </div>
+          ) : qrData.type === 'contact' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Contact Card
+              </label>
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                <VCardInput
+                  value={qrData.content}
+                  onChange={(value) => setQrData({ ...qrData, content: value })}
+                />
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {qrData.type === 'url' && 'Website URL'}
+                {qrData.type === 'text' && 'Text Content'}
+              </label>
+              <textarea
+                value={qrData.content}
+                onChange={(e) => setQrData({ ...qrData, content: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                rows={3}
+                placeholder={
+                  qrData.type === 'url' ? 'https://example.com' :
+                  'Enter your text here...'
+                }
+              />
+            </div>
+          )}
 
           {/* Customization */}
           <div className="space-y-4 pt-4 border-t border-gray-200">

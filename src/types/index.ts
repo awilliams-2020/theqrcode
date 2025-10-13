@@ -69,17 +69,19 @@ export interface QRGeneratorModalProps {
 export interface WiFiConfig {
   ssid: string
   password: string
-  security: 'WPA' | 'WEP' | 'nopass'
+  security: 'WPA' | 'WPA2' | 'WEP' | 'nopass'
   hidden?: boolean
 }
 
 export interface ContactConfig {
-  firstName: string
-  lastName: string
+  firstName?: string
+  lastName?: string
   organization?: string
-  phone?: string
+  phone: string // Required field
   email?: string
   url?: string
+  website?: string
+  title?: string
   address?: string
 }
 
