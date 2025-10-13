@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { QrCode, BarChart3, Edit, Trash2, Copy, Download, Eye, Check, X } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
 import { QRGenerator } from '@/lib/qr-generator'
 import { useToast } from '@/hooks/useToast'
 import { QRCode, QRCodeCardProps } from '@/types'
+import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { formatTimeAgoInTimezone } from '@/lib/date-utils'
 
 export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
   const [showActions, setShowActions] = useState(false)
@@ -15,6 +16,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const { showSuccess, showError } = useToast()
+  const userTimezone = useUserTimezone()
 
   // Close actions popup when clicking outside
   useEffect(() => {
@@ -207,7 +209,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
           {isGenerating ? (
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           ) : qrCodeImage ? (
-            <img src={qrCodeImage} alt={qr.name} className="w-full h-full object-contain rounded-lg" />
+            <img src={qrCodeImage} alt={qr.name} className="w-full h-full object-contain" />
           ) : (
             <QrCode className="h-12 w-12 text-gray-400" />
           )}
@@ -229,7 +231,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
 
       {/* Footer */}
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Created {formatDistanceToNow(new Date(qr.createdAt))} ago</span>
+        <span>Created {formatTimeAgoInTimezone(qr.createdAt, userTimezone)}</span>
         {qr.isDynamic && qr.shortUrl && (
           <span className="truncate max-w-32" title={qr.shortUrl}>
             {qr.shortUrl}
@@ -266,7 +268,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
               <div className="text-center mb-4">
                 <div className={`${qrCodeImage && (qr.settings as any)?.frame?.style === 'circle' ? '' : 'bg-white border-2 border-gray-200 rounded-xl p-4 mb-3 shadow-sm'}`}>
                   {qrCodeImage ? (
-                    <img src={qrCodeImage} alt={qr.name} className="max-w-full h-auto mx-auto rounded-lg max-h-48" />
+                    <img src={qrCodeImage} alt={qr.name} className="max-w-full h-auto mx-auto max-h-48" />
                   ) : (
                     <div className="flex items-center justify-center h-32">
                       <QrCode className="h-12 w-12 text-gray-400" />

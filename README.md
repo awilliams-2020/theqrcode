@@ -1,177 +1,116 @@
-# QR Analytics SaaS
+# TheQRCode.io
 
-A modern, full-stack QR code generator with advanced analytics tracking. Built with Next.js 14, TypeScript, Prisma, and PostgreSQL.
+QR code generation platform with analytics, subscriptions, and API access.
 
-## 🚀 Features
+**Live:** https://theqrcode.io
 
-### Core Features
-- **QR Code Generation**: Create QR codes for URLs, text, WiFi, contacts, and email
-- **Custom Styling**: Customize colors, size, and frame styles
-- **Analytics Tracking**: Track scans with detailed insights (location, device, timing)
-- **Dynamic QR Codes**: Enable/disable analytics per QR code
-- **User Management**: Secure authentication with NextAuth.js
-- **Subscription Plans**: Free, Starter, Pro, and Business tiers
+## Features
 
-### Analytics Features
-- Real-time scan tracking
-- Device type detection (mobile, desktop, tablet)
-- Browser and OS information
-- Geographic location (with IP geolocation)
-- Referrer tracking
-- Time-based analytics
+- Dynamic QR codes with real-time scan analytics
+- Multiple types: URL, WiFi, Contact, Email, Text
+- Tiered plans (Free, Starter, Pro, Business)
+- RESTful API for programmatic access
+- Stripe payments + Google OAuth
+- Email automation (welcome, trials, insights)
+- Docker-based cron jobs
 
-## 🛠 Tech Stack
+## Quick Start
 
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: PostgreSQL
-- **Authentication**: NextAuth.js
-- **Payments**: Stripe (planned)
-- **Deployment**: Vercel + Railway
+```bash
+# Development
+npm install
+npm run dev
+```
 
-## 📦 Installation
+## Environment Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd qr-analytics-saas
-   ```
+Required variables (see [`docs/ENV_SETUP.md`](docs/ENV_SETUP.md)):
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+```env
+DATABASE_URL=postgresql://...
+NEXTAUTH_URL=https://theqrcode.io
+NEXTAUTH_SECRET=...
+GOOGLE_CLIENT_ID=...
+STRIPE_SECRET_KEY=...
+SMTP_HOST=yourdomain.com
+CRON_SECRET=...
+```
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Update `.env.local` with your values:
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/qr_analytics"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key-here"
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   ```
+## Database
 
-4. **Set up the database**
-   ```bash
-   npx prisma migrate dev
-   npx prisma generate
-   ```
+```bash
+npx prisma migrate dev      # Run migrations
+npx prisma generate          # Generate client
+npx prisma studio            # Open GUI
+```
 
-5. **Run the development server**
-   ```bash
-   npm run dev
-   ```
+## Docker Services
 
-## 🏗 Database Schema
+```yaml
+theqrcode      # Production app
+theqrcode-dev  # Development app
+postgres       # Database
+```
 
-### Users & Authentication
-- **User**: User accounts with NextAuth.js integration
-- **Account**: OAuth provider accounts
-- **Session**: User sessions
-- **Subscription**: User subscription plans and limits
+```bash
+docker-compose up -d                    # Start services
+docker logs -f theqrcode                # View logs
+docker exec theqrcode tail -f /var/log/cron.log  # Cron logs
+```
 
-### QR Codes & Analytics
-- **QrCode**: QR code definitions with settings
-- **Scan**: Individual scan events with analytics data
+## Testing
 
-## 📊 Pricing Plans
+```bash
+npm test                     # Run tests
+npm run test:coverage        # With coverage
 
-| Plan | Price | QR Codes | Scans/Month | Features |
-|------|-------|----------|-------------|----------|
-| Free | $0 | 10 | 1,000 | Basic analytics |
-| Starter | $15 | 100 | 10,000 | Advanced analytics, custom branding |
-| Pro | $35 | 500 | 50,000 | API access, bulk generation |
-| Business | $75 | Unlimited | Unlimited | White-label, team features |
+# Test cron jobs
+docker exec theqrcode curl http://localhost:3000/api/cron/daily \
+  -H "Authorization: Bearer $CRON_SECRET"
 
-## 🔧 API Endpoints
+# Test email
+docker exec theqrcode node -e "require('./src/lib/email').testEmailConnection()"
+```
 
-### QR Code Management
-- `GET /api/qr-codes` - List user's QR codes
-- `POST /api/qr-codes` - Create new QR code
-- `GET /api/qr-codes/[id]` - Get QR code details
-- `PUT /api/qr-codes/[id]` - Update QR code
-- `DELETE /api/qr-codes/[id]` - Delete QR code
+## Documentation
 
-### Analytics Tracking
-- `GET /api/track/[shortUrl]` - Track scan and redirect
+- **[docs/README.md](docs/README.md)** - Complete index
+- **[docs/DOCKER_CRON_QUICKSTART.md](docs/DOCKER_CRON_QUICKSTART.md)** - 5-min setup
+- **[docs/ENGAGEMENT_SYSTEM.md](docs/ENGAGEMENT_SYSTEM.md)** - Email automation
+- **[docs/GOOGLE_ADS_USAGE.md](docs/GOOGLE_ADS_USAGE.md)** - Ad tracking
 
-### Authentication
-- `GET/POST /api/auth/[...nextauth]` - NextAuth.js endpoints
+## Project Structure
 
-## 🚀 Deployment
+```
+src/
+├── app/
+│   ├── api/                # API routes + cron endpoints
+│   └── ...                 # Pages
+├── components/             # React components
+└── lib/
+    ├── engagement/         # Email automation + notifications
+    └── qr-generator*.ts    # QR code generation
+```
 
-### Database Setup
-1. Create a PostgreSQL database on Railway or Supabase
-2. Update `DATABASE_URL` in your environment variables
-3. Run migrations: `npx prisma migrate deploy`
+## Troubleshooting
 
-### Frontend Deployment
-1. Deploy to Vercel
-2. Set environment variables in Vercel dashboard
-3. Configure custom domain (optional)
+```bash
+# Cron issues
+docker exec theqrcode ps aux | grep cron
+docker logs theqrcode
 
-## 📈 Business Model
+# Database issues
+docker-compose logs postgres
+docker exec -it postgres psql -U postgres -d theqrcode
 
-### Revenue Streams
-1. **Subscription Revenue**: Monthly/annual recurring revenue
-2. **API Access**: Pay-per-use API for developers
-3. **White-label Licensing**: Custom branding for enterprises
+# Email issues
+docker exec theqrcode nc -zv mail.redbudway.com 465
+```
 
-### Target Market
-- Small businesses and restaurants
-- Marketing agencies
-- Event organizers
-- Freelancers and consultants
-- E-commerce stores
+## Stack
 
-### Growth Strategy
-1. **SEO Optimization**: Target QR code related keywords
-2. **Content Marketing**: Blog posts about QR code best practices
-3. **Social Media**: Showcase QR code use cases
-4. **Partnerships**: Integrate with marketing tools
-5. **Referral Program**: Incentivize user referrals
-
-## 🔮 Future Features
-
-### Phase 2
-- [ ] Bulk QR code generation
-- [ ] API access for developers
-- [ ] Advanced analytics dashboard
-- [ ] Export analytics data
-
-### Phase 3
-- [ ] White-label options
-- [ ] Team collaboration features
-- [ ] Custom domains for short URLs
-- [ ] A/B testing for QR codes
-
-### Phase 4
-- [ ] Mobile app
-- [ ] QR code templates library
-- [ ] Integration marketplace
-- [ ] Enterprise SSO
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📞 Support
-
-For support, email support@qr-analytics.com or create an issue in the repository.
+Next.js 15 • PostgreSQL • Prisma • Docker • Stripe • NextAuth
 
 ---
 
-**Built with ❤️ by [Your Name]**
+📝 See [TODO.md](TODO.md) for roadmap

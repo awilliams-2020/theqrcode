@@ -4,8 +4,24 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { QRGeneratorServer } from '@/lib/qr-generator-server'
 import { URLShortener } from '@/lib/url-shortener'
+import { notifyMilestone, notifyPlanLimitApproaching, createNotification } from '@/lib/engagement/notifications'
+import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
+import { trackQRCode } from '@/lib/matomo-tracking'
+
+function extractIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIP = request.headers.get('x-real-ip')
+  const cfConnectingIP = request.headers.get('cf-connecting-ip')
+  
+  if (forwarded) return forwarded.split(',')[0].trim()
+  if (realIP) return realIP
+  if (cfConnectingIP) return cfConnectingIP
+  return 'unknown'
+}
 
 export async function GET(request: NextRequest) {
+  const requestId = startRequestTiming()
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -13,7 +29,10 @@ export async function GET(request: NextRequest) {
     }
 
     const qrCodes = await prisma.qrCode.findMany({
-      where: { userId: (session.user as any).id },
+      where: { 
+        userId: (session.user as any).id,
+        isDeleted: false // Exclude soft-deleted QR codes
+      },
       include: {
         scans: {
           select: {
@@ -27,14 +46,23 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 200, 
+      request.headers.get('user-agent') || undefined, extractIP(request))
+    
     return NextResponse.json(qrCodes)
   } catch (error) {
     console.error('Error fetching QR codes:', error)
+    
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500, 
+      request.headers.get('user-agent') || undefined, extractIP(request))
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
+  const requestId = startRequestTiming()
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -66,7 +94,10 @@ export async function POST(request: NextRequest) {
 
     if (limits.qrCodes !== -1) {
       const currentCount = await prisma.qrCode.count({
-        where: { userId: (session.user as any).id }
+        where: { 
+          userId: (session.user as any).id,
+          isDeleted: false // Only count non-deleted QR codes
+        }
       })
 
       if (currentCount >= limits.qrCodes) {
@@ -98,6 +129,44 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Get updated QR code count for notifications
+    const newQrCodeCount = await prisma.qrCode.count({
+      where: { 
+        userId: (session.user as any).id,
+        isDeleted: false // Only count non-deleted QR codes
+      }
+    })
+
+    // Send notifications asynchronously (don't block response)
+    const userId = (session.user as any).id
+    
+    // Check for milestones
+    const milestones = [1, 5, 10, 25, 50, 100, 250, 500]
+    if (milestones.includes(newQrCodeCount)) {
+      notifyMilestone(userId, 'qr_codes', newQrCodeCount).catch(err => 
+        console.error('Failed to send milestone notification:', err)
+      )
+    }
+
+    // Send a tip for first QR code
+    if (newQrCodeCount === 1) {
+      createNotification({
+        userId,
+        type: 'tip',
+        title: '🎉 Congratulations on your first QR code!',
+        message: 'Track its performance in the Analytics dashboard. Pro tip: Dynamic QR codes let you change the destination anytime.',
+        actionUrl: '/analytics',
+        priority: 'normal',
+      }).catch(err => console.error('Failed to send first QR notification:', err))
+    }
+
+    // Check if approaching plan limit (80%+)
+    if (limits.qrCodes !== -1 && newQrCodeCount >= limits.qrCodes * 0.8) {
+      notifyPlanLimitApproaching(userId, 'QR codes', newQrCodeCount, limits.qrCodes).catch(err =>
+        console.error('Failed to send plan limit notification:', err)
+      )
+    }
+
     // Generate QR code image with the appropriate content
     // For contact types, always use the original content (vCard) for proper mobile handling
     // For other dynamic QR codes, use the short URL; for static, use the original content
@@ -117,12 +186,33 @@ export async function POST(request: NextRequest) {
       frame: frameSettings
     })
 
+    // Track QR code creation in Matomo (async, don't block response)
+    trackQRCode.create(
+      userId,
+      qrCode.id,
+      type,
+      isDynamic || false,
+      currentPlan,
+      newQrCodeCount,
+      {
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+      }
+    ).catch(err => console.error('Failed to track QR code creation:', err))
+
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 200, 
+      request.headers.get('user-agent') || undefined, extractIP(request))
+    
     return NextResponse.json({
       ...qrCode,
       qrImage
     })
   } catch (error) {
     console.error('Error creating QR code:', error)
+    
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500, 
+      request.headers.get('user-agent') || undefined, extractIP(request))
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

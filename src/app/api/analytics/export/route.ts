@@ -34,6 +34,12 @@ export async function GET(request: NextRequest) {
     let startDate = new Date()
     
     switch (timeRange) {
+      case '1h':
+        startDate.setHours(now.getHours() - 1)
+        break
+      case '1d':
+        startDate.setDate(now.getDate() - 1)
+        break
       case '7d':
         startDate.setDate(now.getDate() - 7)
         break
@@ -53,6 +59,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const whereClause: any = {
       userId: session.user.id,
+      isDeleted: false, // Exclude soft-deleted QR codes
       scans: {
         some: {
           scannedAt: {
@@ -126,7 +133,7 @@ async function exportAsCSV(qrCodes: any[], timeRange: string) {
 
   const csvContent = [
     headers.join(','),
-    ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ...csvData.map(row => row.map((field: any) => `"${field}"`).join(','))
   ].join('\n')
 
   return new NextResponse(csvContent, {

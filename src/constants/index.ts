@@ -5,7 +5,8 @@ export const QR_CODE_TYPES = {
   TEXT: 'text',
   WIFI: 'wifi',
   CONTACT: 'contact',
-  EMAIL: 'email'
+  EMAIL: 'email',
+  MENU: 'menu'
 } as const
 
 export const PLAN_TYPES = {
@@ -21,6 +22,7 @@ export const FRAME_STYLES = {
   CIRCLE: 'circle',
   DASHED: 'dashed'
 } as const
+
 
 export const TOAST_DURATION = 5000
 export const COPY_FEEDBACK_DURATION = 2000
@@ -45,6 +47,7 @@ export const LOGO_CONSTRAINTS = {
   MAX_SIZE_PERCENT: 0.25,
   MAX_PIXELS: 64
 } as const
+
 
 export const API_ENDPOINTS = {
   QR_CODES: '/api/qr-codes',

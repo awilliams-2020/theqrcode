@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
 import { Check, Zap } from 'lucide-react'
+import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 
 interface PricingPageProps {
   session: any
@@ -84,9 +84,15 @@ const plans = [
 ]
 
 export default function PricingPage({ session }: PricingPageProps) {
+  const { trackCTA, trackPricingView } = useLandingPageTracking('pricing');
   const [loading, setLoading] = useState<string | null>(null)
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null)
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
+  
+  // Track pricing page view
+  useEffect(() => {
+    trackPricingView();
+  }, [trackPricingView]);
 
   // Fetch user's current subscription
   useEffect(() => {
@@ -133,6 +139,10 @@ export default function PricingPage({ session }: PricingPageProps) {
   }
 
   const handleSubscribe = async (planId: string) => {
+    // Track the CTA click
+    const planName = plans.find(p => p.id === planId)?.name || planId;
+    trackCTA(`Subscribe ${planName}`, 'pricing', planId);
+    
     // If not logged in, redirect to sign up with selected plan
     if (!session) {
       window.location.href = `/auth/signup?plan=${planId}`
@@ -191,8 +201,8 @@ export default function PricingPage({ session }: PricingPageProps) {
 
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {plans.map((plan) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {plans.filter(p => p.id !== 'business').map((plan) => (
             <div
               key={plan.id}
               className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-200 hover:scale-105 ${

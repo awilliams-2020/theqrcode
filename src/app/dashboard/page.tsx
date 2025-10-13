@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PLAN_LIMITS, PLAN_DISPLAY_NAMES } from '@/lib/constants'
-import { getUserIfNotDeleted } from '@/lib/user-helpers'
 import Dashboard from '@/components/Dashboard'
 
 export default async function DashboardPage() {
@@ -13,16 +12,14 @@ export default async function DashboardPage() {
     redirect('/auth/signin')
   }
 
-  // Check if user is soft-deleted (anonymized but kept for trial abuse prevention)
-  const user = await getUserIfNotDeleted(session.user.id)
-  if (!user) {
-    redirect('/auth/signin')
-  }
   
-  // Get user's QR codes and subscription info
-  const [qrCodes, subscription] = await Promise.all([
+  // Get user's QR codes, subscription info, and admin status
+  const [qrCodes, subscription, user] = await Promise.all([
     prisma.qrCode.findMany({
-      where: { userId: session.user.id },
+      where: { 
+        userId: session.user.id,
+        isDeleted: false // Exclude soft-deleted QR codes
+      },
       include: {
         scans: {
           select: {
@@ -37,6 +34,10 @@ export default async function DashboardPage() {
     }),
     prisma.subscription.findUnique({
       where: { userId: session.user.id }
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true }
     })
   ])
   
@@ -62,13 +63,23 @@ export default async function DashboardPage() {
   
   return (
     <Dashboard 
-      qrCodes={qrCodes}
+      qrCodes={qrCodes.map(qr => ({
+        ...qr,
+        shortUrl: qr.shortUrl || undefined,
+        settings: (qr.settings as Record<string, unknown>) || {},
+        scans: qr.scans.map(scan => ({
+          ...scan,
+          device: scan.device || undefined,
+          country: scan.country || undefined
+        }))
+      }))}
       subscription={serializedSubscription}
       totalScans={totalScans}
       limits={limits}
       currentPlan={effectivePlan}
-      isTrialActive={isTrialActive}
+      isTrialActive={isTrialActive || false}
       planDisplayName={isTrialActive ? `${PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]} (Trial)` : PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]}
+      isAdmin={user?.isAdmin || false}
     />
   )
 }

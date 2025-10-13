@@ -1,10 +1,12 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
 import { QrCode, BarChart3, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
+import PublicQRGenerator from './PublicQRGenerator'
 
 export default function LandingPage() {
+  const { trackCTA } = useLandingPageTracking('home');
   const features = [
     {
       icon: QrCode,
@@ -69,30 +71,40 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Hero Section */}
-      <section className="px-4 py-20">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Create & Track QR Codes
-            <span className="block text-blue-600">with Analytics</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Generate beautiful QR codes and track their performance with detailed analytics. 
-            Perfect for businesses, marketers, and developers.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => window.location.href = '/auth/signup'}
-              className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Start Free Trial
-            </button>
-            <button
-              onClick={() => window.location.href = '/demo'}
-              className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:border-gray-400 transition-colors"
-            >
-              View Demo
-            </button>
+      {/* Hero Section with Generator */}
+      <section className="px-4 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Free QR Code Generator
+              <span className="block text-blue-600">with Analytics</span>
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+              Create beautiful QR codes instantly and track their performance with detailed analytics. 
+              Perfect for businesses, marketers, and developers.
+            </p>
+          </div>
+
+          {/* Embedded QR Generator */}
+          <PublicQRGenerator />
+
+          {/* Trust Badges */}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-gray-600 mb-4">Trusted by thousands of businesses worldwide</p>
+            <div className="flex flex-wrap justify-center gap-8 text-gray-700">
+              <div className="flex items-center gap-2">
+                <QrCode className="h-5 w-5 text-blue-600" />
+                <span className="font-semibold">10K+</span> Active Users
+              </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <span className="font-semibold">1M+</span> QR Codes Created
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-blue-600" />
+                <span className="font-semibold">99.9%</span> Uptime
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -131,8 +143,8 @@ export default function LandingPage() {
               Choose the plan that fits your needs. No hidden fees.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {pricingPlans.map((plan, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {pricingPlans.filter(p => p.name !== 'Business').map((plan, index) => (
               <div
                 key={index}
                 className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-200 hover:scale-105 ${
@@ -164,7 +176,11 @@ export default function LandingPage() {
                   <button
                     onClick={() => {
                       const planId = plan.name.toLowerCase()
-                      window.location.href = `/auth/signup?plan=${planId}`
+                      trackCTA(plan.cta, 'pricing', planId)
+                      // Small delay to ensure tracking completes before navigation
+                      setTimeout(() => {
+                        window.location.href = `/auth/signup?plan=${planId}`
+                      }, 150);
                     }}
                     className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
                       plan.popular
@@ -193,15 +209,111 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-4 py-12 bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <QrCode className="h-6 w-6" />
-            <span className="text-xl font-bold">The QR Code</span>
+      <footer className="px-4 py-16 bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* Company Info */}
+            <div className="lg:col-span-1">
+              <div className="flex items-center space-x-2 mb-4">
+                <QrCode className="h-6 w-6" />
+                <span className="text-xl font-bold">TheQRCode.io</span>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Professional QR code generation and analytics platform for businesses of all sizes.
+              </p>
+            </div>
+
+            {/* Product Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/qr-code-generator" className="text-gray-400 hover:text-white transition-colors">
+                    QR Generator
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features" className="text-gray-400 hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/api" className="text-gray-400 hover:text-white transition-colors">
+                    API Documentation
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support & Legal Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Support & Legal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <p className="text-gray-400">
-            © 2024 The QR Code. All rights reserved.
-          </p>
+
+          {/* Bottom Section */}
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 mb-4 md:mb-0">
+                © 2024 TheQRCode.io. All rights reserved.
+              </p>
+              <div className="flex space-x-6">
+                <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Terms
+                </Link>
+                <Link href="/cookies" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Cookies
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

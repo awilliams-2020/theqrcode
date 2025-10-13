@@ -83,11 +83,11 @@ export async function GET(request: NextRequest) {
         accounts: userData.accounts.map(account => ({
           provider: account.provider,
           type: account.type,
-          createdAt: account.createdAt
+          createdAt: (account as any).createdAt || new Date()
         })),
         sessions: userData.sessions.map(session => ({
           expires: session.expires,
-          createdAt: session.createdAt
+          createdAt: (session as any).createdAt || new Date()
         }))
       },
       summary: {

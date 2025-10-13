@@ -28,13 +28,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
-    // Check if user has previously been soft-deleted (no trial for returning users)
+    // Check if user has previously used a trial (prevent trial abuse)
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { isDeleted: true } as any
+      select: { email: true }
     })
 
-    const hasBeenDeleted = (user as any)?.isDeleted === true
+    // Check trial abuse prevention table (same logic as createUser event)
+    const crypto = require('crypto')
+    const emailHash = crypto.createHash('sha256').update(user?.email || '').digest('hex')
+    const hasDeletedAccount = await prisma.trialAbusePrevention.findUnique({
+      where: { emailHash: emailHash }
+    })
 
     // Check if user already has a subscription
     const existingSubscription = await prisma.subscription.findUnique({
@@ -42,62 +47,98 @@ export async function POST(request: NextRequest) {
     })
 
     let subscription
+    let shouldRedirectToCheckout = false
+    let requestedPlan = plan
 
     if (existingSubscription) {
       // Update existing subscription with selected plan
-      // No trial for users who have been soft-deleted before
-      const trialEndsAt = (plan !== 'free' && !hasBeenDeleted) ? calculateTrialEndDate() : null
+      // No trial for users who have previously deleted account (prevent trial abuse)
+      const trialEndsAt = (plan !== 'free' && !hasDeletedAccount) ? calculateTrialEndDate() : null
       
-      // Determine status based on plan and trial availability
-      let status: 'active' | 'trialing'
-      if (plan === 'free') {
-        // Free plan users get trialing status if they haven't been deleted before
-        status = hasBeenDeleted ? 'active' : 'trialing'
+      // If user had deleted account before and is trying to sign up with paid plan,
+      // default them to free and redirect to checkout
+      if (hasDeletedAccount && plan !== 'free') {
+        console.log(`User ${session.user.id} had previous trial, defaulting to free plan and redirecting to checkout for ${plan}`)
+        subscription = await prisma.subscription.update({
+          where: { userId: session.user.id },
+          data: {
+            plan: 'free',
+            status: 'active',
+            trialEndsAt: null
+          }
+        })
+        shouldRedirectToCheckout = true
       } else {
-        // Paid plan users get trialing status if trial is available
-        status = trialEndsAt ? 'trialing' : 'active'
-      }
-      
-      subscription = await prisma.subscription.update({
-        where: { userId: session.user.id },
-        data: {
-          plan: plan as 'free' | 'starter' | 'pro' | 'business',
-          status: status,
-          trialEndsAt: trialEndsAt
+        // Normal flow - assign requested plan
+        // Determine status based on plan and trial availability
+        let status: 'active' | 'trialing'
+        if (plan === 'free') {
+          // Free plan users are always active (no trial for free plan)
+          status = 'active'
+        } else {
+          // Paid plan users get trialing status if trial is available
+          status = trialEndsAt ? 'trialing' : 'active'
         }
-      })
-      console.log(`Updated subscription to plan ${plan} for user:`, session.user.id, 
-        trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (returning user or free plan)')
+        
+        subscription = await prisma.subscription.update({
+          where: { userId: session.user.id },
+          data: {
+            plan: plan as 'free' | 'starter' | 'pro' | 'business',
+            status: status,
+            trialEndsAt: trialEndsAt
+          }
+        })
+        console.log(`Updated subscription to plan ${plan} for user:`, session.user.id, 
+          trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (previous deletion or free plan)')
+      }
     } else {
       // Create new subscription with selected plan
-      // No trial for users who have been soft-deleted before
-      const trialEndsAt = (plan !== 'free' && !hasBeenDeleted) ? calculateTrialEndDate() : null
+      // No trial for users who have previously deleted account (prevent trial abuse)
+      const trialEndsAt = (plan !== 'free' && !hasDeletedAccount) ? calculateTrialEndDate() : null
       
-      // Determine status based on plan and trial availability
-      let status: 'active' | 'trialing'
-      if (plan === 'free') {
-        // Free plan users get trialing status if they haven't been deleted before
-        status = hasBeenDeleted ? 'active' : 'trialing'
+      // If user had deleted account before and is trying to sign up with paid plan,
+      // default them to free and redirect to checkout
+      if (hasDeletedAccount && plan !== 'free') {
+        console.log(`User ${session.user.id} had previous trial, defaulting to free plan and redirecting to checkout for ${plan}`)
+        subscription = await prisma.subscription.create({
+          data: {
+            userId: session.user.id,
+            plan: 'free',
+            status: 'active',
+            trialEndsAt: null
+          }
+        })
+        shouldRedirectToCheckout = true
       } else {
-        // Paid plan users get trialing status if trial is available
-        status = trialEndsAt ? 'trialing' : 'active'
-      }
-      
-      subscription = await prisma.subscription.create({
-        data: {
-          userId: session.user.id,
-          plan: plan as 'free' | 'starter' | 'pro' | 'business',
-          status: status,
-          trialEndsAt: trialEndsAt
+        // Normal flow - assign requested plan
+        // Determine status based on plan and trial availability
+        let status: 'active' | 'trialing'
+        if (plan === 'free') {
+          // Free plan users are always active (no trial for free plan)
+          status = 'active'
+        } else {
+          // Paid plan users get trialing status if trial is available
+          status = trialEndsAt ? 'trialing' : 'active'
         }
-      })
-      console.log(`Created subscription with plan ${plan} for user:`, session.user.id, 
-        trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (returning user or free plan)')
+        
+        subscription = await prisma.subscription.create({
+          data: {
+            userId: session.user.id,
+            plan: plan as 'free' | 'starter' | 'pro' | 'business',
+            status: status,
+            trialEndsAt: trialEndsAt
+          }
+        })
+        console.log(`Created subscription with plan ${plan} for user:`, session.user.id, 
+          trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (previous deletion or free plan)')
+      }
     }
 
     return NextResponse.json({ 
       message: existingSubscription ? 'Subscription updated successfully' : 'Subscription created successfully',
-      subscription 
+      subscription,
+      shouldRedirectToCheckout,
+      requestedPlan: shouldRedirectToCheckout ? requestedPlan : undefined
     })
   } catch (error) {
     console.error('Error creating subscription:', error)

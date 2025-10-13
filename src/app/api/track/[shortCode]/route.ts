@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { URLShortener } from '@/lib/url-shortener'
 import { LocationService } from '@/lib/location-service'
+import { createScanData } from '@/lib/realtime-broadcast'
+import { notifyMilestone } from '@/lib/engagement/notifications'
+import { runAnalyticsChecks } from '@/lib/engagement/analytics-notifications'
+import { trackQRCode } from '@/lib/matomo-tracking'
 
 // Helper function to generate scan tracking script
 function generateScanTrackingScript(shortCode: string): string {
@@ -114,7 +118,7 @@ async function recordScan(qrCode: any, headersList: any) {
   const locationInfo = await LocationService.getLocationFromIP(ipAddress)
 
   // Record the scan
-  await prisma.scan.create({
+  const scanRecord = await prisma.scan.create({
     data: {
       qrCodeId: qrCode.id,
       ipAddress,
@@ -127,14 +131,33 @@ async function recordScan(qrCode: any, headersList: any) {
       city: locationInfo.city
     }
   })
+
+  // Broadcast real-time scan data
+  try {
+    const scanData = createScanData(
+      scanRecord.id,
+      qrCode,
+      scanRecord,
+      deviceInfo,
+      locationInfo
+    )
+    
+    // Note: Real-time broadcasting removed as polling is used instead
+    console.log('Scan recorded for QR code:', qrCode.name)
+  } catch (error) {
+    console.error('Error processing scan data:', error)
+    // Don't fail the scan recording if data processing fails
+  }
+
+  return scanRecord
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    const shortCode = params.shortCode
+    const { shortCode } = await params
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     
     console.log('Track API Debug:', { shortCode, shortUrl })
@@ -146,7 +169,8 @@ export async function GET(
 
     console.log('QR Code found:', qrCode ? 'Yes' : 'No', qrCode?.name)
 
-    if (!qrCode) {
+    // Check if QR code exists and if it's been soft deleted
+    if (!qrCode || qrCode.isDeleted) {
       // Return HTML page for 404 error, similar to display page
       const html = `
 <!DOCTYPE html>
@@ -334,7 +358,7 @@ export async function GET(
             window.location.href = '${redirectUrl}';
         }, 1000);
     </script>
-    ${generateScanTrackingScript(params.shortCode)}
+    ${generateScanTrackingScript(shortCode)}
 </body>
 </html>`
 
@@ -522,7 +546,7 @@ export async function GET(
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         });
     </script>
-    ${generateScanTrackingScript(params.shortCode)}
+    ${generateScanTrackingScript(shortCode)}
 </body>
 </html>`
             
@@ -534,7 +558,7 @@ export async function GET(
             })
           } catch (error) {
             // If JSON parsing fails, redirect to display page
-            const shortCode = params.shortCode
+            // shortCode is already available from the function scope
             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'
             return NextResponse.redirect(`${baseUrl}/display/${shortCode}`)
           }
@@ -638,6 +662,20 @@ export async function GET(
         .mailto-btn:hover {
             background: #059669;
         }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .footer a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            color: #2563EB;
+        }
     </style>
 </head>
 <body>
@@ -664,6 +702,10 @@ export async function GET(
                 Send Email
             </button>
         </div>
+        
+        <div class="footer">
+            Powered by <a href="https://theqrcode.io" target="_blank" rel="noopener noreferrer">TheQRCode.io</a>
+        </div>
     </div>
     
     <script>
@@ -683,7 +725,7 @@ export async function GET(
             }
         }
     </script>
-    ${generateScanTrackingScript(params.shortCode)}
+    ${generateScanTrackingScript(shortCode)}
 </body>
 </html>`
 
@@ -834,6 +876,20 @@ export async function GET(
             font-weight: 500;
             margin-top: 8px;
         }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .footer a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            color: #2563EB;
+        }
     </style>
 </head>
 <body>
@@ -923,6 +979,10 @@ export async function GET(
             <p>3. Enter the password when prompted</p>
             ${wifiData.password ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
         </div>
+        
+        <div class="footer">
+            Powered by <a href="https://theqrcode.io" target="_blank" rel="noopener noreferrer">TheQRCode.io</a>
+        </div>
     </div>
     
     <script>
@@ -944,7 +1004,7 @@ export async function GET(
             }
         }
     </script>
-    ${generateScanTrackingScript(params.shortCode)}
+    ${generateScanTrackingScript(shortCode)}
 </body>
 </html>`
 
@@ -958,7 +1018,7 @@ export async function GET(
         })
       } catch (error) {
         // If JSON parsing fails, redirect to display page
-      const shortCode = params.shortCode
+      // shortCode is already available from the function scope
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'
       return NextResponse.redirect(`${baseUrl}/display/${shortCode}`)
       }
@@ -1048,6 +1108,20 @@ export async function GET(
         .copy-btn:hover {
             background: #1D4ED8;
         }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .footer a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            color: #2563EB;
+        }
     </style>
 </head>
 <body>
@@ -1069,6 +1143,10 @@ export async function GET(
         <button class="copy-btn" onclick="copyToClipboard('${qrCode.content.replace(/'/g, "\\'")}')">
             Copy Text
         </button>
+        
+        <div class="footer">
+            Powered by <a href="https://theqrcode.io" target="_blank" rel="noopener noreferrer">TheQRCode.io</a>
+        </div>
     </div>
     
     <script>
@@ -1088,7 +1166,7 @@ export async function GET(
             }
         }
     </script>
-    ${generateScanTrackingScript(params.shortCode)}
+    ${generateScanTrackingScript(shortCode)}
 </body>
 </html>`
 
@@ -1100,9 +1178,13 @@ export async function GET(
           'Expires': '0'
         }
       })
+    } else if (qrCode.type === 'menu') {
+      // For menu types, redirect to the menu display page
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'
+      return NextResponse.redirect(`${baseUrl}/menu/${shortCode}`)
     } else {
       // For other types, redirect to display page
-      const shortCode = params.shortCode
+      // shortCode is already available from the function scope
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'
       return NextResponse.redirect(`${baseUrl}/display/${shortCode}`)
     }
@@ -1168,11 +1250,11 @@ function parseUserAgent(userAgent: string) {
 // POST method for tracking scans without redirecting
 export async function POST(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    console.log('POST /api/track called with shortCode:', params.shortCode)
-    const shortCode = params.shortCode
+    const { shortCode } = await params
+    console.log('POST /api/track called with shortCode:', shortCode)
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     console.log('Generated shortUrl:', shortUrl)
     
@@ -1187,18 +1269,19 @@ export async function POST(
       console.log('QR code found:', qrCode ? 'Yes' : 'No')
     } catch (dbError) {
       console.error('Database error details:', {
-        message: dbError.message,
-        code: dbError.code,
-        stack: dbError.stack
+        message: (dbError as any).message,
+        code: (dbError as any).code,
+        stack: (dbError as any).stack
       })
       return NextResponse.json({ 
         error: 'Database error', 
-        details: dbError.message 
+        details: (dbError as any).message 
       }, { status: 500 })
     }
 
-    if (!qrCode) {
-      console.log('QR code not found for shortCode:', shortCode)
+    // Check if QR code exists or has been soft deleted
+    if (!qrCode || qrCode.isDeleted) {
+      console.log('QR code not found or deleted for shortCode:', shortCode)
       return NextResponse.json({ error: 'QR code not found', shortCode, shortUrl }, { status: 404 })
     }
 
@@ -1243,9 +1326,62 @@ export async function POST(
       // Record the scan if within limits
       console.log('Recording scan for QR code:', qrCode.id)
       try {
-        const headersList = headers()
+        // Get headers and device/location info
+        const headersList = await headers()
+        const userAgent = headersList.get('user-agent') || ''
+        const ipAddress = headersList.get('x-forwarded-for') ||
+                         headersList.get('x-real-ip') ||
+                         '127.0.0.1'
+        const deviceInfo = parseUserAgent(userAgent)
+        const locationInfo = await LocationService.getLocationFromIP(ipAddress)
+        
+        // Record the scan
         await recordScan(qrCode, headersList)
         console.log('Scan recorded successfully')
+        
+        // Check for scan milestones (asynchronous, don't block response)
+        const totalScans = await prisma.scan.count({
+          where: {
+            qrCode: {
+              userId: qrCode.userId
+            }
+          }
+        })
+        
+        // Notify on scan milestones
+        const scanMilestones = [100, 500, 1000, 5000, 10000, 50000]
+        if (scanMilestones.includes(totalScans)) {
+          notifyMilestone(qrCode.userId, 'scans', totalScans).catch(err =>
+            console.error('Failed to send scan milestone notification:', err)
+          )
+        }
+        
+        // Run real-time analytics checks (non-blocking)
+        runAnalyticsChecks(qrCode.userId, qrCode.id, {
+          device: deviceInfo.device,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
+          country: locationInfo.country,
+          city: locationInfo.city
+        }).catch(err => {
+          console.error('Failed to run analytics checks:', err)
+        })
+        
+        // Track QR code scan in Matomo (async, don't block response)
+        trackQRCode.scan(
+          qrCode.id,
+          qrCode.userId,
+          qrCode.type,
+          qrCode.isDynamic,
+          totalScans,
+          {
+            ip: ipAddress,
+            userAgent,
+            country: locationInfo.country || undefined,
+            device: deviceInfo.device,
+          }
+        ).catch(err => console.error('Failed to track QR scan in Matomo:', err))
+        
         return NextResponse.json({ success: true, message: 'Scan recorded' })
       } catch (recordError) {
         console.error('Error recording scan:', recordError)

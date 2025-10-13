@@ -12,10 +12,11 @@ function SubscriptionSetupForm() {
     const setupSubscription = async () => {
       try {
         // Get plan from URL or cookie
-        const planParam = searchParams.get('plan')
+        const planParam = searchParams?.get('plan')
         let selectedPlan = 'free'
 
-        if (planParam && ['starter', 'pro', 'business'].includes(planParam)) {
+        // Business plan is temporarily hidden
+        if (planParam && ['starter', 'pro'].includes(planParam)) {
           selectedPlan = planParam
         } else {
           // Check cookie for stored plan
@@ -24,7 +25,8 @@ function SubscriptionSetupForm() {
             .find(row => row.startsWith('signupPlan='))
             ?.split('=')[1]
           
-          if (cookieValue && ['starter', 'pro', 'business'].includes(cookieValue)) {
+          // Business plan is temporarily hidden
+          if (cookieValue && ['starter', 'pro'].includes(cookieValue)) {
             selectedPlan = cookieValue
           }
         }
@@ -46,6 +48,32 @@ function SubscriptionSetupForm() {
 
           const data = await response.json()
           console.log('Subscription setup completed:', data)
+
+          // Check if user should be redirected to checkout (returning user without trial)
+          if (data.shouldRedirectToCheckout && data.requestedPlan) {
+            console.log('Redirecting to checkout for plan:', data.requestedPlan)
+            
+            // Create checkout session
+            const checkoutResponse = await fetch('/api/stripe/checkout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ plan: data.requestedPlan }),
+            })
+
+            if (!checkoutResponse.ok) {
+              throw new Error('Failed to create checkout session')
+            }
+
+            const checkoutData = await checkoutResponse.json()
+            
+            // Redirect to checkout
+            if (checkoutData.url) {
+              window.location.href = checkoutData.url
+              return // Don't proceed with normal flow
+            }
+          }
         }
 
         // Clear the cookie

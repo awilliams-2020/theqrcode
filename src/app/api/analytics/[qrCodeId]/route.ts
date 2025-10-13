@@ -5,13 +5,15 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { qrCodeId: string } }
+  { params }: { params: Promise<{ qrCodeId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { qrCodeId } = await params
 
     // Check if user has access to advanced analytics
     const subscription = await prisma.subscription.findUnique({
@@ -35,6 +37,12 @@ export async function GET(
     let startDate = new Date()
     
     switch (timeRange) {
+      case '1h':
+        startDate.setHours(now.getHours() - 1)
+        break
+      case '1d':
+        startDate.setDate(now.getDate() - 1)
+        break
       case '7d':
         startDate.setDate(now.getDate() - 7)
         break
@@ -54,8 +62,9 @@ export async function GET(
     // Get QR code with scan data
     const qrCode = await prisma.qrCode.findFirst({
       where: {
-        id: params.qrCodeId,
-        userId: session.user.id
+        id: qrCodeId,
+        userId: session.user.id,
+        isDeleted: false // Exclude soft-deleted QR codes
       },
       include: {
         scans: {
@@ -118,9 +127,9 @@ export async function GET(
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date))
 
-    // Hourly scan distribution (for the last 7 days)
+    // Hourly scan distribution (stored in UTC for client-side timezone conversion)
     const hourlyScans = qrCode.scans.reduce((acc, scan) => {
-      const hour = scan.scannedAt.getHours()
+      const hour = scan.scannedAt.getUTCHours()
       acc[hour] = (acc[hour] || 0) + 1
       return acc
     }, {} as Record<number, number>)

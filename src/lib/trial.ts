@@ -84,12 +84,17 @@ export function hasActiveAccess(
     return true;
   }
   
-  // If on free plan, check if trial is active
-  if (plan === 'free' && status === 'trialing') {
+  // If on free plan and active, they have access
+  if (plan === 'free' && status === 'active') {
+    return true;
+  }
+  
+  // If on any plan and trialing, check if trial is active
+  if (status === 'trialing') {
     return isTrialActive(trialEndsAt);
   }
   
-  // If on free plan and trial expired, no access
+  // No access
   return false;
 }
 

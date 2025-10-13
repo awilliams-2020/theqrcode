@@ -137,6 +137,7 @@ export class QRGenerator {
     return svgString
   }
 
+
   private static async addLogoToQR(qrDataURL: string, logo: { file: File; size?: number }): Promise<string> {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')

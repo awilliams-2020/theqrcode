@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { QrCode, ExternalLink, BarChart3 } from 'lucide-react'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     shortCode: string
-  }
+  }>
 }
 
 export default function QRCodeDisplayPage({ params }: PageProps) {
@@ -20,10 +20,11 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
   useEffect(() => {
     const fetchQRCodeData = async () => {
       try {
+        const { shortCode } = await params
         // Fetch both data and image in parallel
         const [infoResponse, imageResponse] = await Promise.all([
-          fetch(`/api/qr-info/${params.shortCode}`),
-          fetch(`/api/qr-image/${params.shortCode}`)
+          fetch(`/api/qr-info/${shortCode}`),
+          fetch(`/api/qr-image/${shortCode}`)
         ])
         
         if (infoResponse.status === 404) {
@@ -52,12 +53,13 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
     }
 
     fetchQRCodeData()
-  }, [params.shortCode])
+  }, [params])
 
   const handleScan = async () => {
     try {
+      const { shortCode } = await params
       // Track the scan first
-      await fetch(`/api/track/${params.shortCode}`, { method: 'POST' })
+      await fetch(`/api/track/${shortCode}`, { method: 'POST' })
       
       // Then redirect to the actual content
       if (qrCodeData?.type === 'url' || qrCodeData?.type === 'email') {
@@ -90,8 +92,9 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
 
   const handleDownloadContact = async () => {
     try {
+      const { shortCode } = await params
       // Track the download
-      await fetch(`/api/track/${params.shortCode}`, { method: 'POST' })
+      await fetch(`/api/track/${shortCode}`, { method: 'POST' })
       
       // Create a blob and trigger download that should open native contacts app
       if (qrCodeData?.type === 'contact' && qrCodeData?.content) {
@@ -193,7 +196,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                 <img 
                   src={qrCodeImage} 
                   alt="QR Code" 
-                  className="w-full h-full object-contain rounded-lg"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <QrCode className="h-24 w-24 text-gray-400" />
@@ -221,22 +224,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                 Tap to download the contact file, then open it to add to your contacts
               </p>
             </div>
-          ) : qrCodeData?.type === 'wifi' ? (
-            <div className="space-y-2">
-              <button
-                onClick={handleScan}
-                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                </svg>
-                <span>Connect to WiFi</span>
-              </button>
-              <p className="text-xs text-gray-500 text-center">
-                Tap to connect to the WiFi network
-              </p>
-            </div>
-          ) : (
+          ) : qrCodeData?.type === 'url' || qrCodeData?.type === 'email' ? (
             <button
               onClick={handleScan}
               className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -244,7 +232,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
               <ExternalLink className="h-4 w-4" />
               <span>Open Link</span>
             </button>
-          )}
+          ) : null}
           
           {qrCodeData?.type === 'contact' && qrCodeData?.content ? (
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
@@ -565,10 +553,13 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
           )}
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
+        <div className="mt-6 pt-6 border-t border-gray-200 space-y-4">
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
             <BarChart3 className="h-4 w-4" />
             <span>Analytics enabled</span>
+          </div>
+          <div className="text-center text-xs text-gray-400">
+            Powered by <a href="https://theqrcode.io" target="_blank" rel="noopener noreferrer" className="font-semibold text-gray-500 hover:text-blue-600 transition-colors">TheQRCode.io</a>
           </div>
         </div>
       </div>

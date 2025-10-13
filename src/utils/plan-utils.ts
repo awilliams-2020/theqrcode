@@ -13,12 +13,15 @@ export function getPlanFeatures(currentPlan: PlanType, isTrialActive: boolean = 
   const paidPlans = [PLAN_TYPES.STARTER, PLAN_TYPES.PRO, PLAN_TYPES.BUSINESS]
   const proPlans = [PLAN_TYPES.PRO, PLAN_TYPES.BUSINESS]
   
+  // For trials, features should be based on the actual plan being trialed, not just "any trial"
+  const effectivePlan = currentPlan
+  
   return {
-    hasColorCustomization: paidPlans.includes(currentPlan as any) || isTrialActive,
-    hasAdvancedCustomization: paidPlans.includes(currentPlan as any) || isTrialActive,
-    hasProFeatures: proPlans.includes(currentPlan as any) || isTrialActive,
-    hasSizeCustomization: currentPlan !== PLAN_TYPES.FREE || isTrialActive,
-    hasAllQRTypes: paidPlans.includes(currentPlan as any) || isTrialActive
+    hasColorCustomization: paidPlans.includes(effectivePlan as any),
+    hasAdvancedCustomization: paidPlans.includes(effectivePlan as any),
+    hasProFeatures: proPlans.includes(effectivePlan as any),
+    hasSizeCustomization: effectivePlan !== PLAN_TYPES.FREE,
+    hasAllQRTypes: paidPlans.includes(effectivePlan as any)
   }
 }
 

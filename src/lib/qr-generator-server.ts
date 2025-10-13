@@ -161,6 +161,7 @@ export class QRGeneratorServer {
     return svgString
   }
 
+
   private static async addFrameToQR(qrDataURL: string, frame: { style?: string; color?: string; size?: number }, size: number): Promise<string> {
     try {
       // Convert data URL to buffer
@@ -176,7 +177,7 @@ export class QRGeneratorServer {
       
       switch (frame.style) {
         case 'rounded':
-          frameBuffer = await this.createRoundedFrame(totalSize, frame.color || '#000000')
+          frameBuffer = await this.createRoundedFrame(totalSize, frame.color || '#000000', frameSize)
           break
         case 'circle':
           frameBuffer = await this.createCircularFrame(totalSize, frame.color || '#000000')
@@ -267,8 +268,7 @@ export class QRGeneratorServer {
     }).png().toBuffer()
   }
 
-  private static async createRoundedFrame(size: number, color: string): Promise<Buffer> {
-    const radius = 20
+  private static async createRoundedFrame(size: number, color: string, radius: number): Promise<Buffer> {
     return sharp({
       create: {
         width: size,

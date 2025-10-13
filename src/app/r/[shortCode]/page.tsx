@@ -3,16 +3,20 @@
 import { useEffect } from 'react'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     shortCode: string
-  }
+  }>
 }
 
 export default function QRCodePage({ params }: PageProps) {
   useEffect(() => {
-    // Redirect immediately to the tracking API
-    window.location.href = `/api/track/${params.shortCode}`
-  }, [params.shortCode])
+    const redirect = async () => {
+      const { shortCode } = await params
+      // Redirect immediately to the tracking API
+      window.location.href = `/api/track/${shortCode}`
+    }
+    redirect()
+  }, [params])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">

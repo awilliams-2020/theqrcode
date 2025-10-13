@@ -4,10 +4,10 @@ import { URLShortener } from '@/lib/url-shortener'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    const shortCode = params.shortCode
+    const { shortCode } = await params
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     
     // Find the QR code by short URL

@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { QrCode, Download, Copy, X, Save, Check } from 'lucide-react'
+import { QrCode, Download, Copy, X, Save, Check, Utensils } from 'lucide-react'
 import { QRGenerator as QRGen } from '@/lib/qr-generator'
-import { QRCodeOptions } from '@/types'
+import { QRCodeOptions, MenuData } from '@/types'
 import { QRCode, QRGeneratorModalProps, QRCodeFormData } from '@/types'
 import { getPlanFeatures } from '@/utils/plan-utils'
 import { QR_CODE_SIZES, FRAME_SIZES, LOGO_CONSTRAINTS } from '@/constants'
+import MenuBuilder from './MenuBuilder'
 
 export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan = 'free', isTrialActive = false }: QRGeneratorModalProps) {
   const [formData, setFormData] = useState({
@@ -33,6 +34,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
   const [isSaving, setIsSaving] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string>('')
+  const [showMenuBuilder, setShowMenuBuilder] = useState(false)
 
   // Plan-based feature access
   const planFeatures = getPlanFeatures(currentPlan as any, isTrialActive)
@@ -286,6 +288,38 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     })
   }
 
+  const handleMenuSave = (menuData: MenuData) => {
+    setFormData({
+      ...formData,
+      content: JSON.stringify(menuData)
+    })
+    setShowMenuBuilder(false)
+  }
+
+  const handleMenuBuilderCancel = () => {
+    setShowMenuBuilder(false)
+    // If there's no existing menu content, revert to URL type
+    if (!formData.content || formData.content.trim() === '') {
+      setFormData({ ...formData, type: 'url' })
+    }
+  }
+
+  // Show menu builder if menu type is selected
+  if (showMenuBuilder && formData.type === 'menu') {
+    const existingMenuData = formData.content ? JSON.parse(formData.content) : undefined
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex flex-col">
+          <MenuBuilder
+            initialData={existingMenuData}
+            onSave={handleMenuSave}
+            onCancel={handleMenuBuilderCancel}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
@@ -321,32 +355,66 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
               </div>
 
               {/* Content Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Content
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                  rows={3}
-                  placeholder="Enter your content here..."
-                />
-              </div>
+              {formData.type === 'menu' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Menu Content
+                  </label>
+                  <div className="p-4 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Utensils className="h-5 w-5 text-orange-600" />
+                        <span className="text-sm font-medium text-gray-700">
+                          {formData.content ? 'Menu configured' : 'No menu configured'}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowMenuBuilder(true)}
+                      className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                    >
+                      {formData.content ? 'Edit Menu' : 'Build Menu'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Content
+                  </label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    rows={3}
+                    placeholder="Enter your content here..."
+                  />
+                </div>
+              )}
 
               {/* Type Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   QR Code Type
-                  {!planFeatures.hasAllQRTypes && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      Starter+ for Email
+                  {currentPlan !== 'pro' && currentPlan !== 'business' && (
+                    <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                      Pro+ for Menu Builder
                     </span>
                   )}
                 </label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  onChange={(e) => {
+                    const newType = e.target.value
+                    if (newType === 'menu' && currentPlan !== 'pro' && currentPlan !== 'business') {
+                      // Don't allow menu type for non-pro users
+                      return
+                    }
+                    if (newType === 'menu') {
+                      setShowMenuBuilder(true)
+                    }
+                    setFormData({ ...formData, type: newType })
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 >
                   <option value="url">Website URL</option>
@@ -354,15 +422,16 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <option value="wifi">WiFi Network</option>
                   <option value="contact">Contact Card</option>
                   {planFeatures.hasAllQRTypes && <option value="email">Email Address</option>}
+                  {(currentPlan === 'pro' || currentPlan === 'business') && <option value="menu">Restaurant Menu</option>}
                 </select>
-                {!planFeatures.hasAllQRTypes && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>Upgrade to Starter</strong> to access Email QR codes and all QR code types
+                {currentPlan !== 'pro' && currentPlan !== 'business' && (
+                  <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <p className="text-sm text-purple-800">
+                      <strong>Upgrade to Pro</strong> to access the Menu Builder and create beautiful digital restaurant menus
                     </p>
                     <button
                       onClick={() => window.location.href = '/pricing'}
-                      className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      className="mt-2 text-sm text-purple-600 hover:text-purple-800 font-medium"
                     >
                       View Plans →
                     </button>
@@ -500,9 +569,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-gray-900">Frame Style</h4>
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                          Pro+
-                        </span>
+                        {!planFeatures.hasProFeatures && (
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Pro
+                          </span>
+                        )}
                       </div>
                       <div className="space-y-3">
                         <select
@@ -573,9 +644,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium text-gray-900">Logo Embedding</h4>
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                          Pro+
-                        </span>
+                        {!planFeatures.hasProFeatures && (
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Pro
+                          </span>
+                        )}
                       </div>
                       
                       {!formData.logo.enabled ? (
@@ -623,9 +696,11 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-gray-900">Advanced Customization</h4>
-                      <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                        Pro+
-                      </span>
+                      {!planFeatures.hasProFeatures && (
+                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                          Pro
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
                       Logo embedding, frame styles, and advanced design options
@@ -730,14 +805,16 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                       </button>
                       <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                         <p className="text-sm text-gray-600 mb-2">
-                          Get SVG & PDF downloads with Pro+
+                          {planFeatures.hasProFeatures ? 'SVG & PDF downloads available' : 'Get SVG & PDF downloads with Pro'}
                         </p>
-                        <button
-                          onClick={() => window.location.href = '/pricing'}
-                          className="text-sm text-purple-600 hover:text-purple-800 font-medium"
-                        >
-                          Upgrade to Pro →
-                        </button>
+                        {!planFeatures.hasProFeatures && (
+                          <button
+                            onClick={() => window.location.href = '/pricing'}
+                            className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                          >
+                            Upgrade to Pro →
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}

@@ -3,21 +3,25 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { URLShortener } from '@/lib/url-shortener'
+import { trackQRCode } from '@/lib/matomo-tracking'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     const qrCode = await prisma.qrCode.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: id,
+        userId: session.user.id,
+        isDeleted: false // Exclude soft-deleted QR codes
       },
       include: {
         scans: {
@@ -39,21 +43,24 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { id } = await params
 
     const body = await request.json()
     const { name, type, content, settings, isDynamic } = body
 
     const qrCode = await prisma.qrCode.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: id,
+        userId: session.user.id,
+        isDeleted: false // Exclude soft-deleted QR codes
       }
     })
 
@@ -65,14 +72,14 @@ export async function PUT(
     let shortUrl = qrCode.shortUrl
     if (isDynamic && !shortUrl) {
       // Generate short URL for newly enabled dynamic QR codes
-      shortUrl = await URLShortener.generateShortUrl(params.id)
+      shortUrl = await URLShortener.generateShortUrl(id)
     } else if (!isDynamic && shortUrl) {
       // Remove short URL if disabling dynamic features
       shortUrl = null
     }
 
     const updatedQrCode = await prisma.qrCode.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         type,
@@ -84,6 +91,18 @@ export async function PUT(
       }
     })
 
+    // Track QR code update in Matomo (async, don't block response)
+    trackQRCode.update(
+      session.user.id,
+      id,
+      type,
+      isDynamic || false,
+      {
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+      }
+    ).catch(err => console.error('Failed to track QR code update:', err))
+
     return NextResponse.json(updatedQrCode)
   } catch (error) {
     console.error('Error updating QR code:', error)
@@ -93,18 +112,21 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     const qrCode = await prisma.qrCode.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id
+        id: id,
+        userId: session.user.id,
+        isDeleted: false // Only allow deleting non-deleted QR codes
       }
     })
 
@@ -112,9 +134,26 @@ export async function DELETE(
       return NextResponse.json({ error: 'QR code not found' }, { status: 404 })
     }
 
-    await prisma.qrCode.delete({
-      where: { id: params.id }
+    // Soft delete: mark as deleted but keep in database for analytics
+    await prisma.qrCode.update({
+      where: { id: id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date()
+      }
     })
+
+    // Track QR code deletion in Matomo (async, don't block response)
+    trackQRCode.delete(
+      session.user.id,
+      id,
+      qrCode.type,
+      qrCode.isDynamic,
+      {
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+      }
+    ).catch(err => console.error('Failed to track QR code deletion:', err))
 
     return NextResponse.json({ success: true })
   } catch (error) {
