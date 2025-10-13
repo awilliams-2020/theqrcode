@@ -27,7 +27,7 @@ export default function RealtimeAnalytics({
   
   // Check if user has access to real-time analytics
   // Live Analytics is only available for trialing users or pro+ users with active status
-  const hasRealtimeAccess = isTrialActive || (subscriptionStatus === 'active' && (userPlan === 'pro' || userPlan === 'business'))
+  const hasRealtimeAccess = (isTrialActive && (userPlan === 'pro' || userPlan === 'business')) || (subscriptionStatus === 'active' && (userPlan === 'pro' || userPlan === 'business'))
 
   const {
     isConnected,

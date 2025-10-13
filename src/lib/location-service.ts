@@ -24,15 +24,20 @@ export class LocationService {
     }
 
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      
       const response = await fetch(
         `${this.IPINFO_BASE_URL}/${ipAddress}/json${this.IPINFO_API_KEY ? `?token=${this.IPINFO_API_KEY}` : ''}`,
         {
           headers: {
             'User-Agent': 'QR-Analytics/1.0'
           },
-          timeout: 5000 // 5 second timeout
+          signal: controller.signal
         }
       )
+      
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)

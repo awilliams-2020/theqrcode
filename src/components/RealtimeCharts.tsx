@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { TrendingUp, Globe, Smartphone, Monitor, Tablet, Activity } from 'lucide-react'
+import { Globe, Smartphone, Monitor, Tablet, Activity } from 'lucide-react'
 import { RealtimeScanData } from '@/hooks/useRealtimePolling'
 import {
   Chart as ChartJS,
@@ -60,11 +60,6 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
   // Process chart data with useMemo to prevent unnecessary recalculations
   // MUST be called before any conditional returns to follow Rules of Hooks
   const processedChartData = useMemo(() => {
-    // Debug: Log the scans data to see what we're receiving
-    if (scans.length > 0) {
-      console.log('RealtimeCharts received scans:', scans.length, 'items')
-      console.log('Sample scan data:', scans[0])
-    }
     if (scans.length === 0) {
       return {
         hourly: Array.from({ length: 24 }, (_, i) => ({ 
@@ -89,8 +84,22 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
     // Calculate hourly distribution (last 24 hours)
     const hourlyData = Array.from({ length: 24 }, (_, i) => {
       const count = scans.filter(scan => {
-        const scanHour = new Date(scan.timestamp).getHours()
-        return scanHour === i
+        try {
+          // Handle both Date objects and string timestamps
+          const scanDate = scan.timestamp instanceof Date 
+            ? scan.timestamp 
+            : new Date(scan.timestamp)
+          
+          if (isNaN(scanDate.getTime())) {
+            return false
+          }
+          
+          // Get the local hour from the scan timestamp
+          const scanHour = scanDate.getHours()
+          return scanHour === i
+        } catch (error) {
+          return false
+        }
       }).length
       return { 
         hour: i, 
@@ -103,8 +112,17 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
     // Calculate daily distribution (last 7 days)
     const dailyData = Array.from({ length: 7 }, (_, i) => {
       const count = scans.filter(scan => {
-        const scanDay = new Date(scan.timestamp).getDay()
-        return scanDay === i
+        try {
+          const scanDate = new Date(scan.timestamp)
+          if (isNaN(scanDate.getTime())) {
+            return false
+          }
+          const scanDay = scanDate.getDay()
+          return scanDay === i
+        } catch (error) {
+          console.error('Error processing timestamp for daily data:', scan.timestamp, error)
+          return false
+        }
       }).length
       return { 
         day: i, 
@@ -225,8 +243,9 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
       tooltip: {
         callbacks: {
           label: function(context: any) {
-            const data = context.raw
-            return `${data.time}: ${data.count} scan${data.count !== 1 ? 's' : ''}`
+            const count = context.parsed.y
+            const time = context.label
+            return `${time}: ${count} scan${count !== 1 ? 's' : ''}`
           }
         }
       }
@@ -294,11 +313,7 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
     labels: chartData.hourly.map(h => h.time),
     datasets: [
       {
-        data: chartData.hourly.map(h => ({
-          count: h.count,
-          time: h.time,
-          isCurrentHour: h.isCurrentHour
-        })),
+        data: chartData.hourly.map(h => h.count), // Just the count values, not objects
         backgroundColor: chartData.hourly.map(h => 
           h.isCurrentHour ? '#10b981' : '#3b82f6'
         ),

@@ -1,0 +1,18 @@
+# TheQRCode.io Engagement Automation Cron Jobs
+# ⚠️ NOTE: This file is NO LONGER USED by the container
+# Cron jobs are now managed by the HOST system (see host crontab)
+# This file is kept for reference only
+#
+# Format: minute hour day month weekday command
+
+# Daily tasks at 9:00 AM UTC - Trial reminders, campaigns, cleanup
+0 9 * * * curl -X GET http://localhost:3000/api/cron/daily -H "Authorization: Bearer ${CRON_SECRET}" >> /var/log/cron.log 2>&1
+
+# Weekly tasks every Monday at 10:00 AM UTC - Re-engagement emails
+0 10 * * 1 curl -X GET http://localhost:3000/api/cron/weekly -H "Authorization: Bearer ${CRON_SECRET}" >> /var/log/cron.log 2>&1
+
+# Monthly tasks on 1st at 10:00 AM UTC - Usage insights
+0 10 1 * * curl -X GET http://localhost:3000/api/cron/monthly -H "Authorization: Bearer ${CRON_SECRET}" >> /var/log/cron.log 2>&1
+
+# Empty line required at end of crontab file
+

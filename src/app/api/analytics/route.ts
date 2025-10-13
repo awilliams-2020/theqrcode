@@ -2,11 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
+
+function extractIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIP = request.headers.get('x-real-ip')
+  const cfConnectingIP = request.headers.get('cf-connecting-ip')
+  
+  if (forwarded) return forwarded.split(',')[0].trim()
+  if (realIP) return realIP
+  if (cfConnectingIP) return cfConnectingIP
+  return 'unknown'
+}
 
 export async function GET(request: NextRequest) {
+  const requestId = startRequestTiming()
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
+      endRequestTiming(requestId, request.nextUrl.pathname, request.method, 401,
+        request.headers.get('user-agent') || undefined, extractIP(request))
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -21,18 +37,26 @@ export async function GET(request: NextRequest) {
                              subscription?.status === 'trialing'
 
     if (!hasAdvancedAccess) {
+      endRequestTiming(requestId, request.nextUrl.pathname, request.method, 403,
+        request.headers.get('user-agent') || undefined, extractIP(request))
       return NextResponse.json({ error: 'Advanced analytics not available for your plan' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
     const qrCodeId = searchParams.get('qrCodeId')
-    const timeRange = searchParams.get('timeRange') || '30d' // 7d, 30d, 90d, 1y
+    const timeRange = searchParams.get('timeRange') || '30d' // 1h, 1d, 7d, 30d, 90d, 1y
 
     // Calculate date range
     const now = new Date()
     let startDate = new Date()
     
     switch (timeRange) {
+      case '1h':
+        startDate.setHours(now.getHours() - 1)
+        break
+      case '1d':
+        startDate.setDate(now.getDate() - 1)
+        break
       case '7d':
         startDate.setDate(now.getDate() - 7)
         break
@@ -52,6 +76,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const whereClause: any = {
       userId: session.user.id,
+      isDeleted: false, // Exclude soft-deleted QR codes
       scans: {
         some: {
           scannedAt: {
@@ -150,10 +175,10 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // Hourly distribution
+    // Hourly distribution (stored in UTC for client-side timezone conversion)
     const hourlyDistribution = qrCodes.reduce((acc, qr) => {
       qr.scans?.forEach(scan => {
-        const hour = scan.scannedAt.getHours()
+        const hour = scan.scannedAt.getUTCHours()
         acc[hour] = (acc[hour] || 0) + 1
       })
       return acc
@@ -208,6 +233,9 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.scanCount - a.scanCount)
       .slice(0, 10)
 
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 200,
+      request.headers.get('user-agent') || undefined, extractIP(request))
+
     return NextResponse.json({
       summary: {
         totalScans,
@@ -257,6 +285,8 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching analytics:', error)
+    endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500,
+      request.headers.get('user-agent') || undefined, extractIP(request))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

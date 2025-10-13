@@ -65,10 +65,10 @@ export default function AnalyticsPage() {
     return null
   }
 
-  const hasAnalyticsAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || isTrialActive
+  const hasAnalyticsAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || (isTrialActive && (userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business'))
   
   // Live Analytics is only available for trialing users or pro+ users with active status
-  const hasLiveAnalyticsAccess = isTrialActive || (subscriptionStatus === 'active' && (userPlan === 'pro' || userPlan === 'business'))
+  const hasLiveAnalyticsAccess = (isTrialActive && (userPlan === 'pro' || userPlan === 'business')) || (subscriptionStatus === 'active' && (userPlan === 'pro' || userPlan === 'business'))
 
   const tabs = [
     {
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
                       <span>{tab.name}</span>
                       {(tab as any).requiresUpgrade && (
                         <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full ml-2">
-                          Pro+
+                          Pro
                         </span>
                       )}
                     </button>
@@ -261,7 +261,7 @@ export default function AnalyticsPage() {
 
                     {/* Upgrade section */}
                     <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6 text-center">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Get Live Analytics with Pro+</h4>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Get Live Analytics with Pro</h4>
                       <p className="text-gray-600 mb-4">
                         Upgrade to Pro or Business to unlock live analytics plus advanced features, custom branding, and priority support.
                       </p>

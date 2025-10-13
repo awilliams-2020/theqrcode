@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { 
@@ -15,6 +15,7 @@ import {
   Settings,
   TrendingUp
 } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -22,6 +23,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   // Handle scroll effect
   useEffect(() => {
@@ -37,6 +39,31 @@ export default function Navbar() {
     setIsOpen(false)
   }, [router])
 
+  // Close mobile menu when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (isOpen && event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscapeKey)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscapeKey)
+    }
+  }, [isOpen])
+
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' })
   }
@@ -45,9 +72,7 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'Analytics', href: '/analytics', icon: TrendingUp },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  ] : [
-    { name: 'Demo', href: '/demo', icon: QrCode },
-  ]).filter(item => item.href !== pathname)
+  ] : []).filter(item => item.href !== pathname)
 
   // Loading skeleton component
   const LoadingSkeleton = ({ className = "" }: { className?: string }) => (
@@ -67,7 +92,7 @@ export default function Navbar() {
                 className="flex items-center space-x-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors"
               >
                 <QrCode className="h-8 w-8 text-blue-600" />
-                <span className="hidden sm:block">QR Analytics</span>
+                <span className="hidden sm:block">TheQRCode</span>
               </button>
             </div>
 
@@ -109,7 +134,7 @@ export default function Navbar() {
 
           {/* Mobile Navigation Menu Loading */}
           {isOpen && (
-            <div className="md:hidden">
+            <div ref={mobileMenuRef} className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
                 {/* Mobile Navigation Items Loading - matches real nav structure */}
                 <div className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium rounded-lg">
@@ -151,7 +176,7 @@ export default function Navbar() {
               className="flex items-center space-x-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors"
             >
               <QrCode className="h-8 w-8 text-blue-600" />
-              <span className="hidden sm:block">QR Analytics</span>
+              <span className="hidden sm:block">TheQRCode</span>
             </button>
           </div>
 
@@ -160,7 +185,7 @@ export default function Navbar() {
             {navigationItems.map((item) => (
               <button
                 key={item.name}
-                onClick={item.action || (() => router.push(item.href))}
+                onClick={() => router.push(item.href)}
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
               >
                 <item.icon className="h-4 w-4" />
@@ -173,6 +198,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             {session ? (
               <div className="flex items-center space-x-3">
+                {/* Notification Bell */}
+                <NotificationBell />
+                
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   {session.user?.image ? (
                     <img
@@ -230,17 +258,20 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className={`md:hidden transition-all duration-300 ease-in-out ${
-          isOpen 
-            ? 'max-h-96 opacity-100' 
-            : 'max-h-0 opacity-0 overflow-hidden'
-        }`}>
+        <div 
+          ref={mobileMenuRef}
+          className={`md:hidden transition-all duration-300 ease-in-out ${
+            isOpen 
+              ? 'max-h-96 opacity-100' 
+              : 'max-h-0 opacity-0 overflow-hidden'
+          }`}
+        >
           <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
             {/* Mobile Navigation Items */}
             {navigationItems.map((item) => (
               <button
                 key={item.name}
-                onClick={item.action || (() => router.push(item.href))}
+                onClick={() => router.push(item.href)}
                 className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               >
                 <item.icon className="h-5 w-5" />
@@ -252,17 +283,21 @@ export default function Navbar() {
             <div className="border-t border-gray-200 pt-3 mt-3">
               {session ? (
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-500">
-                    {session.user?.image ? (
-                      <img
-                        src={session.user.image}
-                        alt="Profile"
-                        className="h-5 w-5 rounded-full"
-                      />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                    <span>{session.user?.name || session.user?.email}</span>
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <div className="flex items-center space-x-3 text-sm text-gray-500">
+                      {session.user?.image ? (
+                        <img
+                          src={session.user.image}
+                          alt="Profile"
+                          className="h-5 w-5 rounded-full"
+                        />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                      <span>{session.user?.name || session.user?.email}</span>
+                    </div>
+                    {/* Notification Bell for Mobile */}
+                    <NotificationBell />
                   </div>
                   <button
                     onClick={handleSignOut}

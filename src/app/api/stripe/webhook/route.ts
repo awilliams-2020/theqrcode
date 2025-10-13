@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { constructWebhookEvent } from '@/lib/stripe'
 import Stripe from 'stripe'
+import { trackSubscription } from '@/lib/matomo-tracking'
 
 // Disable body parsing, need raw body for webhook signature verification
 export const runtime = 'nodejs'
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
     
     // Get Stripe signature from headers
-    const headersList = headers()
+    const headersList = await headers()
     const signature = headersList.get('stripe-signature')
 
     if (!signature) {
@@ -104,13 +105,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       stripePriceId = subscription.items.data[0]?.price?.id
       
       // Safely handle current_period_end
-      if (subscription.current_period_end) {
-        const periodEnd = new Date(subscription.current_period_end * 1000)
+      if ((subscription as any).current_period_end) {
+        const periodEnd = new Date(((subscription as any).current_period_end as number) * 1000)
         if (!isNaN(periodEnd.getTime())) {
           stripeCurrentPeriodEnd = periodEnd
         }
       }
     }
+
+    // Get previous subscription to check if this is an upgrade
+    const previousSubscription = await prisma.subscription.findUnique({
+      where: { userId }
+    })
+
+    const isUpgrade = previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan
 
     // Update or create subscription record
     await prisma.subscription.upsert({
@@ -137,6 +145,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
 
     console.log(`Subscription created/updated for user ${userId} - Plan: ${plan}, Status: active, Trial ended`)
+
+    // Track subscription purchase in Matomo (async, don't block)
+    const revenue = session.amount_total ? session.amount_total / 100 : 0 // Convert cents to dollars
+    trackSubscription.purchase(
+      userId,
+      plan,
+      revenue,
+      session.id,
+      {
+        isUpgrade,
+        previousPlan: previousSubscription?.plan,
+      }
+    ).catch(err => console.error('Failed to track subscription purchase:', err))
   } catch (error) {
     console.error('Error handling checkout completed:', error)
     throw error
@@ -154,8 +175,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   try {
     // Safely handle current_period_end - it might be null or undefined
-    const currentPeriodEnd = subscription.current_period_end 
-      ? new Date(subscription.current_period_end * 1000)
+    const currentPeriodEnd = (subscription as any).current_period_end 
+      ? new Date(((subscription as any).current_period_end as number) * 1000)
       : null
 
     // Only include stripeCurrentPeriodEnd if it's a valid date
@@ -203,6 +224,11 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   try {
+    // Get current subscription info before update
+    const currentSubscription = await prisma.subscription.findUnique({
+      where: { userId }
+    })
+
     // Handle different cancellation scenarios
     const updateData: any = {
       status: 'canceled',
@@ -216,8 +242,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     } else {
       // Cancel at period end - keep current plan until period ends
       // The subscription will remain active until the period ends
-      if (subscription.current_period_end) {
-        const periodEnd = new Date(subscription.current_period_end * 1000)
+      if ((subscription as any).current_period_end) {
+        const periodEnd = new Date(((subscription as any).current_period_end as number) * 1000)
         if (!isNaN(periodEnd.getTime())) {
           updateData.stripeCurrentPeriodEnd = periodEnd
         }
@@ -230,6 +256,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     })
 
     console.log(`Subscription canceled for user ${userId} - Cancel at period end: ${subscription.cancel_at_period_end}`)
+
+    // Track subscription cancellation in Matomo (async, don't block)
+    if (currentSubscription) {
+      trackSubscription.cancel(
+        userId,
+        currentSubscription.plan
+      ).catch(err => console.error('Failed to track subscription cancellation:', err))
+    }
   } catch (error) {
     console.error('Error handling subscription deletion:', error)
     throw error
@@ -265,22 +299,48 @@ async function handleSubscriptionEnded(subscription: Stripe.Subscription) {
 
 // Handle successful invoice payment
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string
+  const subscriptionId = typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : null
 
   if (!subscriptionId) {
     return
   }
 
   try {
-    // Update subscription status to active
-    await prisma.subscription.updateMany({
-      where: { stripeSubscriptionId: subscriptionId },
-      data: {
-        status: 'active',
-      },
+    // Get subscription to find user and check if this is a renewal
+    const subscription = await prisma.subscription.findFirst({
+      where: { stripeSubscriptionId: subscriptionId }
     })
 
-    console.log(`Invoice payment succeeded for subscription ${subscriptionId}`)
+    if (subscription && subscription.userId) {
+      // Update subscription status to active
+      await prisma.subscription.updateMany({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: {
+          status: 'active',
+        },
+      })
+
+      console.log(`Invoice payment succeeded for subscription ${subscriptionId}`)
+
+      // Track subscription renewal in Matomo if this is a recurring payment (async, don't block)
+      // Invoices for new subscriptions are already tracked in handleCheckoutCompleted
+      if (invoice.billing_reason === 'subscription_cycle') {
+        const revenue = invoice.amount_paid ? invoice.amount_paid / 100 : 0
+        trackSubscription.renew(
+          subscription.userId,
+          subscription.plan,
+          revenue
+        ).catch(err => console.error('Failed to track subscription renewal:', err))
+      }
+    } else {
+      // Just update status if we can't find the user
+      await prisma.subscription.updateMany({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: {
+          status: 'active',
+        },
+      })
+    }
   } catch (error) {
     console.error('Error handling invoice payment succeeded:', error)
     throw error
@@ -289,7 +349,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 
 // Handle failed invoice payment
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string
+  const subscriptionId = typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : null
 
   if (!subscriptionId) {
     return

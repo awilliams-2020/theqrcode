@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Smartphone, Monitor, Globe, Clock, Eye, Tablet } from 'lucide-react'
 import { RealtimeScanData } from '@/hooks/useRealtimePolling'
-import { formatDistanceToNow } from 'date-fns'
+import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { formatTimeAgoInTimezone } from '@/lib/date-utils'
 
 interface LiveActivityFeedProps {
   scans: RealtimeScanData[]
@@ -18,6 +19,7 @@ export default function LiveActivityFeed({
 }: LiveActivityFeedProps) {
   const [displayedScans, setDisplayedScans] = useState<RealtimeScanData[]>([])
   const [isMounted, setIsMounted] = useState(false)
+  const userTimezone = useUserTimezone()
 
   useEffect(() => {
     setIsMounted(true)
@@ -79,15 +81,12 @@ export default function LiveActivityFeed({
     <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Live Activity</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Live Activity (24h)</h3>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm text-green-600 font-medium">LIVE</span>
           </div>
         </div>
-        <p className="text-sm text-gray-600 mt-1">
-          Real-time scan activity from your QR codes (last 24 hours)
-        </p>
       </div>
 
       <div className="max-h-96 overflow-y-auto">
@@ -183,7 +182,7 @@ export default function LiveActivityFeed({
                       <Clock className="h-3 w-3 flex-shrink-0" />
                       <span className="text-xs sm:text-sm">
                         {scan?.timestamp && isMounted 
-                          ? formatDistanceToNow(new Date(scan.timestamp), { addSuffix: true }) 
+                          ? formatTimeAgoInTimezone(scan.timestamp, userTimezone) 
                           : 'Unknown time'
                         }
                       </span>

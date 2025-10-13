@@ -3,6 +3,8 @@
  */
 
 // Plan definitions with consistent pricing and features
+// NOTE: Business plan is temporarily hidden in the UI (see PricingPage, LandingPage, SignUp)
+// Backend still supports it for existing customers
 export const PLANS = {
   free: {
     id: 'free',

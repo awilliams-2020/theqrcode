@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       plan: plan as StripePlan,
       successUrl,
       cancelUrl,
-      customerId: subscription?.stripeCustomerId,
+      customerId: subscription?.stripeCustomerId || undefined,
     })
 
     return NextResponse.json({ 

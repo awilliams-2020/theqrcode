@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    const shortCode = params.shortCode
+    const { shortCode } = await params
     const shortUrl = `https://theqrcode.io/r/${shortCode}`
     
     // Find the QR code by short URL

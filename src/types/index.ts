@@ -1,4 +1,4 @@
-// Shared types for the QR Analytics application
+// Shared types for the application
 
 export interface QRCode {
   id: string
@@ -49,6 +49,7 @@ export interface DashboardProps {
   currentPlan: string
   isTrialActive?: boolean
   planDisplayName?: string
+  isAdmin?: boolean
 }
 
 export interface QRCodeCardProps {
@@ -83,7 +84,7 @@ export interface ContactConfig {
 }
 
 export interface QRCodeOptions {
-  type: 'url' | 'text' | 'wifi' | 'contact' | 'email'
+  type: 'url' | 'text' | 'wifi' | 'contact' | 'email' | 'menu'
   content: string
   size?: number
   color?: {
@@ -101,6 +102,32 @@ export interface QRCodeOptions {
   }
 }
 
+export interface MenuItem {
+  id: string
+  name: string
+  description?: string
+  price?: string
+  category: string
+  image?: string
+  available: boolean
+}
+
+export interface MenuCategory {
+  id: string
+  name: string
+  items: MenuItem[]
+}
+
+export interface MenuData {
+  restaurantName: string
+  description?: string
+  categories: MenuCategory[]
+  theme?: {
+    primaryColor?: string
+    secondaryColor?: string
+  }
+}
+
 export type PlanType = 'free' | 'starter' | 'pro' | 'business'
-export type QRCodeType = 'url' | 'text' | 'wifi' | 'contact' | 'email'
+export type QRCodeType = 'url' | 'text' | 'wifi' | 'contact' | 'email' | 'menu'
 export type FrameStyle = 'square' | 'rounded' | 'circle' | 'dashed'

@@ -1,3 +1,5 @@
+// Note: Socket.IO and SSE functionality removed as polling is used instead
+
 export interface RealtimeScanData {
   id: string
   qrCodeId: string
@@ -16,65 +18,7 @@ export interface RealtimeScanData {
   userId: string
 }
 
-// Broadcast scan data to user's SSE connection
-export async function broadcastScan(userId: string, scanData: RealtimeScanData) {
-  try {
-    if (global.sseConnections && global.sseConnections.has(userId)) {
-      const connection = global.sseConnections.get(userId)
-      if (connection) {
-        connection.sendMessage({
-          type: 'scan',
-          data: scanData,
-          timestamp: new Date()
-        })
-        console.log(`Broadcasted scan to user ${userId}:`, scanData.qrCodeName)
-      }
-    } else {
-      console.log(`No SSE connection found for user ${userId}`)
-    }
-  } catch (error) {
-    console.error('Error broadcasting scan:', error)
-  }
-}
-
-// Broadcast analytics update to user's SSE connection
-export async function broadcastAnalyticsUpdate(userId: string, updateData: any) {
-  try {
-    if (global.sseConnections && global.sseConnections.has(userId)) {
-      const connection = global.sseConnections.get(userId)
-      if (connection) {
-        connection.sendMessage({
-          type: 'analytics_update',
-          data: updateData,
-          timestamp: new Date()
-        })
-        console.log(`Broadcasted analytics update to user ${userId}`)
-      }
-    }
-  } catch (error) {
-    console.error('Error broadcasting analytics update:', error)
-  }
-}
-
-// Broadcast to all connected users (for QR code updates)
-export async function broadcastToQRCode(qrCodeId: string, data: any) {
-  try {
-    // For now, we'll broadcast to all connected users
-    // In a more complex scenario, you'd track which users are viewing which QR codes
-    if (global.sseConnections) {
-      global.sseConnections.forEach((connection, userId) => {
-        connection.sendMessage({
-          type: 'qr_update',
-          data,
-          timestamp: new Date()
-        })
-      })
-      console.log(`Broadcasted to all connected users for QR code ${qrCodeId}`)
-    }
-  } catch (error) {
-    console.error('Error broadcasting to QR code:', error)
-  }
-}
+// Note: SSE broadcast functions removed as polling is used instead
 
 // Create scan data for broadcasting
 export function createScanData(

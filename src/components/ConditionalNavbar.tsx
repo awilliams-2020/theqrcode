@@ -17,8 +17,27 @@ export default function ConditionalNavbar() {
     return <Navbar />
   }
   
-  // Hide navbar on display routes
-  const shouldHideNavbar = pathname.startsWith('/display/')
+  // Hide navbar on display routes and all landing pages
+  const landingPages = [
+    '/qr-code-for-restaurants',
+    '/qr-code-for-real-estate',
+    '/qr-code-for-weddings',
+    '/qr-code-for-fitness',
+    '/qr-code-for-photographers',
+    '/qr-code-for-retail',
+    '/qr-code-for-salons',
+    '/qr-code-for-food-trucks',
+    '/qr-code-for-musicians',
+    '/qr-code-for-open-houses',
+    '/qr-code-generator',
+    '/wifi-qr-code-generator',
+    '/qr-code-api',
+  ]
+  
+  const shouldHideNavbar = 
+    pathname?.startsWith('/display/') || 
+    pathname?.startsWith('/menu/') ||
+    landingPages.includes(pathname || '')
   
   if (shouldHideNavbar) {
     return null

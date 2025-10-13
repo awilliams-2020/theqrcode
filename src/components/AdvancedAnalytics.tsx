@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { 
   BarChart3, 
   Download, 
-  Filter, 
   TrendingUp, 
   Globe, 
   Smartphone, 
@@ -13,24 +12,44 @@ import {
   MapPin, 
   Clock, 
   Users, 
-  Eye,
   Target,
   Activity,
-  PieChart,
   LineChart,
-  Zap,
   Laptop,
   Tablet,
   MousePointer,
   Chrome,
   Building2,
-  Navigation,
   Timer,
-  Award,
-  Star,
-  RefreshCw
+  Award
 } from 'lucide-react'
-import { formatDistanceToNow, format, subDays, startOfDay, endOfDay } from 'date-fns'
+import { format } from 'date-fns'
+import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { formatTimeAgoInTimezone, formatDateInTimezone } from '@/lib/date-utils'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+} from 'chart.js'
+import { Bar, Line } from 'react-chartjs-2'
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement
+)
 
 interface AnalyticsData {
   summary: {
@@ -70,7 +89,7 @@ interface AnalyticsData {
     scanCount: number
     lastScanned: string | null
     createdAt: string
-    scans: Array<{
+    recentScans: Array<{
       id: string
       scannedAt: string
       device?: string
@@ -95,13 +114,14 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
   const [selectedQRCode, setSelectedQRCode] = useState<string | null>(null)
   const [showExportModal, setShowExportModal] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const userTimezone = useUserTimezone()
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
   // Check if user has access to advanced analytics
-  const hasAdvancedAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || isTrialActive
+  const hasAdvancedAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || (isTrialActive && (userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business'))
 
   useEffect(() => {
     if (hasAdvancedAccess) {
@@ -409,10 +429,10 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
               Create QR Codes
             </button>
             <button
-              onClick={() => window.location.href = '/demo'}
+              onClick={() => window.location.href = '/qr-code-generator'}
               className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
-              View Demo
+              Try Generator
             </button>
           </div>
         </div>
@@ -427,7 +447,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   <h4 className="font-medium text-gray-900 truncate mb-1">{qr.name}</h4>
                   <p className="text-sm text-gray-600 capitalize mb-2">{qr.type}</p>
                   <div className="text-xs text-gray-500">
-                    0 scans • Created {isMounted ? formatDistanceToNow(new Date(qr.createdAt), { addSuffix: true }) : 'Loading...'}
+                    0 scans • Created {isMounted ? formatTimeAgoInTimezone(qr.createdAt, userTimezone) : 'Loading...'}
                   </div>
                 </div>
               ))}
@@ -455,6 +475,8 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             onChange={(e) => setSelectedTimeRange(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
+            <option value="1h">This hour</option>
+            <option value="1d">Today</option>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
@@ -543,23 +565,40 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             <LineChart className="h-5 w-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-900">Scan Trends</h3>
           </div>
-          <div className="h-64 flex items-end justify-between space-x-1">
-            {(dailyScans || []).slice(-14).map((day, index) => {
-              const maxCount = Math.max(...(dailyScans?.map(d => d.count) || [1]))
-              return (
-                <div key={day.date} className="flex flex-col items-center flex-1">
-                  <div 
-                    className="bg-blue-500 rounded-t w-full mb-2"
-                    style={{ 
-                      height: `${Math.max((day.count / maxCount) * 200, 4)}px` 
-                    }}
-                  ></div>
-                <span className="text-xs text-gray-600 transform -rotate-45">
-                  {format(new Date(day.date), 'MMM dd')}
-                </span>
-              </div>
-              )
-            })}
+          <div className="h-64">
+            <Line 
+              data={{
+                labels: (dailyScans || []).slice(-14).map(day => format(new Date(day.date), 'MMM dd')),
+                datasets: [
+                  {
+                    label: 'Daily Scans',
+                    data: (dailyScans || []).slice(-14).map(day => day.count),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                  }
+                ]
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: Math.max(1, Math.ceil((Math.max(...(dailyScans?.map(d => d.count) || [0])) / 5)))
+                    }
+                  }
+                }
+              }}
+            />
           </div>
         </div>
 
@@ -614,23 +653,74 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             <Timer className="h-5 w-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-900">Peak Hours</h3>
           </div>
-          <div className="h-64 flex items-end justify-between space-x-1">
-            {analyticsData?.distributions?.hourly?.map((hour) => {
-              const maxCount = Math.max(...(analyticsData?.distributions?.hourly?.map(h => h.count) || [1]))
-              return (
-                <div key={hour.hour} className="flex flex-col items-center flex-1">
-                  <div 
-                    className="bg-indigo-500 rounded-t w-full mb-2"
-                    style={{ 
-                      height: `${Math.max((hour.count / maxCount) * 200, 4)}px` 
-                    }}
-                  ></div>
-                  <span className="text-xs text-gray-600">
-                    {hour.hour}:00
-                  </span>
-                </div>
-              )
-            })}
+          <div className="h-64">
+            <Bar 
+              data={(() => {
+                // Convert UTC hours to local hours and maintain data order
+                const hourlyData = (analyticsData?.distributions?.hourly || []).map((hour: any) => {
+                  const utcHour = hour.hour
+                  const now = new Date()
+                  const localDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), utcHour))
+                  const localHour = localDate.getHours()
+                  return {
+                    localHour,
+                    count: hour.count,
+                    label: `${localHour.toString().padStart(2, '0')}:00`
+                  }
+                })
+                
+                // Sort by local hour for proper display (00:00, 01:00, 02:00, ...)
+                hourlyData.sort((a, b) => a.localHour - b.localHour)
+                
+                return {
+                  labels: hourlyData.map(h => h.label),
+                  datasets: [
+                    {
+                      label: 'Scans per hour',
+                      data: hourlyData.map(h => h.count),
+                      backgroundColor: '#10b981',
+                      borderColor: '#059669',
+                      borderWidth: 1,
+                      borderRadius: 4,
+                      borderSkipped: false,
+                    }
+                  ]
+                }
+              })()}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    callbacks: {
+                      title: function(context) {
+                        return `Hour: ${context[0].label}`
+                      },
+                      label: function(context) {
+                        return `Scans: ${context.parsed.y}`
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: Math.max(1, Math.ceil((Math.max(...(analyticsData?.distributions?.hourly?.map((h: any) => h.count) || [0])) / 5)))
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Hour (Local Time)'
+                    }
+                  }
+                }
+              }}
+            />
           </div>
         </div>
 
@@ -881,7 +971,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         </div>
         <div className="space-y-3">
           {qrCodes?.slice(0, 5).map((qr) => {
-            const recentScan = qr.scans?.[0] // Get most recent scan
+            const recentScan = qr.recentScans?.[0] // Get most recent scan
             if (!recentScan) return null
             
             return (
@@ -898,12 +988,12 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   </div>
                 </div>
                 <div className="text-xs sm:text-sm text-gray-500 self-start sm:self-auto">
-                  {isMounted ? formatDistanceToNow(new Date(recentScan.scannedAt), { addSuffix: true }) : 'Loading...'}
+                  {isMounted ? formatTimeAgoInTimezone(recentScan.scannedAt, userTimezone) : 'Loading...'}
                 </div>
               </div>
             )
           })}
-          {(!qrCodes || qrCodes.length === 0 || !qrCodes.some(qr => qr.scans?.length > 0)) && (
+          {(!qrCodes || qrCodes.length === 0 || !qrCodes.some(qr => qr.recentScans?.length > 0)) && (
             <div className="text-center py-8 text-gray-500">
               <Clock className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>No recent scans yet</p>
@@ -929,7 +1019,6 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                 <th className="text-left py-3 px-4 font-medium text-gray-900">Type</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900">Scans</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900">Last Scanned</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Total Scans</th>
               </tr>
             </thead>
             <tbody>
@@ -948,10 +1037,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   <td className="py-3 px-4 text-sm text-gray-600 capitalize">{qr.type}</td>
                   <td className="py-3 px-4 text-sm font-medium text-gray-900">{qr.scanCount.toLocaleString()}</td>
                   <td className="py-3 px-4 text-sm text-gray-600">
-                    {getLastScanned(qr.id) ? (isMounted ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Loading...') : 'Never'}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-600">
-                    {qr.scanCount.toLocaleString()} scans
+                    {getLastScanned(qr.id) ? (isMounted ? formatTimeAgoInTimezone(getLastScanned(qr.id)!, userTimezone) : 'Loading...') : 'Never'}
                   </td>
                 </tr>
               ))}
@@ -985,7 +1071,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                 
                 {/* Last Scanned */}
                 <div className="text-xs text-gray-600 bg-white rounded px-2 py-1 border">
-                  <span className="font-medium">Last scanned:</span> {getLastScanned(qr.id) ? (isMounted ? formatDistanceToNow(new Date(getLastScanned(qr.id)!), { addSuffix: true }) : 'Loading...') : 'Never'}
+                  <span className="font-medium">Last scanned:</span> {getLastScanned(qr.id) ? (isMounted ? formatTimeAgoInTimezone(getLastScanned(qr.id)!, userTimezone) : 'Loading...') : 'Never'}
                 </div>
               </div>
             </div>

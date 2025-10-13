@@ -2,6 +2,17 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import dynamic from 'next/dynamic'
+
+// Import engagement components dynamically
+const AnnouncementBanner = dynamic(() => import('./AnnouncementBanner'), {
+  ssr: false,
+})
+
+const FeedbackButton = dynamic(() => import('./FeedbackButton'), {
+  ssr: false,
+})
 
 interface ConditionalMainProps {
   children: React.ReactNode
@@ -9,22 +20,57 @@ interface ConditionalMainProps {
 
 export default function ConditionalMain({ children }: ConditionalMainProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const [isMounted, setIsMounted] = useState(false)
   
   useEffect(() => {
     setIsMounted(true)
   }, [])
   
+  // Define landing pages
+  const landingPages = [
+    '/qr-code-for-restaurants',
+    '/qr-code-for-real-estate',
+    '/qr-code-for-weddings',
+    '/qr-code-for-fitness',
+    '/qr-code-for-photographers',
+    '/qr-code-for-retail',
+    '/qr-code-for-salons',
+    '/qr-code-for-food-trucks',
+    '/qr-code-for-musicians',
+    '/qr-code-for-open-houses',
+    '/qr-code-generator',
+    '/wifi-qr-code-generator',
+    '/qr-code-api',
+  ]
+  
+  const isLandingPage = landingPages.includes(pathname || '')
+  
   // Use default padding during SSR, then conditionally adjust on client
   const mainClassName = !isMounted 
     ? "pt-16 bg-white min-h-screen" // Default during SSR
-    : pathname.startsWith('/display/')
-      ? "bg-white min-h-screen" // No padding on display routes
+    : pathname?.startsWith('/display/') || pathname?.startsWith('/menu/') || isLandingPage
+      ? "bg-white min-h-screen" // No padding on display routes, menu routes, and landing pages
       : "pt-16 bg-white min-h-screen" // Normal padding
   
+  // Don't show engagement features on display routes, menu routes, landing pages, or auth pages
+  const showEngagementFeatures = isMounted && 
+    !pathname?.startsWith('/display/') && 
+    !pathname?.startsWith('/menu/') &&
+    !isLandingPage &&
+    !pathname?.startsWith('/auth/')
+  
   return (
-    <main className={mainClassName}>
-      {children}
-    </main>
+    <>
+      {/* Announcement Banner - shown to all users on applicable pages */}
+      {showEngagementFeatures && session && <AnnouncementBanner />}
+      
+      <main className={mainClassName}>
+        {children}
+      </main>
+      
+      {/* Feedback Button - shown to authenticated users */}
+      {showEngagementFeatures && session && <FeedbackButton />}
+    </>
   )
 }

@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PLAN_LIMITS, PLAN_DISPLAY_NAMES } from '@/lib/constants'
-import { getUserIfNotDeleted } from '@/lib/user-helpers'
 import Settings from '@/components/Settings'
 
 export default async function SettingsPage() {
@@ -13,27 +12,31 @@ export default async function SettingsPage() {
     redirect('/auth/signin')
   }
 
-  // Check if user is soft-deleted (anonymized but kept for trial abuse prevention)
-  const user = await getUserIfNotDeleted(session.user.id)
-  if (!user) {
-    redirect('/auth/signin')
-  }
   
-  // Get user's subscription info
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: session.user.id }
-  })
+  // Get user's subscription info and user data
+  const [subscription, user] = await Promise.all([
+    prisma.subscription.findUnique({
+      where: { userId: session.user.id }
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id }
+    })
+  ])
   
   // Get user's QR codes count for display
   const qrCodesCount = await prisma.qrCode.count({
-    where: { userId: session.user.id }
+    where: { 
+      userId: session.user.id,
+      isDeleted: false // Exclude soft-deleted QR codes
+    }
   })
   
   // Get total scans count
   const totalScans = await prisma.scan.count({
     where: {
       qrCode: {
-        userId: session.user.id
+        userId: session.user.id,
+        isDeleted: false // Exclude scans from deleted QR codes
       }
     }
   })
@@ -61,9 +64,10 @@ export default async function SettingsPage() {
       totalScans={totalScans}
       limits={limits}
       currentPlan={effectivePlan}
-      isTrialActive={isTrialActive}
+      isTrialActive={isTrialActive || false}
       planDisplayName={isTrialActive ? `${PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]} (Trial)` : PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]}
-      accountCreatedAt={user.createdAt}
+      accountCreatedAt={user?.createdAt || new Date()}
+      userTimezone={(user as any)?.timezone || 'UTC'}
     />
   )
 }

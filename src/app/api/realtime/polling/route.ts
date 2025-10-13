@@ -15,12 +15,19 @@ export async function GET(request: NextRequest) {
 
     // Get current time and calculate time ranges
     const now = new Date()
+    
+    // Today start (beginning of current day)
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const thisHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
+    
+    // This hour = last 60 minutes (to match Advanced Analytics)
+    const thisHourStart = new Date(now.getTime() - 60 * 60 * 1000)
 
     // Get user's QR codes with recent scans
     const qrCodes = await prisma.qrCode.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        isDeleted: false // Exclude soft-deleted QR codes
+      },
       include: {
         scans: {
           where: {
@@ -42,14 +49,20 @@ export async function GET(request: NextRequest) {
     // Total scans (all time)
     const totalScansResult = await prisma.scan.count({
       where: {
-        qrCode: { userId }
+        qrCode: { 
+          userId,
+          isDeleted: false // Exclude scans from deleted QR codes
+        }
       }
     })
 
     // Scans today
     const scansToday = await prisma.scan.count({
       where: {
-        qrCode: { userId },
+        qrCode: { 
+          userId,
+          isDeleted: false // Exclude scans from deleted QR codes
+        },
         scannedAt: { gte: todayStart }
       }
     })
@@ -57,15 +70,21 @@ export async function GET(request: NextRequest) {
     // Scans this hour
     const scansThisHour = await prisma.scan.count({
       where: {
-        qrCode: { userId },
+        qrCode: { 
+          userId,
+          isDeleted: false // Exclude scans from deleted QR codes
+        },
         scannedAt: { gte: thisHourStart }
       }
     })
 
-    // Recent scans (last 10 from last 24 hours)
+    // Recent scans from last 24 hours (increased limit for better chart visualization)
     const recentScans = await prisma.scan.findMany({
       where: {
-        qrCode: { userId },
+        qrCode: { 
+          userId,
+          isDeleted: false // Exclude scans from deleted QR codes
+        },
         scannedAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
         }
@@ -76,7 +95,7 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: { scannedAt: 'desc' },
-      take: 10
+      take: 100 // Increased from 10 to 100 for better hourly distribution visualization
     })
 
     // Calculate top countries from recent scans

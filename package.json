@@ -1,19 +1,24 @@
 {
-  "name": "qr-analytics-saas",
+  "name": "theqrcode-io",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
     "@prisma/client": "^6.16.2",
     "@stripe/stripe-js": "^7.9.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/qrcode": "^1.5.5",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.544.0",
@@ -31,12 +36,20 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.13",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "supertest": "^7.1.4",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.4",
     "typescript": "^5"
   }
 }

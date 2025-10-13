@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Bell, X, Check, AlertCircle, TrendingUp, Eye } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { formatTimeAgoInTimezone } from '@/lib/date-utils'
 
 interface Notification {
   id: string
@@ -30,6 +31,7 @@ export default function LiveNotifications({
   const [isOpen, setIsOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const userTimezone = useUserTimezone()
 
   useEffect(() => {
     setIsMounted(true)
@@ -43,6 +45,16 @@ export default function LiveNotifications({
         return <TrendingUp className="h-4 w-4 text-green-600" />
       case 'alert':
         return <AlertCircle className="h-4 w-4 text-red-600" />
+      case 'analytics_spike':
+        return <span className="text-lg">🚀</span>
+      case 'analytics_location':
+        return <span className="text-lg">🌍</span>
+      case 'analytics_trend':
+        return <span className="text-lg">📱</span>
+      case 'analytics_summary':
+        return <span className="text-lg">📊</span>
+      case 'analytics_record':
+        return <span className="text-lg">🏆</span>
       default:
         return <Bell className="h-4 w-4 text-gray-600" />
     }
@@ -56,6 +68,16 @@ export default function LiveNotifications({
         return 'bg-green-50 border-green-200'
       case 'alert':
         return 'bg-red-50 border-red-200'
+      case 'analytics_spike':
+        return 'bg-yellow-50 border-yellow-200'
+      case 'analytics_location':
+        return 'bg-green-50 border-green-200'
+      case 'analytics_trend':
+        return 'bg-purple-50 border-purple-200'
+      case 'analytics_summary':
+        return 'bg-blue-50 border-blue-200'
+      case 'analytics_record':
+        return 'bg-orange-50 border-orange-200'
       default:
         return 'bg-gray-50 border-gray-200'
     }
@@ -138,7 +160,7 @@ export default function LiveNotifications({
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-xs text-gray-500">
                           {isMounted 
-                            ? formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })
+                            ? formatTimeAgoInTimezone(notification.timestamp, userTimezone)
                             : 'Loading...'
                           }
                         </p>

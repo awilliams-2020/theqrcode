@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { QrCode, Plus, BarChart3, Download, Settings, ArrowRight } from 'lucide-react'
+import { QrCode, Plus, BarChart3, Download, Settings, Shield } from 'lucide-react'
 import QRGeneratorModal from './QRGeneratorModal'
 import QRCodeCard from './QRCodeCard'
 import TrialBanner from './TrialBanner'
@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/useToast'
 import { QRCode, QRCodeFormData, Subscription, DashboardProps } from '@/types'
 import { createQRCode, updateQRCode, deleteQRCode } from '@/utils/api'
 
-export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName }: DashboardProps) {
+export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName, isAdmin }: DashboardProps) {
   const router = useRouter()
   const [showGenerator, setShowGenerator] = useState(false)
   const [selectedQR, setSelectedQR] = useState<QRCode | null>(null)
@@ -158,6 +158,16 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
+                  {isAdmin && (
+                    <button
+                      onClick={() => router.push('/admin')}
+                      className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      title="Admin Panel"
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span className="hidden sm:inline">Admin</span>
+                    </button>
+                  )}
                   {isTrialActive && (
                     <div className="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full text-sm font-medium border border-blue-200">
                       Trial Active
@@ -269,7 +279,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {(currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'business' || isTrialActive) && (
+                {(currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'business'))) && (
                   <button
                     onClick={() => router.push('/analytics')}
                     className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium self-start sm:self-center"

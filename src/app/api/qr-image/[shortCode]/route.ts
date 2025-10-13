@@ -5,10 +5,10 @@ import { QRGeneratorServer } from '@/lib/qr-generator-server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    const shortCode = params.shortCode
+    const { shortCode } = await params
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     
     // Find the QR code by short URL
@@ -32,7 +32,7 @@ export async function GET(
     }
     
     const qrImage = await QRGeneratorServer.generateQRCode({
-      type: qrCode.type,
+      type: qrCode.type as 'email' | 'url' | 'contact' | 'text' | 'wifi',
       content: qrContent,
       size: settings?.size || 256,
       color: settings?.color || { dark: '#000000', light: '#FFFFFF' },

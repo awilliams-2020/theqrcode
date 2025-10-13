@@ -53,13 +53,14 @@ export function useRealtimePolling(userId: string) {
   const [recentScans, setRecentScans] = useState<RealtimeScanData[]>([])
   const [notifications, setNotifications] = useState<Array<{
     id: string
-    type: 'scan' | 'milestone' | 'alert'
+    type: 'scan' | 'milestone' | 'alert' | 'analytics_spike' | 'analytics_location' | 'analytics_trend' | 'analytics_summary' | 'analytics_record'
     message: string
     timestamp: Date
     read: boolean
   }>>([])
   
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const notificationPollingRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch real-time data
   const fetchRealtimeData = useCallback(async () => {
@@ -95,7 +96,7 @@ export function useRealtimePolling(userId: string) {
           qrCodeId: '', // Will be populated if needed
           qrCodeName: scan?.qrCodeName || 'Unknown QR Code',
           qrCodeType: scan?.qrCodeType || 'url',
-          timestamp: scan?.scannedAt ? new Date(scan.scannedAt) : new Date('1970-01-01'), // Use fixed fallback date to avoid hydration mismatch
+          timestamp: scan?.scannedAt ? new Date(scan.scannedAt) : new Date(),
           location: {
             country: scan?.country || 'Unknown',
             city: scan?.city || 'Unknown'
@@ -138,6 +139,39 @@ export function useRealtimePolling(userId: string) {
     setIsConnected(false)
   }, [])
 
+  // Fetch analytics notifications
+  const fetchAnalyticsNotifications = useCallback(async () => {
+    if (!userId || !session?.user?.id) return
+
+    try {
+      const response = await fetch('/api/notifications?category=analytics', {
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+
+      if (!response.ok) return
+
+      const data = await response.json()
+
+      if (data.success && data.notifications) {
+        // Format notifications to match the expected structure
+        const formattedNotifications = data.notifications.map((notif: any) => ({
+          id: notif.id,
+          type: notif.type,
+          message: `${notif.title}: ${notif.message}`,
+          timestamp: new Date(notif.createdAt),
+          read: notif.isRead
+        }))
+        
+        setNotifications(formattedNotifications)
+      }
+    } catch (error) {
+      console.error('Failed to fetch analytics notifications:', error)
+    }
+  }, [userId, session?.user?.id])
+
   // Initialize polling
   useEffect(() => {
     if (!userId || !session?.user?.id) return
@@ -173,7 +207,7 @@ export function useRealtimePolling(userId: string) {
             qrCodeId: '', // Will be populated if needed
             qrCodeName: scan?.qrCodeName || 'Unknown QR Code',
             qrCodeType: scan?.qrCodeType || 'url',
-            timestamp: scan?.scannedAt ? new Date(scan.scannedAt) : new Date('1970-01-01'), // Use fixed fallback date to avoid hydration mismatch
+            timestamp: scan?.scannedAt ? new Date(scan.scannedAt) : new Date(),
             location: {
               country: scan?.country || 'Unknown',
               city: scan?.city || 'Unknown'
@@ -197,27 +231,54 @@ export function useRealtimePolling(userId: string) {
 
     // Initial fetch
     fetchData()
+    fetchAnalyticsNotifications()
 
     // Start polling interval
     const interval = setInterval(fetchData, 2000)
+    const notificationInterval = setInterval(fetchAnalyticsNotifications, 5000) // Poll notifications every 5 seconds
 
     return () => {
       clearInterval(interval)
+      clearInterval(notificationInterval)
     }
-  }, [userId, session?.user?.id])
+  }, [userId, session?.user?.id, fetchAnalyticsNotifications])
 
   // Mark notification as read
-  const markNotificationAsRead = useCallback((notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === notificationId ? { ...notif, read: true } : notif
+  const markNotificationAsRead = useCallback(async (notificationId: string) => {
+    try {
+      await fetch(`/api/notifications/${notificationId}`, {
+        method: 'PATCH',
+        credentials: 'include'
+      })
+      
+      // Update local state
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
       )
-    )
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
   }, [])
 
   // Clear all notifications
-  const clearNotifications = useCallback(() => {
-    setNotifications([])
+  const clearNotifications = useCallback(async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'markAllRead' })
+      })
+      
+      // Update local state
+      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
+    } catch (error) {
+      console.error('Failed to clear notifications:', error)
+    }
   }, [])
 
   // Get unread notification count

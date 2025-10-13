@@ -46,6 +46,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install utilities (as root)
+RUN apk add --no-cache curl
+
 COPY --from=builder /app/public ./public
 
 # Set the correct permission for prerender cache
@@ -60,12 +63,19 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Copy Prisma schema and generated client
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps /app/node_modules ./node_modules
 
-USER nextjs
+# Copy entrypoint
+COPY docker/entrypoint.sh ./docker/entrypoint.sh
+RUN chmod +x ./docker/entrypoint.sh
+
+# Note: Cron jobs are managed by host system, not container
+# See host crontab for scheduled tasks
 
 EXPOSE 3000
 
 ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
-# Run database migrations on startup
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+# Use custom entrypoint that runs migrations
+ENTRYPOINT ["./docker/entrypoint.sh"]

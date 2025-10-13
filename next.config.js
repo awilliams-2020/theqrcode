@@ -11,6 +11,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // instrumentationHook is enabled by default in Next.js 15+
 }
 
 module.exports = nextConfig
