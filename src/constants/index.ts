@@ -23,6 +23,31 @@ export const FRAME_STYLES = {
   DASHED: 'dashed'
 } as const
 
+export const QR_DOT_TYPES = {
+  SQUARE: 'square',
+  DOTS: 'dots',
+  ROUNDED: 'rounded',
+  EXTRA_ROUNDED: 'extra-rounded',
+  CLASSY: 'classy',
+  CLASSY_ROUNDED: 'classy-rounded'
+} as const
+
+export const QR_CORNER_SQUARE_TYPES = {
+  SQUARE: 'square',
+  DOT: 'dot',
+  EXTRA_ROUNDED: 'extra-rounded'
+} as const
+
+export const QR_CORNER_DOT_TYPES = {
+  SQUARE: 'square',
+  DOT: 'dot'
+} as const
+
+export const QR_BACKGROUND_TYPES = {
+  SOLID: 'solid',
+  LINEAR_GRADIENT: 'linear-gradient',
+  RADIAL_GRADIENT: 'radial-gradient'
+} as const
 
 export const TOAST_DURATION = 5000
 export const COPY_FEEDBACK_DURATION = 2000

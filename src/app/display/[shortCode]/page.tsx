@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { QrCode, ExternalLink, BarChart3 } from 'lucide-react'
+import { QRGenerator } from '@/lib/qr-generator'
 
 interface PageProps {
   params: Promise<{
@@ -21,11 +22,8 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
     const fetchQRCodeData = async () => {
       try {
         const { shortCode } = await params
-        // Fetch both data and image in parallel
-        const [infoResponse, imageResponse] = await Promise.all([
-          fetch(`/api/qr-info/${shortCode}`),
-          fetch(`/api/qr-image/${shortCode}`)
-        ])
+        // Fetch QR code info
+        const infoResponse = await fetch(`/api/qr-info/${shortCode}`)
         
         if (infoResponse.status === 404) {
           setError('QR code not found')
@@ -33,17 +31,29 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
           return
         }
 
-        if (!infoResponse.ok || !imageResponse.ok) {
+        if (!infoResponse.ok) {
           throw new Error('Failed to fetch QR code data')
         }
 
-        const [infoData, imageData] = await Promise.all([
-          infoResponse.json(),
-          imageResponse.json()
-        ])
-        
+        const infoData = await infoResponse.json()
         setQrCodeData(infoData)
-        setQrCodeImage(imageData.qrImage)
+        
+        // Generate QR code client-side with styling options
+        const settings = infoData.settings as any
+        const qrContent = infoData.isDynamic 
+          ? `https://theqrcode.io/r/${shortCode}` 
+          : infoData.content
+        
+        const qrImage = await QRGenerator.generateQRCode({
+          type: infoData.type as any,
+          content: qrContent,
+          size: settings?.size || 256,
+          color: settings?.color || { dark: '#000000', light: '#FFFFFF' },
+          frame: settings?.frame || undefined,
+          styling: settings?.styling || undefined
+        })
+        
+        setQrCodeImage(qrImage)
       } catch (err) {
         console.error('Error fetching QR code data:', err)
         setError('Failed to load QR code')

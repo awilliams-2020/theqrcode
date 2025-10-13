@@ -98,10 +98,20 @@ export interface QRCodeOptions {
     color?: string
     size?: number
   }
+  styling?: QRStylingOptions
   logo?: {
     file: File
     size?: number
   }
+}
+
+export interface QRStylingOptions {
+  dotsType?: QRDotType
+  cornersSquareType?: QRCornerSquareType
+  cornersDotType?: QRCornerDotType
+  backgroundType?: QRBackgroundType
+  gradientDirection?: number
+  gradientColorStops?: Array<{ offset: number; color: string }>
 }
 
 export interface MenuItem {
@@ -133,3 +143,7 @@ export interface MenuData {
 export type PlanType = 'free' | 'starter' | 'pro' | 'business'
 export type QRCodeType = 'url' | 'text' | 'wifi' | 'contact' | 'email' | 'menu'
 export type FrameStyle = 'square' | 'rounded' | 'circle' | 'dashed'
+export type QRDotType = 'square' | 'dots' | 'rounded' | 'extra-rounded' | 'classy' | 'classy-rounded'
+export type QRCornerSquareType = 'square' | 'dot' | 'extra-rounded'
+export type QRCornerDotType = 'square' | 'dot'
+export type QRBackgroundType = 'solid' | 'linear-gradient' | 'radial-gradient'

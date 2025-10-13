@@ -39,11 +39,13 @@ export default function PublicQRGenerator({
     type: 'url' | 'wifi' | 'contact' | 'text'
     size: number
     color: { dark: string; light: string }
+    styling?: { dotsType?: string; cornersSquareType?: string; cornersDotType?: string; backgroundType?: string }
   }>({
     content: getDefaultContent(defaultType),
     type: defaultType,
     size: 256,
-    color: { dark: '#000000', light: '#FFFFFF' }
+    color: { dark: '#000000', light: '#FFFFFF' },
+    styling: undefined
   })
   
   const [qrImage, setQrImage] = useState<string>('')
@@ -62,7 +64,8 @@ export default function PublicQRGenerator({
         type: qrData.type,
         content: content,
         size: qrData.size,
-        color: qrData.color
+        color: qrData.color,
+        styling: qrData.styling as any
       })
       setQrImage(image)
     } catch (error) {
