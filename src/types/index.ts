@@ -56,6 +56,7 @@ export interface QRCodeCardProps {
   qr: QRCode
   onEdit: () => void
   onDelete: () => void
+  onShare: () => void
 }
 
 export interface QRGeneratorModalProps {
@@ -138,6 +139,30 @@ export interface MenuData {
     primaryColor?: string
     secondaryColor?: string
   }
+}
+
+export interface QRShareMessage {
+  id: string
+  qrCodeId: string
+  message: string
+  shareMethod: ShareMethod
+  createdAt: Date
+}
+
+export interface QRShareOptions {
+  message: string
+  shareMethod: ShareMethod
+  email?: string
+  subject?: string
+}
+
+export type ShareMethod = 'social' | 'email' | 'sms' | 'link' | 'download'
+
+export interface ShareTemplate {
+  id: string
+  name: string
+  message: string
+  category: 'business' | 'wifi' | 'contact' | 'event' | 'email' | 'text' | 'general'
 }
 
 export type PlanType = 'free' | 'starter' | 'pro' | 'business'

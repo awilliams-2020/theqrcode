@@ -292,7 +292,7 @@ function SignUpForm() {
     ],
     pro: [
       '500 QR codes',
-      '50,000 scans per month',
+      '500,000 scans per month',
       'Real-time analytics',
       'All QR code types',
       'Advanced customization',

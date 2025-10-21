@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { prisma } from './prisma'
-import { createTransporter } from './email'
+import { createTransporter, createEmailOptions } from './email'
 
 // Generate email verification token
 export async function createEmailVerificationToken(email: string): Promise<string> {
@@ -61,8 +61,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   const transporter = createTransporter()
   const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const mailOptions = createEmailOptions({
     to: email,
     subject: 'Verify Your Email - TheQRCode.io',
     text: `
@@ -130,7 +129,7 @@ The TheQRCode.io Team
   </div>
 </div>
     `,
-  }
+  })
 
   await transporter.sendMail(mailOptions)
 }

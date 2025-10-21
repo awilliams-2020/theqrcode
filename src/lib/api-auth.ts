@@ -6,6 +6,7 @@ export interface ApiAuthResult {
   userId: string
   permissions: string[]
   rateLimit: number
+  environment: string
   apiKeyId: string
 }
 
@@ -104,7 +105,8 @@ export async function authenticateApiRequest(
         userId: keyData.userId,
         permissions: keyData.permissions,
         rateLimit: keyData.rateLimit,
-        apiKeyId: apiKey // We'll need to get the actual ID from the database
+        environment: keyData.environment,
+        apiKeyId: keyData.id
       }
     }
   } catch (error) {

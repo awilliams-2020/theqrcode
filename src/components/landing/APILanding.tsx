@@ -1,6 +1,6 @@
 'use client'
 
-import { Code, Zap, Shield, BarChart3, Webhook, Key, CheckCircle2, Terminal, FileCode, Globe, Lock, Activity } from 'lucide-react'
+import { Code, Zap, Shield, BarChart3, Webhook, CheckCircle2, Terminal, FileCode, Globe, Lock, Activity } from 'lucide-react'
 import Link from 'next/link'
 
 export default function APILanding() {
@@ -26,14 +26,9 @@ export default function APILanding() {
       description: 'Programmatic access to scan data, device info, location, and custom event tracking.'
     },
     {
-      icon: Key,
-      title: 'Flexible Plans',
-      description: 'Scale from hundreds to millions of QR codes. Pay only for what you use with transparent pricing.'
-    },
-    {
-      icon: FileCode,
-      title: 'Full Documentation',
-      description: 'Comprehensive docs with code examples in 8+ languages. Get started in minutes.'
+      icon: Webhook,
+      title: 'Real-time Webhooks',
+      description: 'Get instant notifications when QR codes are scanned. Secure webhook delivery with signature verification.'
     }
   ]
 
@@ -61,6 +56,36 @@ export default function APILanding() {
 
 const qrCode = await response.json();
 console.log(qrCode.imageUrl);`
+    },
+    {
+      title: 'Set Up Webhooks',
+      language: 'JavaScript',
+      code: `// Create webhook for real-time scan notifications
+const webhook = await fetch('https://api.theqrcode.io/v1/webhooks', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Scan Notifications',
+    url: 'https://yourapp.com/webhook',
+    events: ['scan.created', 'scan.updated']
+  })
+});
+
+// Verify webhook signature in your endpoint
+const signature = req.headers['x-webhook-signature'];
+const payload = JSON.stringify(req.body);
+const expectedSignature = crypto
+  .createHmac('sha256', webhookSecret)
+  .update(payload)
+  .digest('hex');
+
+if (signature === expectedSignature) {
+  // Process the webhook event
+  console.log('Scan detected:', req.body.data);
+}`
     },
     {
       title: 'Get Analytics',
@@ -111,14 +136,14 @@ print(f"Top location: {analytics['topLocation']}")`
     'Real-time analytics API',
     'Custom branding and styling',
     'Multiple format exports (PNG, SVG, PDF)',
-    'Rate limiting: Up to 5000 req/hour',
+    'Rate limiting: Up to 5000 req/hour (Pro), 10000 req/hour (Business)',
     'API key authentication',
+    'Real-time webhook notifications',
+    'Secure webhook signature verification',
     'Comprehensive documentation',
-    'Code examples in 8+ languages',
     'Sandbox environment for testing',
     '99.9% uptime SLA',
-    'Dynamic QR code updates',
-    'Custom redirect URLs'
+    'Dynamic QR code updates'
   ]
 
   return (
@@ -136,7 +161,7 @@ print(f"Top location: {analytics['topLocation']}")`
                 <span className="block text-green-400 mt-2">Built for Scale</span>
               </h1>
               <p className="text-xl text-gray-300 mb-8">
-                Powerful REST API for generating and managing QR codes programmatically. Create, track, and analyze QR codes at scale with comprehensive analytics.
+                Powerful REST API for generating and managing QR codes programmatically. Create, track, and analyze QR codes at scale with comprehensive analytics and real-time webhook notifications.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button
@@ -212,7 +237,7 @@ Content-Type: application/json
               Production-ready API with enterprise features
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="bg-gray-900 p-8 rounded-xl border border-gray-700 hover:border-green-500/50 transition-all hover:shadow-lg hover:shadow-green-500/10">
                 <feature.icon className="h-12 w-12 text-green-400 mb-4" />
@@ -235,7 +260,7 @@ Content-Type: application/json
               Get started in minutes with our intuitive API design
             </p>
           </div>
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-3 gap-8">
             {codeExamples.map((example, index) => (
               <div key={index} className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
                 <div className="px-6 py-4 bg-gray-900 border-b border-gray-700">
@@ -366,7 +391,7 @@ Content-Type: application/json
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-white">50,000 scans/month</span>
+                  <span className="text-white">500,000 scans/month</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -374,7 +399,11 @@ Content-Type: application/json
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-white">1,000 requests/hour</span>
+                  <span className="text-white">Real-time webhooks</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-white">5,000 requests/hour</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -417,7 +446,7 @@ Content-Type: application/json
               Get API Access →
             </button>
             <button
-              onClick={() => window.location.href = '/docs/api'}
+              onClick={() => window.location.href = '/api'}
               className="px-8 py-4 border-2 border-gray-600 text-gray-200 text-lg font-semibold rounded-lg hover:border-gray-500 transition-colors bg-gray-800"
             >
               Read Documentation
@@ -442,9 +471,8 @@ Content-Type: application/json
             <div>
               <h3 className="text-lg font-semibold mb-4">Developer</h3>
               <ul className="space-y-2">
-                <li><Link href="/docs/api" className="text-gray-400 hover:text-white transition-colors">API Docs</Link></li>
-                <li><Link href="/docs/webhooks" className="text-gray-400 hover:text-white transition-colors">Webhooks</Link></li>
-                <li><Link href="/docs/examples" className="text-gray-400 hover:text-white transition-colors">Examples</Link></li>
+                <li><Link href="/api" className="text-gray-400 hover:text-white transition-colors">API Docs</Link></li>
+                <li><Link href="/api#webhooks" className="text-gray-400 hover:text-white transition-colors">Webhooks</Link></li>
               </ul>
             </div>
             <div>

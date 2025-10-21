@@ -5,7 +5,7 @@ import { randomBytes } from 'crypto'
 
 /**
  * GET /api/v1/webhooks
- * List all webhooks for the authenticated user (Business plan only)
+ * List all webhooks for the authenticated user
  */
 async function getWebhooks(req: NextRequest, auth: any): Promise<NextResponse> {
   const startTime = Date.now()
@@ -50,7 +50,7 @@ async function getWebhooks(req: NextRequest, auth: any): Promise<NextResponse> {
 
 /**
  * POST /api/v1/webhooks
- * Create a new webhook (Business plan only)
+ * Create a new webhook
  */
 async function createWebhook(req: NextRequest, auth: any): Promise<NextResponse> {
   const startTime = Date.now()
@@ -122,7 +122,7 @@ async function createWebhook(req: NextRequest, auth: any): Promise<NextResponse>
   }
 }
 
-// Export handlers with authentication (Business plan only)
+// Export handlers with authentication
 export const GET = withApiAuth(getWebhooks, {
   requiredPermissions: ['webhooks:manage']
 })

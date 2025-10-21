@@ -84,7 +84,7 @@ export const API_ENDPOINTS = {
 export const PLAN_LIMITS = {
   [PLAN_TYPES.FREE]: { qrCodes: 10, scans: 1000 },
   [PLAN_TYPES.STARTER]: { qrCodes: 100, scans: 10000 },
-  [PLAN_TYPES.PRO]: { qrCodes: 500, scans: 50000 },
+  [PLAN_TYPES.PRO]: { qrCodes: 500, scans: 500000 },
   [PLAN_TYPES.BUSINESS]: { qrCodes: -1, scans: -1 }
 } as const
 

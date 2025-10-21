@@ -54,7 +54,7 @@ export default function LandingPage() {
       price: '$29',
       period: 'per month',
       description: 'Best for growing companies',
-      features: ['500 QR codes', '50,000 scans per month', 'Real-time analytics', 'All QR code types', 'Advanced customization', 'Priority support', 'API access'],
+      features: ['500 QR codes', '500,000 scans per month', 'Real-time analytics', 'All QR code types', 'Advanced customization', 'Priority support', 'API access'],
       cta: 'Subscribe',
       popular: true
     },
@@ -76,12 +76,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Free QR Code Generator
-              <span className="block text-blue-600">with Analytics</span>
+              Create QR Codes in 30 Seconds
+              <span className="block text-blue-600">No Signup Required</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-              Create beautiful QR codes instantly and track their performance with detailed analytics. 
-              Perfect for businesses, marketers, and developers.
+              Generate professional QR codes instantly. Track performance with analytics. 
+              Perfect for restaurants, businesses, and events. Start free forever.
             </p>
           </div>
 
@@ -90,19 +90,19 @@ export default function LandingPage() {
 
           {/* Trust Badges */}
           <div className="mt-12 text-center">
-            <p className="text-sm text-gray-600 mb-4">Trusted by thousands of businesses worldwide</p>
+            <p className="text-sm text-gray-600 mb-4">Start creating QR codes in seconds</p>
             <div className="flex flex-wrap justify-center gap-8 text-gray-700">
               <div className="flex items-center gap-2">
                 <QrCode className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold">10K+</span> Active Users
+                <span className="font-semibold">100%</span> Free to Start
               </div>
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold">1M+</span> QR Codes Created
+                <span className="font-semibold">Instant</span> Generation
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold">99.9%</span> Uptime
+                <span className="font-semibold">No Credit Card</span> Required
               </div>
             </div>
           </div>

@@ -279,9 +279,9 @@ export default function FoodTruckLanding() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="px-4 py-20 bg-white">
+      <section className="px-4 py-20 bg-white hidden">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-12 hidden">
             Trusted by Food Trucks Nationwide
           </h2>
           <div className="grid md:grid-cols-3 gap-8">

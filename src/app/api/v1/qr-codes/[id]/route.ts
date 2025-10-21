@@ -18,7 +18,8 @@ async function getQRCode(req: NextRequest, auth: any, params: { id: string }): P
       where: {
         id,
         userId: auth.userId,
-        isDeleted: false // Exclude soft-deleted QR codes
+        isDeleted: false, // Exclude soft-deleted QR codes
+        isSandbox: auth.environment === 'sandbox'
       },
       include: {
         scans: {
@@ -50,6 +51,7 @@ async function getQRCode(req: NextRequest, auth: any, params: { id: string }): P
       shortUrl: qrCode.shortUrl,
       settings: qrCode.settings,
       isDynamic: qrCode.isDynamic,
+      isSandbox: qrCode.isSandbox,
       scanCount: qrCode.scans.length,
       lastScanned: qrCode.scans[0]?.scannedAt || null,
       recentScans: qrCode.scans.slice(0, 10).map(scan => ({
@@ -93,7 +95,8 @@ async function updateQRCode(req: NextRequest, auth: any, params: { id: string })
       where: {
         id,
         userId: auth.userId,
-        isDeleted: false // Exclude soft-deleted QR codes
+        isDeleted: false, // Exclude soft-deleted QR codes
+        isSandbox: auth.environment === 'sandbox'
       }
     })
 
@@ -144,6 +147,7 @@ async function updateQRCode(req: NextRequest, auth: any, params: { id: string })
       shortUrl: qrCode.shortUrl,
       settings: qrCode.settings,
       isDynamic: qrCode.isDynamic,
+      isSandbox: qrCode.isSandbox,
       qrImage,
       createdAt: qrCode.createdAt,
       updatedAt: qrCode.updatedAt
@@ -176,7 +180,8 @@ async function deleteQRCode(req: NextRequest, auth: any, params: { id: string })
       where: {
         id,
         userId: auth.userId,
-        isDeleted: false // Only allow deleting non-deleted QR codes
+        isDeleted: false, // Only allow deleting non-deleted QR codes
+        isSandbox: auth.environment === 'sandbox'
       }
     })
 

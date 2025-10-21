@@ -590,14 +590,14 @@ export default function AdminMonitoring() {
             href="https://sentry.io" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+            className="flex items-center gap-3 p-4 border border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 bg-orange-50"
           >
             <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white text-sm font-bold">S</span>
             </div>
             <div>
               <div className="font-semibold text-gray-900">Sentry</div>
-              <div className="text-xs text-gray-600">Error Tracking</div>
+              <div className="text-xs text-gray-600">Error Tracking & Performance</div>
             </div>
           </a>
 

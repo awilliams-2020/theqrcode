@@ -329,7 +329,6 @@ export default function PublicQRGenerator({
                 <li>✓ Add custom logos & frames</li>
                 <li>✓ Export as SVG & PDF formats</li>
                 <li>✓ Create dynamic & editable QR codes</li>
-                <li>✓ Team collaboration features</li>
               </ul>
               <button
                 onClick={() => window.location.href = '/auth/signup'}

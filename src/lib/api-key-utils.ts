@@ -7,6 +7,7 @@ export interface ApiKeyData {
   keyPrefix: string
   permissions: string[]
   rateLimit: number
+  environment: string
   lastUsedAt: Date | null
   expiresAt: Date | null
   isActive: boolean
@@ -17,6 +18,7 @@ export interface CreateApiKeyData {
   name: string
   permissions: string[]
   rateLimit?: number
+  environment?: string
   expiresAt?: Date
 }
 
@@ -62,6 +64,7 @@ export class ApiKeyManager {
         keyPrefix,
         permissions: data.permissions,
         rateLimit: data.rateLimit || 1000,
+        environment: data.environment || 'production',
         expiresAt: data.expiresAt
       }
     })
@@ -74,6 +77,7 @@ export class ApiKeyManager {
         keyPrefix: created.keyPrefix,
         permissions: created.permissions,
         rateLimit: created.rateLimit,
+        environment: created.environment,
         lastUsedAt: created.lastUsedAt,
         expiresAt: created.expiresAt,
         isActive: created.isActive,
@@ -86,9 +90,11 @@ export class ApiKeyManager {
    * Validate an API key and return user data
    */
   static async validateApiKey(apiKey: string): Promise<{
+    id: string
     userId: string
     permissions: string[]
     rateLimit: number
+    environment: string
     isActive: boolean
     expiresAt: Date | null
   } | null> {
@@ -115,9 +121,11 @@ export class ApiKeyManager {
     })
 
     return {
+      id: apiKeyRecord.id,
       userId: apiKeyRecord.userId,
       permissions: apiKeyRecord.permissions,
       rateLimit: apiKeyRecord.rateLimit,
+      environment: apiKeyRecord.environment,
       isActive: apiKeyRecord.isActive,
       expiresAt: apiKeyRecord.expiresAt
     }
@@ -138,6 +146,7 @@ export class ApiKeyManager {
       keyPrefix: key.keyPrefix,
       permissions: key.permissions,
       rateLimit: key.rateLimit,
+      environment: key.environment,
       lastUsedAt: key.lastUsedAt,
       expiresAt: key.expiresAt,
       isActive: key.isActive,
@@ -192,6 +201,7 @@ export class ApiKeyManager {
       keyPrefix: apiKey.keyPrefix,
       permissions: apiKey.permissions,
       rateLimit: apiKey.rateLimit,
+      environment: apiKey.environment,
       lastUsedAt: apiKey.lastUsedAt,
       expiresAt: apiKey.expiresAt,
       isActive: apiKey.isActive,
@@ -215,7 +225,8 @@ export class ApiKeyManager {
         return [
           'qr:read',
           'qr:write', 
-          'analytics:read'
+          'analytics:read',
+          'webhooks:manage'
         ]
       case 'business':
         return [
@@ -238,7 +249,7 @@ export class ApiKeyManager {
   static getPlanRateLimit(plan: string): number {
     switch (plan) {
       case 'pro':
-        return 1000 // 1,000 requests per hour
+        return 5000 // 5,000 requests per hour
       case 'business':
         return 10000 // 10,000 requests per hour
       default:

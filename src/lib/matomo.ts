@@ -95,14 +95,15 @@ export interface MatomoServerTrackParams {
 let config: MatomoConfig | null = null;
 
 /**
- * Initialize Matomo configuration
+ * Initialize Matomo configuration (only in production)
  */
 export function initMatomo(customConfig?: Partial<MatomoConfig>): MatomoConfig | null {
   const url = customConfig?.url || process.env.NEXT_PUBLIC_MATOMO_URL;
   const siteId = customConfig?.siteId || process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
   const authToken = customConfig?.authToken || process.env.MATOMO_AUTH_TOKEN;
 
-  if (!url || !siteId) {
+  // Only initialize Matomo in production environment
+  if (!url || !siteId || process.env.NODE_ENV !== 'production') {
     return null;
   }
 
@@ -130,170 +131,137 @@ export function getMatomoConfig(): MatomoConfig | null {
 // ============================================================================
 
 /**
- * Check if Matomo tracker is available
+ * Check if Matomo tracker is available in browser
  */
 function isMatomoAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window._paq !== 'undefined';
 }
 
 /**
- * Check if Matomo is configured (has required env vars)
+ * Check if Matomo is configured (has required env vars and is in production)
  */
 export function isMatomoConfigured(): boolean {
-  return !!(process.env.NEXT_PUBLIC_MATOMO_URL && process.env.NEXT_PUBLIC_MATOMO_SITE_ID);
+  return !!(
+    process.env.NEXT_PUBLIC_MATOMO_URL && 
+    process.env.NEXT_PUBLIC_MATOMO_SITE_ID && 
+    process.env.NODE_ENV === 'production'
+  );
+}
+
+/**
+ * Unified guard for client-side tracking functions
+ */
+function canTrackClientSide(): boolean {
+  return isMatomoAvailable() && isMatomoConfigured();
+}
+
+/**
+ * Helper to safely execute client-side tracking commands
+ */
+function executeTracking(fn: () => void): void {
+  if (canTrackClientSide()) {
+    fn();
+  }
+}
+
+/**
+ * Helper to set custom dimensions
+ */
+function setCustomDimensions(dimensions?: Record<string, string>): void {
+  if (!dimensions) return;
+  
+  const _paq = window._paq!;
+  Object.entries(dimensions).forEach(([key, value]) => {
+    _paq.push(['setCustomDimension', parseInt(key), value]);
+  });
 }
 
 /**
  * Track a page view
  */
 export function trackPageView(params?: MatomoPageViewParams): void {
-  if (!isMatomoAvailable()) {
-    return;
-  }
+  executeTracking(() => {
+    const _paq = window._paq!;
+    const { userId, customUrl, documentTitle, customDimensions } = params || {};
 
-  const _paq = window._paq!;
-
-  // Set user ID if provided
-  if (params?.userId) {
-    _paq.push(['setUserId', params.userId]);
-  }
-
-  // Set custom dimensions
-  if (params?.customDimensions) {
-    Object.entries(params.customDimensions).forEach(([key, value]) => {
-      _paq.push(['setCustomDimension', parseInt(key), value]);
-    });
-  }
-
-  // Set custom URL if provided
-  if (params?.customUrl) {
-    _paq.push(['setCustomUrl', params.customUrl]);
-  }
-
-  // Set document title if provided
-  if (params?.documentTitle) {
-    _paq.push(['setDocumentTitle', params.documentTitle]);
-  }
-
-  // Track page view
-  _paq.push(['trackPageView']);
+    if (userId) _paq.push(['setUserId', userId]);
+    if (customUrl) _paq.push(['setCustomUrl', customUrl]);
+    if (documentTitle) _paq.push(['setDocumentTitle', documentTitle]);
+    
+    setCustomDimensions(customDimensions);
+    _paq.push(['trackPageView']);
+  });
 }
 
 /**
  * Track a custom event
  */
 export function trackEvent(params: MatomoEventParams): void {
-  if (!isMatomoAvailable()) {
-    return;
-  }
+  executeTracking(() => {
+    const _paq = window._paq!;
+    const { category, action, name, value, customDimensions } = params;
 
-  const _paq = window._paq!;
-
-  // Set custom dimensions
-  if (params.customDimensions) {
-    Object.entries(params.customDimensions).forEach(([key, value]) => {
-      _paq.push(['setCustomDimension', parseInt(key), value]);
-    });
-  }
-
-  // Track event
-  _paq.push([
-    'trackEvent',
-    params.category,
-    params.action,
-    params.name,
-    params.value,
-  ]);
+    setCustomDimensions(customDimensions);
+    _paq.push(['trackEvent', category, action, name, value]);
+  });
 }
 
 /**
  * Track a goal conversion
  */
 export function trackGoal(params: MatomoGoalParams): void {
-  if (!isMatomoAvailable()) {
-    return;
-  }
+  executeTracking(() => {
+    const _paq = window._paq!;
+    const { goalId, revenue, customDimensions } = params;
 
-  const _paq = window._paq!;
-
-  // Set custom dimensions
-  if (params.customDimensions) {
-    Object.entries(params.customDimensions).forEach(([key, value]) => {
-      _paq.push(['setCustomDimension', parseInt(key), value]);
-    });
-  }
-
-  // Track goal
-  if (params.revenue) {
-    _paq.push(['trackGoal', params.goalId, params.revenue]);
-  } else {
-    _paq.push(['trackGoal', params.goalId]);
-  }
+    setCustomDimensions(customDimensions);
+    _paq.push(revenue ? ['trackGoal', goalId, revenue] : ['trackGoal', goalId]);
+  });
 }
 
 /**
  * Track an e-commerce order
  */
 export function trackEcommerce(params: MatomoEcommerceParams): void {
-  if (!isMatomoAvailable()) {
-    return;
-  }
+  executeTracking(() => {
+    const _paq = window._paq!;
+    const { items, orderId, revenue, subTotal, tax, shipping, discount, customDimensions } = params;
 
-  const _paq = window._paq!;
-
-  // Add items to cart
-  params.items.forEach((item) => {
-    _paq.push([
-      'addEcommerceItem',
-      item.sku,
-      item.name,
-      item.category,
-      item.price,
-      item.quantity,
-    ]);
-  });
-
-  // Set custom dimensions
-  if (params.customDimensions) {
-    Object.entries(params.customDimensions).forEach(([key, value]) => {
-      _paq.push(['setCustomDimension', parseInt(key), value]);
+    // Add items to cart
+    items.forEach(item => {
+      _paq.push(['addEcommerceItem', item.sku, item.name, item.category, item.price, item.quantity]);
     });
-  }
 
-  // Track order
-  _paq.push([
-    'trackEcommerceOrder',
-    params.orderId,
-    params.revenue,
-    params.subTotal,
-    params.tax,
-    params.shipping,
-    params.discount,
-  ]);
+    setCustomDimensions(customDimensions);
+    _paq.push(['trackEcommerceOrder', orderId, revenue, subTotal, tax, shipping, discount]);
+  });
 }
 
 /**
  * Set user ID for tracking
  */
 export function setUserId(userId: string): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push(['setUserId', userId]);
+  executeTracking(() => {
+    window._paq!.push(['setUserId', userId]);
+  });
 }
 
 /**
  * Reset user ID (for logout)
  */
 export function resetUserId(): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push(['resetUserId']);
+  executeTracking(() => {
+    window._paq!.push(['resetUserId']);
+  });
 }
 
 /**
  * Set custom dimension
  */
 export function setCustomDimension(id: number, value: string): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push(['setCustomDimension', id, value]);
+  executeTracking(() => {
+    window._paq!.push(['setCustomDimension', id, value]);
+  });
 }
 
 /**
@@ -304,8 +272,9 @@ export function trackSiteSearch(
   category?: string,
   resultsCount?: number
 ): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push(['trackSiteSearch', keyword, category, resultsCount]);
+  executeTracking(() => {
+    window._paq!.push(['trackSiteSearch', keyword, category, resultsCount]);
+  });
 }
 
 /**
@@ -316,13 +285,9 @@ export function trackContentImpression(
   contentPiece: string,
   contentTarget?: string
 ): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push([
-    'trackContentImpression',
-    contentName,
-    contentPiece,
-    contentTarget,
-  ]);
+  executeTracking(() => {
+    window._paq!.push(['trackContentImpression', contentName, contentPiece, contentTarget]);
+  });
 }
 
 /**
@@ -334,14 +299,9 @@ export function trackContentInteraction(
   contentPiece: string,
   contentTarget?: string
 ): void {
-  if (!isMatomoAvailable()) return;
-  window._paq!.push([
-    'trackContentInteraction',
-    interaction,
-    contentName,
-    contentPiece,
-    contentTarget,
-  ]);
+  executeTracking(() => {
+    window._paq!.push(['trackContentInteraction', interaction, contentName, contentPiece, contentTarget]);
+  });
 }
 
 // ============================================================================
@@ -382,23 +342,21 @@ export async function serverTrack(
   params: MatomoServerTrackParams
 ): Promise<boolean> {
   try {
-    const cfg = getMatomoConfig();
-    if (!cfg) {
+    // Early returns for invalid conditions
+    if (process.env.NODE_ENV !== 'production' || !getMatomoConfig()) {
       return false;
     }
 
     const trackingParams: Record<string, any> = {
       url: params.url,
-      apiv: 1, // API version
-      rand: Math.random().toString().slice(2), // Random number to prevent caching
+      apiv: 1,
+      rand: Math.random().toString().slice(2),
+      ...(params.userId && { uid: params.userId }),
+      ...(params.visitorId && { _id: params.visitorId }),
+      ...(params.ip && { cip: params.ip }),
+      ...(params.userAgent && { ua: params.userAgent }),
+      ...(params.referrer && { urlref: params.referrer }),
     };
-
-    // Add user identification
-    if (params.userId) trackingParams.uid = params.userId;
-    if (params.visitorId) trackingParams._id = params.visitorId;
-    if (params.ip) trackingParams.cip = params.ip;
-    if (params.userAgent) trackingParams.ua = params.userAgent;
-    if (params.referrer) trackingParams.urlref = params.referrer;
 
     // Add custom dimensions
     if (params.customDimensions) {
@@ -413,58 +371,53 @@ export async function serverTrack(
         trackingParams.action_name = params.pageView?.title || 'Page View';
         break;
 
-      case 'trackEvent':
+      case 'trackEvent': {
         if (!params.event) throw new Error('Event parameters required');
-        trackingParams.e_c = params.event.category;
-        trackingParams.e_a = params.event.action;
-        if (params.event.name) trackingParams.e_n = params.event.name;
-        if (params.event.value) trackingParams.e_v = params.event.value;
+        const { category, action, name, value } = params.event;
+        Object.assign(trackingParams, {
+          e_c: category,
+          e_a: action,
+          ...(name && { e_n: name }),
+          ...(value && { e_v: value }),
+        });
         break;
+      }
 
-      case 'trackGoal':
+      case 'trackGoal': {
         if (!params.goal) throw new Error('Goal parameters required');
-        trackingParams.idgoal = params.goal.id;
-        if (params.goal.revenue) trackingParams.revenue = params.goal.revenue;
+        Object.assign(trackingParams, {
+          idgoal: params.goal.id,
+          ...(params.goal.revenue && { revenue: params.goal.revenue }),
+        });
         break;
+      }
 
-      case 'trackEcommerce':
+      case 'trackEcommerce': {
         if (!params.ecommerce) throw new Error('Ecommerce parameters required');
-        trackingParams.idgoal = 0; // 0 = ecommerce order
-        trackingParams.ec_id = params.ecommerce.orderId;
-        trackingParams.revenue = params.ecommerce.revenue;
-        if (params.ecommerce.subTotal) trackingParams.ec_st = params.ecommerce.subTotal;
-        if (params.ecommerce.tax) trackingParams.ec_tx = params.ecommerce.tax;
-        if (params.ecommerce.shipping) trackingParams.ec_sh = params.ecommerce.shipping;
-        if (params.ecommerce.discount) trackingParams.ec_dt = params.ecommerce.discount;
-
-        // Add items as JSON
-        trackingParams.ec_items = JSON.stringify(
-          params.ecommerce.items.map((item) => [
-            item.sku,
-            item.name,
-            item.category || '',
-            item.price,
-            item.quantity,
-          ])
-        );
+        const { orderId, revenue, subTotal, tax, shipping, discount, items } = params.ecommerce;
+        Object.assign(trackingParams, {
+          idgoal: 0, // 0 = ecommerce order
+          ec_id: orderId,
+          revenue,
+          ec_items: JSON.stringify(items.map(item => [
+            item.sku, item.name, item.category || '', item.price, item.quantity
+          ])),
+          ...(subTotal && { ec_st: subTotal }),
+          ...(tax && { ec_tx: tax }),
+          ...(shipping && { ec_sh: shipping }),
+          ...(discount && { ec_dt: discount }),
+        });
         break;
+      }
     }
 
     // Build URL and make request
-    const trackingUrl = buildTrackingUrl(trackingParams);
-
-    const response = await fetch(trackingUrl, {
+    const response = await fetch(buildTrackingUrl(trackingParams), {
       method: 'GET',
-      headers: {
-        'User-Agent': params.userAgent || 'TheQRCode.io Server',
-      },
+      headers: { 'User-Agent': params.userAgent || 'TheQRCode.io Server' },
     });
 
-    if (!response.ok) {
-      return false;
-    }
-
-    return true;
+    return response.ok;
   } catch (error) {
     return false;
   }

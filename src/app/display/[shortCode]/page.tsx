@@ -40,8 +40,13 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
         
         // Generate QR code client-side with styling options
         const settings = infoData.settings as any
+        
+        // Use window.location to determine the correct base URL for the current environment
+        const isDev = typeof window !== 'undefined' && window.location.hostname === 'dev.theqrcode.io'
+        const baseUrl = isDev ? 'https://dev.theqrcode.io' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io')
+        
         const qrContent = infoData.isDynamic 
-          ? `https://theqrcode.io/r/${shortCode}` 
+          ? `${baseUrl}/r/${shortCode}` 
           : infoData.content
         
         const qrImage = await QRGenerator.generateQRCode({

@@ -9,6 +9,7 @@ import TrialBanner from './TrialBanner'
 import { useToast } from '@/hooks/useToast'
 import { QRCode, QRCodeFormData, Subscription, DashboardProps } from '@/types'
 import { createQRCode, updateQRCode, deleteQRCode } from '@/utils/api'
+import { captureException } from '@/lib/sentry'
 
 export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName, isAdmin }: DashboardProps) {
   const router = useRouter()
@@ -52,8 +53,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
   }
 
   const handleSaveQR = async (qrData: QRCodeFormData) => {
+    const isEdit = !!qrData.id
     try {
-      const isEdit = !!qrData.id
       const response = isEdit 
         ? await updateQRCode(qrData.id!, qrData)
         : await createQRCode(qrData)
@@ -79,6 +80,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       // Refresh the page to show the updated QR code
       window.location.reload()
     } catch (error) {
+      captureException(error, { component: 'Dashboard', action: 'save-qr-code', isEdit })
       showError(
         'Failed to Save QR Code',
         'An unexpected error occurred. Please try again.'
@@ -102,6 +104,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       // Refresh the page to update the QR codes list
       window.location.reload()
     } catch (error) {
+      captureException(error, { component: 'Dashboard', action: 'delete-qr-code', qrId })
       showError(
         'Failed to Delete QR Code',
         'An unexpected error occurred. Please try again.'
@@ -140,6 +143,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
               }
             } catch (error) {
               console.error('Error creating checkout:', error)
+              captureException(error, { component: 'Dashboard', action: 'create-checkout', plan: 'pro' })
               showError('Checkout Failed', 'Unable to start checkout. Please try again.')
             }
           }}
@@ -319,6 +323,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                     qr={qr}
                     onEdit={() => handleEditQR(qr)}
                     onDelete={() => handleDeleteQR(qr.id)}
+                    onShare={() => {}} // Share functionality is handled within QRCodeCard
                   />
                 ))}
               </div>

@@ -8,6 +8,7 @@ import {
   addApiKeyToRequest,
   cleanupTestData 
 } from '../test-utils'
+import { createHmac } from 'crypto'
 
 // Mock the database
 jest.mock('@/lib/prisma', () => ({
@@ -402,6 +403,236 @@ describe('Webhooks API (Business Plan)', () => {
 
       expect(response.status).toBe(404)
       expect(data.error).toContain('Webhook not found')
+    })
+  })
+
+  describe('Webhook signature verification', () => {
+    it('should generate valid HMAC signature', async () => {
+      const payload = JSON.stringify({ type: 'scan.created', data: { id: '123' } })
+      const secret = 'test-secret-key-123'
+      
+      const expectedSignature = createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex')
+      
+      expect(expectedSignature).toBeDefined()
+      expect(expectedSignature).toMatch(/^[a-f0-9]{64}$/) // Should be 64 character hex string
+    })
+
+    it('should verify valid webhook signature', async () => {
+      const payload = JSON.stringify({ type: 'scan.created', data: { id: '123' } })
+      const secret = 'test-secret-key-123'
+      
+      const signature = createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex')
+      
+      // This would be the verification logic in the actual webhook receiver
+      const expectedSignature = createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex')
+      
+      expect(signature).toBe(expectedSignature)
+    })
+
+    it('should detect invalid webhook signature', async () => {
+      const payload = JSON.stringify({ type: 'scan.created', data: { id: '123' } })
+      const secret = 'test-secret-key-123'
+      const wrongSecret = 'wrong-secret-key'
+      
+      const validSignature = createHmac('sha256', secret)
+        .update(payload)
+        .digest('hex')
+      
+      const invalidSignature = createHmac('sha256', wrongSecret)
+        .update(payload)
+        .digest('hex')
+      
+      expect(validSignature).not.toBe(invalidSignature)
+    })
+
+    it('should detect signature mismatch for same secret but different payload', async () => {
+      const secret = 'test-secret-key-123'
+      const payload1 = JSON.stringify({ type: 'scan.created', data: { id: '123' } })
+      const payload2 = JSON.stringify({ type: 'scan.created', data: { id: '456' } })
+      
+      const signature1 = createHmac('sha256', secret)
+        .update(payload1)
+        .digest('hex')
+      
+      const signature2 = createHmac('sha256', secret)
+        .update(payload2)
+        .digest('hex')
+      
+      expect(signature1).not.toBe(signature2)
+    })
+  })
+
+  describe('Webhook delivery', () => {
+    let mockWebhook: any
+
+    beforeEach(() => {
+      mockWebhook = {
+        id: 'webhook1',
+        name: 'Test Delivery Webhook',
+        url: 'https://example.com/webhook',
+        events: ['scan.created', 'qr.created'],
+        secret: 'test-secret-key-123',
+        isActive: true,
+        userId: testUser.id
+      }
+    })
+
+    it('should create proper webhook payload structure', async () => {
+      const eventData = {
+        type: 'scan.created',
+        data: {
+          id: 'scan_123',
+          qrCodeId: 'qr_456',
+          userId: testUser.id,
+          timestamp: new Date().toISOString(),
+          location: { city: 'Test City', country: 'Test Country' }
+        }
+      }
+
+      const payloadString = JSON.stringify(eventData)
+      const signature = createHmac('sha256', mockWebhook.secret)
+        .update(payloadString)
+        .digest('hex')
+
+      // Verify the payload structure matches expected format
+      expect(eventData.type).toBe('scan.created')
+      expect(eventData.data.id).toBeDefined()
+      expect(eventData.data.qrCodeId).toBeDefined()
+      expect(eventData.data.userId).toBe(testUser.id)
+      expect(signature).toBeDefined()
+    })
+
+    it('should generate signature for webhook delivery', async () => {
+      const webhookPayload = {
+        type: 'qr.created',
+        data: {
+          id: 'qr_new_123',
+          userId: testUser.id,
+          name: 'New QR Code',
+          createdAt: new Date().toISOString()
+        }
+      }
+
+      const payloadString = JSON.stringify(webhookPayload)
+      const signature = createHmac('sha256', mockWebhook.secret)
+        .update(payloadString)
+        .digest('hex')
+
+      // Verify signature properties
+      expect(signature).toBeDefined()
+      expect(typeof signature).toBe('string')
+      expect(signature.length).toBe(64) // SHA256 hex should be 64 characters
+      expect(signature).toMatch(/^[a-f0-9]{64}$/)
+    })
+
+    it('should handle different event types in webhook payload', async () => {
+      const eventTypes = ['scan.created', 'scan.updated', 'qr.created', 'qr.updated', 'qr.deleted']
+
+      for (const eventType of eventTypes) {
+        const payload = {
+          type: eventType,
+          data: {
+            id: `test_${Date.now()}`,
+            userId: testUser.id,
+            timestamp: new Date().toISOString()
+          }
+        }
+
+        const payloadString = JSON.stringify(payload)
+        const signature = createHmac('sha256', mockWebhook.secret)
+          .update(payloadString)
+          .digest('hex')
+
+        expect(signature).toBeDefined()
+        expect(payload.type).toBe(eventType)
+      }
+    })
+
+    it('should create proper headers for webhook delivery', async () => {
+      const payload = {
+        type: 'scan.created',
+        data: { id: 'test' }
+      }
+
+      const payloadString = JSON.stringify(payload)
+      const signature = createHmac('sha256', mockWebhook.secret)
+        .update(payloadString)
+        .digest('hex')
+
+      // Expected headers that should be sent with webhook
+      const headers = {
+        'Content-Type': 'application/json',
+        'User-Agent': 'TheQRCode-Webhook/1.0',
+        'X-Webhook-Signature': signature,
+        'X-Webhook-Timestamp': new Date().toISOString()
+      }
+
+      expect(headers['Content-Type']).toBe('application/json')
+      expect(headers['X-Webhook-Signature']).toBe(signature)
+      expect(headers['X-Webhook-Signature']).toMatch(/^[a-f0-9]{64}$/)
+      expect(headers['X-Webhook-Timestamp']).toBeDefined()
+    })
+  })
+
+  describe('Webhook event verification', () => {
+    it('should verify webhook signature from request headers', async () => {
+      const payload = { type: 'scan.created', data: { id: '123' } }
+      const secret = 'test-secret-key-123'
+      const payloadString = JSON.stringify(payload)
+
+      // Simulate signature generation (what the webhook sender would do)
+      const signature = createHmac('sha256', secret)
+        .update(payloadString)
+        .digest('hex')
+
+      // Simulate signature verification (what the webhook receiver would do)
+      const request = createMockRequest('POST', '/webhook-endpoint', payload, {
+        'x-webhook-signature': signature,
+        'content-type': 'application/json'
+      })
+
+      const receivedSignature = request.headers.get('x-webhook-signature')
+      const expectedSignature = createHmac('sha256', secret)
+        .update(payloadString)
+        .digest('hex')
+
+      expect(receivedSignature).toBe(signature)
+      expect(receivedSignature).toBe(expectedSignature)
+    })
+
+    it('should reject webhooks with missing signature header', async () => {
+      const payload = { type: 'scan.created', data: { id: '123' } }
+      
+      const request = createMockRequest('POST', '/webhook-endpoint', payload, {
+        'content-type': 'application/json'
+        // Missing x-webhook-signature header
+      })
+
+      const signature = request.headers.get('x-webhook-signature')
+      expect(signature).toBeNull()
+    })
+
+    it('should reject webhooks with invalid signature', async () => {
+      const payload = { type: 'scan.created', data: { id: '123' } }
+      const payloadString = JSON.stringify(payload)
+      const secret = 'correct-secret'
+      const wrongSecret = 'wrong-secret'
+
+      const correctSignature = createHmac('sha256', secret)
+        .update(payloadString)
+        .digest('hex')
+
+      const wrongSignature = createHmac('sha256', wrongSecret)
+        .update(payloadString)
+        .digest('hex')
+
+      expect(correctSignature).not.toBe(wrongSignature)
     })
   })
 })

@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, QrCode, Users, Calendar, Gift, MapPin, CheckCircle2, Camera, Music, Wine } from 'lucide-react'
+import { Heart, QrCode, Users, Calendar, Gift, MapPin, CheckCircle2, Camera, Music, Wine, Shield, Award, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default function WeddingLanding() {
@@ -278,24 +278,27 @@ export default function WeddingLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Features Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Happy Couples Worldwide
+            Built for Happy Couples Worldwide
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-pink-600 mb-2">1,000+</div>
-              <p className="text-gray-600">Weddings Planned</p>
+              <Heart className="h-16 w-16 text-pink-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Easy RSVP Tracking</h3>
+              <p className="text-gray-600">Monitor RSVPs in real-time, send reminders to guests who haven't responded, and manage meal preferences effortlessly.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-pink-600 mb-2">95%</div>
-              <p className="text-gray-600">RSVP Response Rate</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Update Anytime</h3>
+              <p className="text-gray-600">Venue changed? Menu updated? Simply update your QR code content without reprinting invitations or programs.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-pink-600 mb-2">50K+</div>
-              <p className="text-gray-600">Guest Interactions</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first wedding QR code at no cost. Upgrade only when you need advanced features like custom designs and analytics.</p>
             </div>
           </div>
         </div>

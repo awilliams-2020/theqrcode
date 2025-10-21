@@ -286,24 +286,27 @@ export default function RestaurantLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Features Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Restaurants Worldwide
+            Why Restaurants Choose TheQRCode.io
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-orange-600 mb-2">500+</div>
-              <p className="text-gray-600">Restaurants Using Our QR Codes</p>
+              <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first QR code at no cost. Upgrade only when you need advanced features.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-orange-600 mb-2">1M+</div>
-              <p className="text-gray-600">Menu Scans Per Month</p>
+              <RefreshCw className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Update Anytime</h3>
+              <p className="text-gray-600">Never reprint menus again. Update prices and content instantly from your dashboard.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-orange-600 mb-2">$5K</div>
-              <p className="text-gray-600">Average Saved on Printing Annually</p>
+              <BarChart3 className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Track Everything</h3>
+              <p className="text-gray-600">See which items are viewed most, peak hours, and customer engagement patterns.</p>
             </div>
           </div>
         </div>

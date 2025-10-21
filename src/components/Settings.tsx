@@ -43,6 +43,7 @@ interface ApiKey {
   keyPrefix: string
   permissions: string[]
   rateLimit: number
+  environment: string
   lastUsedAt: Date | null
   expiresAt: Date | null
   isActive: boolean
@@ -75,6 +76,7 @@ export default function Settings({
   const [newApiKeyName, setNewApiKeyName] = useState('')
   const [isCreatingApiKey, setIsCreatingApiKey] = useState(false)
   const [selectedCreatePermissions, setSelectedCreatePermissions] = useState<string[]>([])
+  const [selectedEnvironment, setSelectedEnvironment] = useState<'production' | 'sandbox'>('production')
   const [createdApiKey, setCreatedApiKey] = useState<{ key: string; data: ApiKey } | null>(null)
   const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({})
   const [editingApiKey, setEditingApiKey] = useState<ApiKey | null>(null)
@@ -138,6 +140,7 @@ export default function Settings({
         body: JSON.stringify({
           name: newApiKeyName.trim(),
           permissions: selectedCreatePermissions.length > 0 ? selectedCreatePermissions : undefined,
+          environment: selectedEnvironment,
         }),
       })
 
@@ -151,6 +154,7 @@ export default function Settings({
             keyPrefix: data.keyPrefix,
             permissions: data.permissions,
             rateLimit: data.rateLimit,
+            environment: data.environment,
             lastUsedAt: data.lastUsedAt,
             expiresAt: data.expiresAt,
             isActive: data.isActive,
@@ -605,6 +609,17 @@ export default function Settings({
                               <span className="text-sm font-medium text-gray-900">{apiKey.rateLimit.toLocaleString()} requests/hour</span>
                             </div>
                             
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Environment:</span>
+                              <span className={`text-sm font-medium px-2 py-1 rounded-full text-xs ${
+                                apiKey.environment === 'sandbox' 
+                                  ? 'bg-yellow-100 text-yellow-800' 
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                                {apiKey.environment === 'sandbox' ? 'Sandbox' : 'Production'}
+                              </span>
+                            </div>
+                            
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">Permissions:</span>
@@ -755,12 +770,15 @@ export default function Settings({
           setName={setNewApiKeyName}
           selectedPermissions={selectedCreatePermissions}
           setSelectedPermissions={setSelectedCreatePermissions}
+          selectedEnvironment={selectedEnvironment}
+          setSelectedEnvironment={setSelectedEnvironment}
           currentPlan={currentPlan}
           isTrialActive={isTrialActive}
           onClose={() => {
             setShowCreateApiKey(false)
             setNewApiKeyName('')
             setSelectedCreatePermissions([])
+            setSelectedEnvironment('production')
           }}
           onCreate={createApiKey}
           isCreating={isCreatingApiKey}
@@ -868,6 +886,8 @@ interface CreateApiKeyModalProps {
   setName: (name: string) => void
   selectedPermissions: string[]
   setSelectedPermissions: (permissions: string[] | ((prev: string[]) => string[])) => void
+  selectedEnvironment: 'production' | 'sandbox'
+  setSelectedEnvironment: (env: 'production' | 'sandbox') => void
   currentPlan: string
   isTrialActive?: boolean
   onClose: () => void
@@ -880,6 +900,8 @@ function CreateApiKeyModal({
   setName, 
   selectedPermissions, 
   setSelectedPermissions, 
+  selectedEnvironment,
+  setSelectedEnvironment,
   currentPlan, 
   isTrialActive, 
   onClose, 
@@ -956,6 +978,51 @@ function CreateApiKeyModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isCreating}
             />
+          </div>
+
+          {/* Environment Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Environment
+            </label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id="env-production"
+                  name="environment"
+                  value="production"
+                  checked={selectedEnvironment === 'production'}
+                  onChange={() => setSelectedEnvironment('production')}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  disabled={isCreating}
+                />
+                <div className="flex-1">
+                  <label htmlFor="env-production" className="text-sm font-medium text-gray-900">
+                    Production
+                  </label>
+                  <p className="text-xs text-gray-600">Create real QR codes that count towards your plan limits</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id="env-sandbox"
+                  name="environment"
+                  value="sandbox"
+                  checked={selectedEnvironment === 'sandbox'}
+                  onChange={() => setSelectedEnvironment('sandbox')}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  disabled={isCreating}
+                />
+                <div className="flex-1">
+                  <label htmlFor="env-sandbox" className="text-sm font-medium text-gray-900">
+                    Sandbox
+                  </label>
+                  <p className="text-xs text-gray-600">Test API calls without affecting production data or plan limits</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Permissions */}

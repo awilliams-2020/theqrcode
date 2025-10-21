@@ -1,7 +1,7 @@
 'use client'
 
 interface StructuredDataProps {
-  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage'
+  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage' | 'BreadcrumbList' | 'Product' | 'Service' | 'Article' | 'HowTo'
   data: any
 }
 
@@ -79,6 +79,91 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
               "text": faq.answer
             }
           }))
+        }
+      
+      case 'BreadcrumbList':
+        return {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": data.breadcrumbs.map((crumb: any, index: number) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": crumb.name,
+            "item": crumb.url
+          }))
+        }
+      
+      case 'Product':
+        return {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": data.name || "QR Code Generator",
+          "description": data.description || "Professional QR code generator with advanced analytics",
+          "url": data.url || "https://theqrcode.io",
+          "image": data.image || "https://theqrcode.io/og",
+          "brand": {
+            "@type": "Brand",
+            "name": "TheQRCode.io"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": data.price || "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": data.url || "https://theqrcode.io"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "150"
+          },
+          ...data
+        }
+      
+      case 'Service':
+        return {
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": data.name || "QR Code Generation Service",
+          "description": data.description || "Professional QR code generation and analytics service",
+          "provider": {
+            "@type": "Organization",
+            "name": "TheQRCode.io",
+            "url": "https://theqrcode.io"
+          },
+          "serviceType": "QR Code Generation",
+          "areaServed": "Worldwide",
+          "availableChannel": {
+            "@type": "ServiceChannel",
+            "serviceUrl": "https://theqrcode.io",
+            "serviceSmsNumber": "+1-555-0123",
+            "servicePhone": "+1-555-0123"
+          },
+          ...data
+        }
+      
+      case 'HowTo':
+        return {
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          "name": data.name || "How to Create QR Codes",
+          "description": data.description || "Learn how to create professional QR codes with analytics",
+          "image": data.image || "https://theqrcode.io/og",
+          "estimatedCost": {
+            "@type": "MonetaryAmount",
+            "currency": "USD",
+            "value": "0"
+          },
+          "totalTime": "PT2M",
+          "step": data.steps?.map((step: any, index: number) => ({
+            "@type": "HowToStep",
+            "position": index + 1,
+            "name": step.name,
+            "text": step.text,
+            "url": step.url,
+            "image": step.image
+          })) || [],
+          ...data
         }
       
       default:

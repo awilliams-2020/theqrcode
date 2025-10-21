@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, QrCode, MapPin, FileText, BarChart3, Clock, CheckCircle2, TrendingUp, Smartphone, DollarSign } from 'lucide-react'
+import { Home, QrCode, MapPin, FileText, BarChart3, Clock, CheckCircle2, TrendingUp, Smartphone, DollarSign, Shield, Award } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RealEstateLanding() {
@@ -278,24 +278,27 @@ export default function RealEstateLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Features Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Real Estate Professionals
+            Built for Real Estate Professionals
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">200+</div>
-              <p className="text-gray-600">Real Estate Agents</p>
+              <Shield className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Track Every Lead</h3>
+              <p className="text-gray-600">Monitor which properties generate the most interest and optimize your marketing strategy with real-time analytics.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">50K+</div>
-              <p className="text-gray-600">Property QR Scans Per Month</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Update Instantly</h3>
+              <p className="text-gray-600">Price changes, sold properties, or cancelled open houses? Update your QR codes without reprinting signs.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">35%</div>
-              <p className="text-gray-600">Average Increase in Leads</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first QR code at no cost. Upgrade only when you need advanced analytics and bulk creation features.</p>
             </div>
           </div>
         </div>

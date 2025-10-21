@@ -52,6 +52,7 @@ model User {
   sessions      Session[]
   subscription  Subscription?
   webhooks      Webhook[]
+  qrShares      QrShare[]
 }
 
 model VerificationToken {
@@ -123,12 +124,14 @@ model QrCode {
   shortUrl  String?   @unique
   settings  Json
   isDynamic Boolean   @default(false)
+  isSandbox Boolean   @default(false) // Indicates if this QR code was created via sandbox API key
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   scans     Scan[]
+  shares    QrShare[]
 }
 
 model Scan {
@@ -146,6 +149,22 @@ model Scan {
   qrCode    QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
 }
 
+model QrShare {
+  id          String   @id @default(cuid())
+  qrCodeId    String
+  userId      String
+  message     String
+  shareMethod String   // 'social', 'email', 'sms', 'link', 'download'
+  email       String?  // For email shares
+  subject     String?  // For email shares
+  createdAt   DateTime @default(now())
+  qrCode      QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([qrCodeId, createdAt])
+  @@index([userId, createdAt])
+}
+
 model ApiKey {
   id          String     @id @default(cuid())
   userId      String
@@ -154,6 +173,7 @@ model ApiKey {
   keyPrefix   String
   permissions String[]
   rateLimit   Int        @default(1000)
+  environment String     @default("production") // "sandbox" or "production"
   lastUsedAt  DateTime?
   expiresAt   DateTime?
   isActive    Boolean    @default(true)

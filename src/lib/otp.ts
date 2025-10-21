@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import { createTransporter } from './email'
+import { createTransporter, createEmailOptions } from './email'
 
 // Generate a 6-digit OTP
 export function generateOTP(): string {
@@ -92,8 +92,7 @@ export async function incrementOTPAttempts(email: string, token: string): Promis
 export async function sendOTPEmail(email: string, token: string): Promise<void> {
   const transporter = createTransporter()
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const mailOptions = createEmailOptions({
     to: email,
     subject: 'Your TheQRCode.io Sign-In Code',
     text: `
@@ -146,7 +145,7 @@ The TheQRCode.io Team
   </div>
 </div>
     `,
-  }
+  })
 
   await transporter.sendMail(mailOptions)
 }

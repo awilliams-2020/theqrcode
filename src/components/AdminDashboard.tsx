@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Users, QrCode, BarChart3, Shield, TrendingUp, MessageSquare, Activity } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Users, QrCode, BarChart3, Shield, TrendingUp, MessageSquare, Activity, ExternalLink, Globe, Mail, Zap } from 'lucide-react'
 import AdminMetrics from './AdminMetrics'
 import AdminFeedback from './AdminFeedback'
 import AdminMonitoring from './AdminMonitoring'
+import EmailTester from './EmailTester'
 
 interface AdminStats {
   totalUsers: number
@@ -31,7 +32,38 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ stats, recentUsers }: AdminDashboardProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'feedback' | 'monitoring'>('overview')
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'feedback' | 'monitoring' | 'landing-pages' | 'email-tester'>('overview')
+  
+  // Handle tab from URL parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab') as typeof activeTab
+    if (tab && ['overview', 'metrics', 'feedback', 'monitoring', 'landing-pages', 'email-tester'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+  
+  // Landing pages data
+  const landingPages = [
+    { name: 'QR Code Generator', path: '/qr-code-generator', category: 'Tools' },
+    { name: 'QR Code Analytics', path: '/qr-code-analytics', category: 'Tools' },
+    { name: 'WiFi QR Code Generator', path: '/wifi-qr-code-generator', category: 'Tools' },
+    { name: 'QR Code API', path: '/qr-code-api', category: 'Tools' },
+    { name: 'Contact QR Code Generator', path: '/contact-qr-code-generator', category: 'Tools' },
+    { name: 'Restaurants', path: '/qr-code-for-restaurants', category: 'Niche' },
+    { name: 'Real Estate', path: '/qr-code-for-real-estate', category: 'Niche' },
+    { name: 'Weddings', path: '/qr-code-for-weddings', category: 'Niche' },
+    { name: 'Fitness', path: '/qr-code-for-fitness', category: 'Niche' },
+    { name: 'Photographers', path: '/qr-code-for-photographers', category: 'Niche' },
+    { name: 'Retail', path: '/qr-code-for-retail', category: 'Niche' },
+    { name: 'Salons', path: '/qr-code-for-salons', category: 'Niche' },
+    { name: 'Food Trucks', path: '/qr-code-for-food-trucks', category: 'Niche' },
+    { name: 'Musicians', path: '/qr-code-for-musicians', category: 'Niche' },
+    { name: 'Open Houses', path: '/qr-code-for-open-houses', category: 'Niche' },
+    { name: 'Healthcare', path: '/qr-code-for-healthcare', category: 'Niche' },
+    { name: 'Education', path: '/qr-code-for-education', category: 'Niche' },
+    { name: 'Hotels', path: '/qr-code-for-hotels', category: 'Niche' },
+  ]
   const tabNavRef = useRef<HTMLDivElement>(null)
 
   // Remove focus when clicking outside the tab navigation
@@ -145,6 +177,38 @@ export default function AdminDashboard({ stats, recentUsers }: AdminDashboardPro
                   <span>System Monitoring</span>
                 </div>
                 {activeTab === 'monitoring' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('landing-pages')}
+                className={`pb-3 px-2 sm:px-1 font-medium text-sm transition-colors relative whitespace-nowrap ${
+                  activeTab === 'landing-pages'
+                    ? 'text-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Globe className="h-4 w-4 flex-shrink-0" />
+                  <span>Landing Pages</span>
+                </div>
+                {activeTab === 'landing-pages' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('email-tester')}
+                className={`pb-3 px-2 sm:px-1 font-medium text-sm transition-colors relative whitespace-nowrap ${
+                  activeTab === 'email-tester'
+                    ? 'text-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span>Email Tester</span>
+                </div>
+                {activeTab === 'email-tester' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
                 )}
               </button>
@@ -281,6 +345,76 @@ export default function AdminDashboard({ stats, recentUsers }: AdminDashboardPro
         {/* System Monitoring Tab */}
         {activeTab === 'monitoring' && (
           <AdminMonitoring />
+        )}
+
+        {/* Email Tester Tab */}
+        {activeTab === 'email-tester' && (
+          <EmailTester />
+        )}
+
+
+        {/* Landing Pages Tab */}
+        {activeTab === 'landing-pages' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Landing Pages</h2>
+                <p className="text-sm text-gray-800 mt-1">
+                  Quick access to all landing pages for testing and optimization
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {/* Tool Pages */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Tool Pages</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {landingPages
+                      .filter(page => page.category === 'Tools')
+                      .map((page) => (
+                        <a
+                          key={page.path}
+                          href={page.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors group"
+                        >
+                          <div>
+                            <h4 className="font-medium text-gray-900">{page.name}</h4>
+                            <p className="text-sm text-gray-600">{page.path}</p>
+                          </div>
+                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                        </a>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Niche Pages */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Niche Landing Pages</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {landingPages
+                      .filter(page => page.category === 'Niche')
+                      .map((page) => (
+                        <a
+                          key={page.path}
+                          href={page.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors group"
+                        >
+                          <div>
+                            <h4 className="font-medium text-gray-900">{page.name}</h4>
+                            <p className="text-sm text-gray-600">{page.path}</p>
+                          </div>
+                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                        </a>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

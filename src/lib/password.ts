@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
-import { createTransporter } from './email'
+import { createTransporter, createEmailOptions } from './email'
 import crypto from 'crypto'
 
 // Hash password
@@ -96,8 +96,7 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   const transporter = createTransporter()
   const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const mailOptions = createEmailOptions({
     to: email,
     subject: 'Reset Your Password - TheQRCode.io',
     text: `
@@ -165,7 +164,7 @@ The TheQRCode.io Team
   </div>
 </div>
     `,
-  }
+  })
 
   await transporter.sendMail(mailOptions)
 }
