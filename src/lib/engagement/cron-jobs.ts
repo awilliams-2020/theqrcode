@@ -12,6 +12,7 @@ import { deleteOldNotifications } from './notifications'
 import { sendPeriodicAnalyticsSummaries } from './analytics-notifications'
 import { PrismaClient } from '@prisma/client'
 
+
 const prisma = new PrismaClient()
 
 // Run daily at 9 AM
@@ -68,6 +69,7 @@ export async function weeklyEngagementTasks() {
     // Send re-engagement emails to inactive users
     await sendReEngagementEmails()
     console.log('✓ Re-engagement emails sent')
+
   } catch (error) {
     console.error('Weekly engagement tasks failed:', error)
   }

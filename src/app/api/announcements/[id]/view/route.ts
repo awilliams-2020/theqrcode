@@ -7,8 +7,9 @@ const prisma = new PrismaClient()
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
@@ -19,12 +20,12 @@ export async function POST(
     await prisma.announcementView.upsert({
       where: {
         announcementId_userId: {
-          announcementId: params.id,
+          announcementId: id,
           userId: session.user.id,
         },
       },
       create: {
-        announcementId: params.id,
+        announcementId: id,
         userId: session.user.id,
       },
       update: {

@@ -7,6 +7,7 @@ import { createScanData } from '@/lib/realtime-broadcast'
 import { notifyMilestone } from '@/lib/engagement/notifications'
 import { runAnalyticsChecks } from '@/lib/engagement/analytics-notifications'
 import { trackQRCode } from '@/lib/matomo-tracking'
+import { captureException } from '@/lib/sentry'
 
 // Helper function to generate scan tracking script
 function generateScanTrackingScript(shortCode: string): string {
@@ -68,7 +69,7 @@ function generateScanTrackingScript(shortCode: string): string {
 const PLAN_LIMITS = {
   free: { qrCodes: 10, scans: 1000 },
   starter: { qrCodes: 100, scans: 10000 },
-  pro: { qrCodes: 500, scans: 50000 },
+  pro: { qrCodes: 500, scans: 500000 },
   business: { qrCodes: -1, scans: -1 }
 } as const
 
@@ -156,8 +157,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ shortCode: string }> }
 ) {
+  let shortCode: string = ''
   try {
-    const { shortCode } = await params
+    const { shortCode: code } = await params
+    shortCode = code
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     
     console.log('Track API Debug:', { shortCode, shortUrl })
@@ -924,7 +927,7 @@ export async function GET(
                 </button>
             </div>
             
-            ${wifiData.password ? `
+            ${wifiData.password && wifiData.security !== 'nopass' ? `
             <div class="detail-item">
                 <div class="detail-icon password">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -977,7 +980,7 @@ export async function GET(
             <p>1. Go to your device's WiFi settings</p>
             <p>2. Look for "${wifiData.ssid}" in the network list</p>
             <p>3. Enter the password when prompted</p>
-            ${wifiData.password ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
+            ${wifiData.password && wifiData.security !== 'nopass' ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
         </div>
         
         <div class="footer">
@@ -1190,6 +1193,11 @@ export async function GET(
     }
   } catch (error) {
     console.error('Error tracking scan:', error)
+    captureException(error, {
+      endpoint: '/api/track/[shortCode]',
+      method: 'GET',
+      shortCode
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -1252,8 +1260,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ shortCode: string }> }
 ) {
+  let shortCode: string = ''
   try {
-    const { shortCode } = await params
+    const { shortCode: code } = await params
+    shortCode = code
     console.log('POST /api/track called with shortCode:', shortCode)
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     console.log('Generated shortUrl:', shortUrl)
@@ -1404,6 +1414,11 @@ export async function POST(
     }
   } catch (error) {
     console.error('Error tracking scan:', error)
+    captureException(error, {
+      endpoint: '/api/track/[shortCode]',
+      method: 'POST',
+      shortCode
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

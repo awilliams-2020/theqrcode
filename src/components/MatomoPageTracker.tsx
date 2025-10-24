@@ -8,12 +8,18 @@
 
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { isMatomoConfigured } from '@/lib/matomo';
 
 function PageTrackerInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Only track in production and when Matomo is configured
+    if (!isMatomoConfigured()) {
+      return;
+    }
+
     if (typeof window !== 'undefined' && window._paq) {
       const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
       

@@ -1,45 +1,19 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export default withAuth(
-  function middleware(req: NextRequest) {
-    // Middleware executed for protected routes
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Allow all - session validation handled by individual pages
-        return true
-      }
-    },
-  }
-)
-
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  const realIP = request.headers.get('x-real-ip')
-  const cfConnectingIP = request.headers.get('cf-connecting-ip')
-  
-  if (forwarded) {
-    return forwarded.split(',')[0].trim()
-  }
-  
-  if (realIP) {
-    return realIP
-  }
-  
-  if (cfConnectingIP) {
-    return cfConnectingIP
-  }
-  
-  return 'unknown'
+export function middleware(request: NextRequest) {
+  // For main domain, continue normally
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/api/qr-codes/:path*',
-    '/api/monitoring/:path*',
-    '/api/health'
-  ]
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 }

@@ -1,11 +1,12 @@
 import QRCode from 'qrcode'
 import { QRCodeOptions, WiFiConfig, ContactConfig } from '@/types'
+import { QRStyleRenderer } from './qr-styling'
 
 export type { QRCodeOptions, WiFiConfig, ContactConfig }
 
 export class QRGenerator {
   static async generateQRCode(options: QRCodeOptions): Promise<string> {
-    const { type, content, size = 256, color = {}, frame, logo } = options
+    const { type, content, size = 256, color = {}, frame, styling, logo } = options
     
     let qrContent = content
     
@@ -53,14 +54,24 @@ export class QRGenerator {
     }
     
     try {
+      // Use qr-code-styling if any styling options are provided
+      if (styling || logo) {
+        return await QRStyleRenderer.generateStyledQRCode(
+          qrContent, 
+          styling, 
+          size, 
+          {
+            dark: color.dark || '#000000',
+            light: color.light || '#FFFFFF'
+          },
+          logo || undefined
+        )
+      }
+
+      // Fallback to basic QR generation for no styling
       let qrDataURL = await QRCode.toDataURL(qrContent, qrOptions)
       
-      // Apply logo if provided
-      if (logo) {
-        qrDataURL = await this.addLogoToQR(qrDataURL, logo)
-      }
-      
-      // Apply frame if provided
+      // Apply basic frame if provided
       if (frame && frame.style !== 'square') {
         qrDataURL = await this.addFrameToQR(qrDataURL, frame, size)
       }
@@ -85,17 +96,26 @@ export class QRGenerator {
       phone,
       email,
       url,
+      website,
+      title,
       address
     } = config
     
     let vcard = 'BEGIN:VCARD\nVERSION:3.0\n'
-    vcard += `FN:${firstName} ${lastName}\n`
-    vcard += `N:${lastName};${firstName};;;\n`
+    
+    // Name fields
+    const fullName = [firstName, lastName].filter(Boolean).join(' ')
+    if (fullName) {
+      vcard += `FN:${fullName}\n`
+      vcard += `N:${lastName || ''};${firstName || ''};;;\n`
+    }
     
     if (organization) vcard += `ORG:${organization}\n`
+    if (title) vcard += `TITLE:${title}\n`
     if (phone) vcard += `TEL:${phone}\n`
     if (email) vcard += `EMAIL:${email}\n`
-    if (url) vcard += `URL:${url}\n`
+    if (website) vcard += `URL:${website}\n`
+    if (url) vcard += `URL:${url}\n` // Support legacy field
     if (address) vcard += `ADR:;;${address};;;;\n`
     
     vcard += 'END:VCARD'
@@ -103,7 +123,7 @@ export class QRGenerator {
   }
   
   static async generateSVG(options: QRCodeOptions): Promise<string> {
-    const { type, content, size = 256, color = {}, frame, logo } = options
+    const { type, content, size = 256, color = {}, frame, styling, logo } = options
     
     let qrContent = content
     if (type === 'wifi') {
@@ -129,8 +149,9 @@ export class QRGenerator {
     
     let svgString = await QRCode.toString(qrContent, { ...qrOptions, type: 'svg' })
     
-    // Apply frame if provided
-    if (frame && frame.style !== 'square') {
+    // Note: Advanced styling is not supported in SVG format due to complexity
+    // Only apply frame if provided and no styling is specified
+    if (!styling && frame && frame.style !== 'square') {
       svgString = this.addFrameToSVG(svgString, frame, size)
     }
     
@@ -284,7 +305,7 @@ export class QRGenerator {
     }
     
     // Update SVG dimensions and add frame
-    let updatedSvg = svgString
+    const updatedSvg = svgString
       .replace(/width="[^"]*"/, `width="${totalSize}"`)
       .replace(/height="[^"]*"/, `height="${totalSize}"`)
       .replace(/viewBox="[^"]*"/, `viewBox="0 0 ${totalSize} ${totalSize}"`)

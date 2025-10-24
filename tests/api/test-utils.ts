@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { ApiKeyManager } from '@/lib/api-key-utils'
+import { createHmac } from 'crypto'
 
 export interface TestUser {
   id: string
@@ -104,6 +105,8 @@ export function createMockRequest(
   if (body) {
     // Mock the json() method
     request.json = jest.fn().mockResolvedValue(body)
+    // Mock the text() method for raw body access (useful for webhook signature verification)
+    request.text = jest.fn().mockResolvedValue(typeof body === 'string' ? body : JSON.stringify(body))
   }
 
   return request
@@ -130,6 +133,33 @@ export async function cleanupTestData() {
  */
 export function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Generate webhook signature using HMAC-SHA256
+ */
+export function generateWebhookSignature(payload: string, secret: string): string {
+  return createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex')
+}
+
+/**
+ * Create a webhook request with proper signature
+ */
+export function createWebhookRequest(
+  payload: any,
+  secret: string,
+  url: string = '/api/webhook-test'
+): NextRequest {
+  const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload)
+  const signature = generateWebhookSignature(payloadString, secret)
+
+  return createMockRequest('POST', url, payloadString, {
+    'x-webhook-signature': signature,
+    'content-type': 'application/json',
+    'user-agent': 'Test-Webhook-Client/1.0'
+  })
 }
 
 /**

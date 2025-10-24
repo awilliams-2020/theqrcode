@@ -7,12 +7,25 @@ export async function GET(
 ) {
   try {
     const { shortCode } = await params
-    const shortUrl = `https://theqrcode.io/r/${shortCode}`
     
-    // Find the QR code by short URL
-    const qrCode = await prisma.qrCode.findUnique({
+    // First try with current environment's base URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'
+    const shortUrl = `${baseUrl}/r/${shortCode}`
+    let qrCode = await prisma.qrCode.findUnique({
       where: { shortUrl }
     })
+    
+    // If not found, try finding by short code pattern (in case URL was created with different base URL)
+    if (!qrCode) {
+      qrCode = await prisma.qrCode.findFirst({
+        where: { 
+          shortUrl: { 
+            contains: `/r/${shortCode}` 
+          },
+          type: 'contact'
+        }
+      })
+    }
 
     if (!qrCode || qrCode.type !== 'contact') {
       return NextResponse.json({ error: 'Contact not found' }, { status: 404 })

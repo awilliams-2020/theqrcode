@@ -23,6 +23,31 @@ export const FRAME_STYLES = {
   DASHED: 'dashed'
 } as const
 
+export const QR_DOT_TYPES = {
+  SQUARE: 'square',
+  DOTS: 'dots',
+  ROUNDED: 'rounded',
+  EXTRA_ROUNDED: 'extra-rounded',
+  CLASSY: 'classy',
+  CLASSY_ROUNDED: 'classy-rounded'
+} as const
+
+export const QR_CORNER_SQUARE_TYPES = {
+  SQUARE: 'square',
+  DOT: 'dot',
+  EXTRA_ROUNDED: 'extra-rounded'
+} as const
+
+export const QR_CORNER_DOT_TYPES = {
+  SQUARE: 'square',
+  DOT: 'dot'
+} as const
+
+export const QR_BACKGROUND_TYPES = {
+  SOLID: 'solid',
+  LINEAR_GRADIENT: 'linear-gradient',
+  RADIAL_GRADIENT: 'radial-gradient'
+} as const
 
 export const TOAST_DURATION = 5000
 export const COPY_FEEDBACK_DURATION = 2000
@@ -59,7 +84,7 @@ export const API_ENDPOINTS = {
 export const PLAN_LIMITS = {
   [PLAN_TYPES.FREE]: { qrCodes: 10, scans: 1000 },
   [PLAN_TYPES.STARTER]: { qrCodes: 100, scans: 10000 },
-  [PLAN_TYPES.PRO]: { qrCodes: 500, scans: 50000 },
+  [PLAN_TYPES.PRO]: { qrCodes: 500, scans: 500000 },
   [PLAN_TYPES.BUSINESS]: { qrCodes: -1, scans: -1 }
 } as const
 

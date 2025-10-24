@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { createTransporter } from '../email'
+import { createTransporter, createEmailOptions } from '../email'
 import { emailTemplates } from './email-templates'
 
 const prisma = new PrismaClient()
@@ -38,12 +38,13 @@ export async function sendEmailCampaign(campaignId: string) {
   // Send emails in batches
   for (const user of users) {
     try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      const emailOptions = createEmailOptions({
         to: user.email,
         subject: campaign.subject,
         html: campaign.template,
+        listUnsubscribe: `${process.env.NEXTAUTH_URL}/api/unsubscribe?token={unsubscribe_token}`,
       })
+      await transporter.sendMail(emailOptions)
 
       // Log email sent
       await prisma.emailLog.create({
@@ -156,19 +157,28 @@ export async function sendWelcomeEmail(userId: string) {
 
   if (!user || !user.email) return
 
-  const trialDays = user.subscription?.trialEndsAt
+  const isOnTrial = user.subscription?.trialEndsAt && user.subscription.trialEndsAt > new Date()
+  const trialDays = isOnTrial && user.subscription?.trialEndsAt
     ? Math.ceil((user.subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 14
+    : undefined
 
   const transporter = createTransporter()
   
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const welcomeEmail = createEmailOptions({
     to: user.email,
     subject: emailTemplates.welcome.subject,
-    html: emailTemplates.welcome.html({ name: user.name || 'there', trialDays }),
-    text: emailTemplates.welcome.text({ name: user.name || 'there', trialDays }),
+    html: emailTemplates.welcome.html({ 
+      name: user.name || 'there', 
+      trialDays, 
+      isOnTrial 
+    }),
+    text: emailTemplates.welcome.text({ 
+      name: user.name || 'there', 
+      trialDays, 
+      isOnTrial 
+    }),
   })
+  await transporter.sendMail(welcomeEmail)
 
   await prisma.emailLog.create({
     data: {
@@ -219,13 +229,13 @@ export async function sendTrialEndingReminders() {
 
     const subject = emailTemplates.trialEnding.subject.replace('{days}', daysLeft.toString())
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const trialEndingEmail = createEmailOptions({
       to: user.email,
       subject,
       html: emailTemplates.trialEnding.html({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount }),
       text: emailTemplates.trialEnding.text({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount }),
     })
+    await transporter.sendMail(trialEndingEmail)
 
     await prisma.emailLog.create({
       data: {
@@ -285,8 +295,7 @@ export async function sendMonthlyInsights() {
     // Find top performing QR code
     const topQrCode = user.qrCodes[0]?.name || 'N/A'
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const insightsEmail = createEmailOptions({
       to: user.email,
       subject: emailTemplates.usageInsights.subject,
       html: emailTemplates.usageInsights.html({
@@ -306,6 +315,7 @@ export async function sendMonthlyInsights() {
         scanGrowth,
       }),
     })
+    await transporter.sendMail(insightsEmail)
 
     await prisma.emailLog.create({
       data: {
@@ -342,8 +352,7 @@ export async function sendTrialExpiredEmail(userId: string, previousPlan: string
   const transporter = createTransporter()
 
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const trialExpiredEmail = createEmailOptions({
       to: user.email,
       subject: emailTemplates.trialExpired.subject,
       html: emailTemplates.trialExpired.html({
@@ -359,6 +368,7 @@ export async function sendTrialExpiredEmail(userId: string, previousPlan: string
         scanCount,
       }),
     })
+    await transporter.sendMail(trialExpiredEmail)
 
     await prisma.emailLog.create({
       data: {
@@ -400,13 +410,13 @@ export async function sendReEngagementEmails() {
 
     const daysSinceLastLogin = Math.ceil((Date.now() - user.updatedAt.getTime()) / (1000 * 60 * 60 * 24))
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const reEngagementEmail = createEmailOptions({
       to: user.email,
       subject: emailTemplates.reEngagement.subject,
       html: emailTemplates.reEngagement.html({ name: user.name || 'there', daysSinceLastLogin }),
       text: emailTemplates.reEngagement.text({ name: user.name || 'there', daysSinceLastLogin }),
     })
+    await transporter.sendMail(reEngagementEmail)
 
     await prisma.emailLog.create({
       data: {

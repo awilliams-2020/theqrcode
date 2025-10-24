@@ -9,15 +9,14 @@ import { prisma } from '@/lib/prisma'
  * GET /api/v1/api-keys/[id]
  * Get a specific API key by ID
  */
-async function getApiKey(req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> {
+async function getApiKey(req: NextRequest, context: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+  const { id } = await context.params
   try {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id } = context.params
 
     // Check if user has Pro plan or is in trial
     const subscription = await prisma.subscription.findUnique({
@@ -58,15 +57,14 @@ async function getApiKey(req: NextRequest, context: { params: { id: string } }):
  * PUT /api/v1/api-keys/[id]
  * Update a specific API key
  */
-async function updateApiKey(req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> {
+async function updateApiKey(req: NextRequest, context: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+  const { id } = await context.params
   try {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id } = context.params
     const body = await req.json()
     const { name, permissions, expiresAt } = body
 
@@ -117,15 +115,14 @@ async function updateApiKey(req: NextRequest, context: { params: { id: string } 
  * DELETE /api/v1/api-keys/[id]
  * Delete a specific API key
  */
-async function deleteApiKey(req: NextRequest, context: { params: { id: string } }): Promise<NextResponse> {
+async function deleteApiKey(req: NextRequest, context: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+  const { id } = await context.params
   try {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id } = context.params
 
     // Check if user has Pro plan or is in trial
     const subscription = await prisma.subscription.findUnique({

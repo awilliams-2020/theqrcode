@@ -22,6 +22,7 @@ jest.mock('@/lib/prisma', () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
       count: jest.fn(),
@@ -280,7 +281,7 @@ describe('Bulk Operations API (Business Plan)', () => {
         { id: 'qr1' },
         { id: 'qr2' },
       ])
-      prisma.qrCode.deleteMany.mockResolvedValue({ count: 2 })
+      prisma.qrCode.updateMany.mockResolvedValue({ count: 2 })
 
       const request = createMockRequest('DELETE', '/api/v1/qr-codes/bulk', {
         qrCodeIds: ['qr1', 'qr2', 'qr3'], // qr3 doesn't exist

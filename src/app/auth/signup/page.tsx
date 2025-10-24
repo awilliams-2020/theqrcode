@@ -5,6 +5,14 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { QrCode, CheckCircle, Mail, ArrowLeft, Lock } from 'lucide-react'
 
+// Use standard NextAuth signIn for OAuth providers
+const signInSignup = (provider: string, options: any) => {
+  signIn(provider, {
+    ...options,
+    callbackUrl: options.callbackUrl || '/dashboard'
+  })
+}
+
 type AuthMethod = 'oauth' | 'password' | 'otp'
 
 function SignUpForm() {
@@ -44,6 +52,7 @@ function SignUpForm() {
       setIsGoogleLoading(true)
       setError('')
       
+      
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
         await fetch('/api/auth/signup-plan', {
@@ -55,20 +64,10 @@ function SignUpForm() {
         })
       }
       
-      const result = await signIn('google', {
-        redirect: false,
+      // Use custom signup OAuth flow
+      signInSignup('google', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
       })
-
-      if (result?.error) {
-        setError('Failed to create account. Please try again.')
-      } else if (result?.ok) {
-        if (selectedPlan !== 'free') {
-          router.push(`/auth/setup?plan=${selectedPlan}`)
-        } else {
-          router.push('/dashboard')
-        }
-      }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
     } finally {
@@ -81,6 +80,7 @@ function SignUpForm() {
       setIsGitHubLoading(true)
       setError('')
       
+      
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
         await fetch('/api/auth/signup-plan', {
@@ -92,20 +92,10 @@ function SignUpForm() {
         })
       }
       
-      const result = await signIn('github', {
-        redirect: false,
+      // Use custom signup OAuth flow
+      signInSignup('github', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
       })
-
-      if (result?.error) {
-        setError('Failed to create account. Please try again.')
-      } else if (result?.ok) {
-        if (selectedPlan !== 'free') {
-          router.push(`/auth/setup?plan=${selectedPlan}`)
-        } else {
-          router.push('/dashboard')
-        }
-      }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
     } finally {
@@ -292,7 +282,7 @@ function SignUpForm() {
     ],
     pro: [
       '500 QR codes',
-      '50,000 scans per month',
+      '500,000 scans per month',
       'Real-time analytics',
       'All QR code types',
       'Advanced customization',

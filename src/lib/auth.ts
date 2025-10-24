@@ -17,6 +17,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          scope: "openid profile email"
+        }
+      }
     }),
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || '',
@@ -86,52 +91,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error(result.message)
         }
 
-        // Find or create user
-        let user = await prisma.user.findUnique({
+        // Find user (don't create new users for sign-in)
+        const user = await prisma.user.findUnique({
           where: { email },
         })
 
         if (!user) {
-          // Create new user
-          user = await prisma.user.create({
-            data: {
-              email,
-              emailVerified: new Date(), // OTP verifies email
-            },
-          })
-
-          // Create default subscription
-          await prisma.subscription.create({
-            data: {
-              userId: user.id,
-              plan: 'free',
-              status: 'active',
-              trialEndsAt: null,
-            },
-          })
-
-          // Try to create Stripe customer
-          if (process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'development') {
-            try {
-              const stripeCustomer = await createStripeCustomer({
-                userId: user.id,
-                userEmail: user.email!,
-                userName: user.name || undefined,
-              })
-
-              await prisma.subscription.update({
-                where: { userId: user.id },
-                data: { stripeCustomerId: stripeCustomer.id },
-              })
-            } catch (stripeError) {
-              console.error('[Auth] Stripe customer creation failed:', stripeError instanceof Error ? stripeError.message : 'Unknown error')
-            }
-          }
-
-          // Send welcome email
-          sendWelcomeEmail(user.id).catch((error) => {
-            console.error('[Auth] Welcome email failed:', error instanceof Error ? error.message : 'Unknown error')
-          })
+          throw new Error('No account found with this email. Please sign up first.')
         }
 
         return {
@@ -158,10 +124,11 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // Add user id to token on sign in
       if (user) {
         token.sub = user.id
+        
         
         // Track user login in Matomo (async, don't block)
         prisma.subscription.findUnique({
@@ -175,8 +142,16 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async signIn({ user, account, profile }) {
-      // Allow all users to sign in/sign up
-      // Trial abuse prevention is handled in the setup-subscription API
+      // For OAuth providers (Google, GitHub), allow both signup and signin
+      if (account?.provider === 'google' || account?.provider === 'github') {
+        if (!user?.email) {
+          return false
+        }
+        // Allow both existing users and new signups
+        return true
+      }
+
+      // Allow existing users to sign in
       return true
     },
   },
@@ -236,6 +211,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt', // Changed to JWT to support Credentials provider
@@ -247,7 +223,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       },
     },
     callbackUrl: {
@@ -255,7 +231,7 @@ export const authOptions: NextAuthOptions = {
       options: {
         sameSite: 'lax',
         path: '/',
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       },
     },
     csrfToken: {
@@ -264,7 +240,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       },
     },
   },

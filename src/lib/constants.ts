@@ -48,7 +48,7 @@ export const PLANS = {
     description: 'Best for growing companies',
     features: [
       '500 QR codes',
-      '50,000 scans per month',
+      '500,000 scans per month',
       'Real-time analytics',
       'All QR code types',
       'Advanced customization',
@@ -60,7 +60,7 @@ export const PLANS = {
     ],
     limits: {
       qrCodes: 500,
-      scans: 50000,
+      scans: 500000,
     },
   },
   business: {

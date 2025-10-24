@@ -37,7 +37,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js'
-import { Bar, Line } from 'react-chartjs-2'
+const { Line, Bar } = require('react-chartjs-2')
 
 // Register Chart.js components
 ChartJS.register(
@@ -566,7 +566,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             <h3 className="text-lg font-semibold text-gray-900">Scan Trends</h3>
           </div>
           <div className="h-64">
-            <Line 
+            <Line
               data={{
                 labels: (dailyScans || []).slice(-14).map(day => format(new Date(day.date), 'MMM dd')),
                 datasets: [
@@ -654,7 +654,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             <h3 className="text-lg font-semibold text-gray-900">Peak Hours</h3>
           </div>
           <div className="h-64">
-            <Bar 
+            <Bar
               data={(() => {
                 // Convert UTC hours to local hours and maintain data order
                 const hourlyData = (analyticsData?.distributions?.hourly || []).map((hour: any) => {
@@ -696,10 +696,10 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
                   },
                   tooltip: {
                     callbacks: {
-                      title: function(context) {
+                      title: function(context: any) {
                         return `Hour: ${context[0].label}`
                       },
-                      label: function(context) {
+                      label: function(context: any) {
                         return `Scans: ${context.parsed.y}`
                       }
                     }

@@ -386,8 +386,8 @@ const endpoints = [
   {
     method: 'GET',
     path: '/api/v1/webhooks',
-    description: 'List all webhooks (Business plan only)',
-    tier: 'Business',
+    description: 'List all webhooks',
+    tier: 'Pro',
     example: {
       request: {},
       response: {
@@ -410,8 +410,8 @@ const endpoints = [
   {
     method: 'POST',
     path: '/api/v1/webhooks',
-    description: 'Create a new webhook (Business plan only)',
-    tier: 'Business',
+    description: 'Create a new webhook',
+    tier: 'Pro',
     requestFields: [
       { name: 'name', type: 'string', required: true, description: 'Display name for the webhook' },
       { name: 'url', type: 'string', required: true, description: 'Webhook endpoint URL (must be HTTPS)' },
@@ -481,10 +481,10 @@ export default function APIDocumentationPage() {
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               API Documentation
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               Complete API documentation for QR code generation, analytics, and management. 
               Build powerful integrations with our RESTful API.
             </p>
@@ -496,41 +496,41 @@ export default function APIDocumentationPage() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               Quick Start
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               Get started with our API in minutes
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-gray-900 rounded-lg p-8 text-white">
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gray-900 rounded-lg p-4 sm:p-6 md:p-8 text-white">
               <h3 className="text-xl font-semibold mb-4">1. Get Your API Key</h3>
               <p className="text-gray-300 mb-4">
                 Sign up for a Pro plan to get your API key from the dashboard.
               </p>
-              <div className="bg-gray-800 rounded p-4 mb-4">
-                <code className="text-green-400">
-                  {`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://theqrcode.io/api/v1/qr-codes`}
-                </code>
+              <div className="bg-gray-800 rounded p-3 sm:p-4 mb-4 overflow-x-auto">
+                <pre className="text-green-400 text-xs sm:text-sm whitespace-pre-wrap break-all">
+                  <code>{`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  https://theqrcode.io/api/v1/qr-codes`}</code>
+                </pre>
               </div>
             </div>
             
-            <div className="bg-gray-900 rounded-lg p-8 text-white">
+            <div className="bg-gray-900 rounded-lg p-4 sm:p-6 md:p-8 text-white">
               <h3 className="text-xl font-semibold mb-4">2. Create Your First QR Code</h3>
               <p className="text-gray-300 mb-4">
                 Use our simple API to generate QR codes programmatically.
               </p>
-              <div className="bg-gray-800 rounded p-4 mb-4">
-                <code className="text-green-400">
-                  {`curl -X POST \\
+              <div className="bg-gray-800 rounded p-3 sm:p-4 mb-4 overflow-x-auto">
+                <pre className="text-green-400 text-xs sm:text-sm whitespace-pre-wrap break-all">
+                  <code>{`curl -X POST \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"type": "url", "content": "https://example.com"}' \\
-  https://theqrcode.io/api/v1/qr-codes`}
-                </code>
+  https://theqrcode.io/api/v1/qr-codes`}</code>
+                </pre>
               </div>
             </div>
           </div>
@@ -541,15 +541,15 @@ export default function APIDocumentationPage() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               API Features
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               Powerful features for developers and integrations
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <div key={index} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                 <feature.icon className="h-12 w-12 text-blue-600 mb-4" />
@@ -569,20 +569,20 @@ export default function APIDocumentationPage() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               API Endpoints
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               Complete reference for all available API endpoints
             </p>
           </div>
           
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {endpoints.filter(endpoint => endpoint.tier !== 'Business').map((endpoint, index) => (
               <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                       <span className={`px-3 py-1 rounded text-sm font-medium ${
                         endpoint.method === 'GET' ? 'bg-green-100 text-green-800' :
                         endpoint.method === 'POST' ? 'bg-blue-100 text-blue-800' :
@@ -592,7 +592,9 @@ export default function APIDocumentationPage() {
                       }`}>
                         {endpoint.method}
                       </span>
-                      <code className="text-gray-900 font-mono">{endpoint.path}</code>
+                      <code className="text-gray-900 font-mono text-sm sm:text-base break-all">{endpoint.path}</code>
+                    </div>
+                    <div className="flex items-center">
                       <span className={`px-3 py-1 rounded text-sm font-medium ${
                         endpoint.tier === 'Pro' ? 'bg-blue-100 text-blue-800' :
                         endpoint.tier === 'Business' ? 'bg-purple-100 text-purple-800' :
@@ -602,28 +604,28 @@ export default function APIDocumentationPage() {
                       </span>
                     </div>
                   </div>
-                  <p className="text-gray-600 mt-2">{endpoint.description}</p>
+                  <p className="text-gray-600 mt-3 text-sm sm:text-base">{endpoint.description}</p>
                 </div>
                 
-                <div className="p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-4 sm:p-6">
+                  <div className="grid lg:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Request Example</h4>
-                      <div className="bg-gray-900 rounded p-4 text-sm">
-                        <pre className="text-green-400 overflow-x-auto">
+                      <h4 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Request Example</h4>
+                      <div className="bg-gray-900 rounded p-3 sm:p-4 text-xs sm:text-sm">
+                        <pre className="text-green-400 overflow-x-auto whitespace-pre-wrap break-all">
                           {JSON.stringify(endpoint.example.request, null, 2)}
                         </pre>
                       </div>
                       
                       {endpoint.requestFields && (
                         <div className="mt-4">
-                          <h5 className="font-semibold text-gray-900 mb-3">Request Parameters</h5>
-                          <div className="bg-gray-50 rounded-lg p-4">
+                          <h5 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Request Parameters</h5>
+                          <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                             <div className="space-y-3">
                               {endpoint.requestFields.map((field, fieldIndex) => (
                                 <div key={fieldIndex} className="border-b border-gray-200 pb-3 last:border-b-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <code className="text-sm font-mono bg-gray-200 px-2 py-1 rounded text-gray-800">
+                                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                                    <code className="text-xs sm:text-sm font-mono bg-gray-200 px-2 py-1 rounded text-gray-800 break-all">
                                       {field.name}
                                     </code>
                                     <span className={`text-xs px-2 py-1 rounded ${
@@ -637,7 +639,7 @@ export default function APIDocumentationPage() {
                                       <span className="text-xs text-red-700 font-medium">Required</span>
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-700 ml-2">{field.description}</p>
+                                  <p className="text-xs sm:text-sm text-gray-700">{field.description}</p>
                                 </div>
                               ))}
                             </div>
@@ -646,9 +648,9 @@ export default function APIDocumentationPage() {
                       )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Response Example</h4>
-                      <div className="bg-gray-900 rounded p-4 text-sm">
-                        <pre className="text-green-400 overflow-x-auto">
+                      <h4 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Response Example</h4>
+                      <div className="bg-gray-900 rounded p-3 sm:p-4 text-xs sm:text-sm">
+                        <pre className="text-green-400 overflow-x-auto whitespace-pre-wrap break-all">
                           {JSON.stringify(endpoint.example.response, null, 2)}
                         </pre>
                       </div>
@@ -661,20 +663,143 @@ export default function APIDocumentationPage() {
         </div>
       </section>
 
+      {/* Webhooks Section */}
+      <section id="webhooks" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <Webhook className="h-8 w-8 sm:h-12 sm:w-12 text-blue-600 mr-3 sm:mr-4" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Webhooks
+              </h2>
+            </div>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              Get real-time notifications when QR codes are created, updated, or scanned. 
+              Perfect for building reactive systems and keeping your data in sync.
+            </p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Available Events</h3>
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base">QR Code Events</h4>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                      Available
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                      <code className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded self-start">qr.created</code>
+                      <span className="text-xs sm:text-sm text-gray-600">New QR code created</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                      <code className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded self-start">qr.updated</code>
+                      <span className="text-xs sm:text-sm text-gray-600">QR code content updated</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                      <code className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded self-start">qr.deleted</code>
+                      <span className="text-xs sm:text-sm text-gray-600">QR code deleted</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Scan Events</h4>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                      Available
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                      <code className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded self-start">scan.created</code>
+                      <span className="text-xs sm:text-sm text-gray-600">QR code scanned</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2">
+                      <code className="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded self-start">scan.updated</code>
+                      <span className="text-xs sm:text-sm text-gray-600">Scan data updated</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Getting Started</h3>
+              <div className="bg-gray-900 rounded-lg p-4 sm:p-6">
+                <h4 className="text-base sm:text-lg font-semibold text-white mb-4">1. Create a Webhook</h4>
+                <pre className="text-green-400 text-xs sm:text-sm overflow-x-auto whitespace-pre-wrap break-all">
+{`POST /api/v1/webhooks
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "name": "My Webhook",
+  "url": "https://myapp.com/webhooks/qr-events",
+  "events": ["qr.created", "scan.created"]
+}`}
+                </pre>
+              </div>
+              
+              <div className="mt-6 bg-gray-900 rounded-lg p-4 sm:p-6">
+                <h4 className="text-base sm:text-lg font-semibold text-white mb-4">2. Handle Incoming Events</h4>
+                <pre className="text-green-400 text-xs sm:text-sm overflow-x-auto whitespace-pre-wrap break-all">
+{`// Verify webhook signature
+const signature = req.headers['x-webhook-signature'];
+const payload = JSON.stringify(req.body);
+
+// Generate expected signature
+const expectedSignature = hmac('sha256', secret)
+  .update(payload)
+  .digest('hex');
+
+if (signature === expectedSignature) {
+  // Process webhook event
+  const event = req.body;
+  console.log('Event type:', event.type);
+  console.log('Data:', event.data);
+}`}
+                </pre>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-12 bg-blue-50 rounded-lg p-4 sm:p-6 lg:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Requirements</h3>
+            <ul className="space-y-2 text-sm sm:text-base text-gray-700">
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2">•</span>
+                <span><strong>HTTPS endpoint required:</strong> All webhook URLs must use HTTPS for security</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2">•</span>
+                <span><strong>Fast response expected:</strong> Your endpoint should respond with 2xx status within 10 seconds</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2">•</span>
+                <span><strong>Retry policy:</strong> Failed webhooks will be retried up to 3 times with exponential backoff</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       {/* Rate Limits and Pricing */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               Rate Limits & Pricing
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               Transparent pricing and rate limits for API usage
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-3">Free</h3>
               <div className="text-2xl font-bold text-gray-800 mb-4">$0/month</div>
@@ -686,11 +811,11 @@ export default function APIDocumentationPage() {
                   </svg>
                   <span className="text-sm font-medium">No API access</span>
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                <li className="flex items-center">
+                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm font-medium">Dashboard only</span>
+                  <span className="text-sm font-medium text-gray-600">Dashboard only</span>
                 </li>
               </ul>
             </div>
@@ -706,11 +831,11 @@ export default function APIDocumentationPage() {
                   </svg>
                   <span className="text-sm font-medium">No API access</span>
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                <li className="flex items-center">
+                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm font-medium">Dashboard only</span>
+                  <span className="text-sm font-medium text-gray-600">Dashboard only</span>
                 </li>
               </ul>
             </div>
@@ -727,7 +852,7 @@ export default function APIDocumentationPage() {
                   <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm text-gray-800 font-medium">1,000 requests/hour</span>
+                  <span className="text-sm text-gray-800 font-medium">5,000 requests/hour</span>
                 </li>
                 <li className="flex items-center">
                   <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -740,6 +865,12 @@ export default function APIDocumentationPage() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   <span className="text-sm text-gray-800 font-medium">Analytics API</span>
+                </li>
+                <li className="flex items-center">
+                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm text-gray-800 font-medium">Webhooks</span>
                 </li>
                 <li className="flex items-center">
                   <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -762,10 +893,10 @@ export default function APIDocumentationPage() {
       {/* CTA Section */}
       <section className="py-16 bg-blue-600">
         <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
             Ready to Start Building?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-lg sm:text-xl text-blue-100 mb-8">
             Get your API key and start integrating QR codes into your applications today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

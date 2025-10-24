@@ -7,6 +7,7 @@ import { URLShortener } from '@/lib/url-shortener'
 import { notifyMilestone, notifyPlanLimitApproaching, createNotification } from '@/lib/engagement/notifications'
 import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
 import { trackQRCode } from '@/lib/matomo-tracking'
+import { captureException } from '@/lib/sentry'
 
 function extractIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(qrCodes)
   } catch (error) {
     console.error('Error fetching QR codes:', error)
+    captureException(error, { endpoint: '/api/qr-codes', method: 'GET' })
     
     endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500, 
       request.headers.get('user-agent') || undefined, extractIP(request))
@@ -62,9 +64,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const requestId = startRequestTiming()
+  let session: any = null
   
   try {
-    const session = await getServerSession(authOptions)
+    session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -209,6 +212,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error creating QR code:', error)
+    captureException(error, {
+      endpoint: '/api/qr-codes',
+      method: 'POST',
+      userId: session?.user?.id
+    })
     
     endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500, 
       request.headers.get('user-agent') || undefined, extractIP(request))

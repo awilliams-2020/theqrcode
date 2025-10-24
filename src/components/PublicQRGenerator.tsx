@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { QrCode, Download } from 'lucide-react'
 import { QRGenerator } from '@/lib/qr-generator'
+import WiFiInput from './WiFiInput'
+import VCardInput from './VCardInput'
 
 interface PublicQRGeneratorProps {
   defaultType?: 'url' | 'wifi' | 'contact' | 'text'
@@ -37,11 +39,13 @@ export default function PublicQRGenerator({
     type: 'url' | 'wifi' | 'contact' | 'text'
     size: number
     color: { dark: string; light: string }
+    styling?: { dotsType?: string; cornersSquareType?: string; cornersDotType?: string; backgroundType?: string }
   }>({
     content: getDefaultContent(defaultType),
     type: defaultType,
     size: 256,
-    color: { dark: '#000000', light: '#FFFFFF' }
+    color: { dark: '#000000', light: '#FFFFFF' },
+    styling: undefined
   })
   
   const [qrImage, setQrImage] = useState<string>('')
@@ -60,7 +64,8 @@ export default function PublicQRGenerator({
         type: qrData.type,
         content: content,
         size: qrData.size,
-        color: qrData.color
+        color: qrData.color,
+        styling: qrData.styling as any
       })
       setQrImage(image)
     } catch (error) {
@@ -120,9 +125,26 @@ export default function PublicQRGenerator({
     } else if (type === 'text') {
       defaultContent = 'Hello, World!'
     } else if (type === 'wifi') {
-      defaultContent = 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;'
+      // Default WiFi JSON format
+      defaultContent = JSON.stringify({
+        ssid: '',
+        password: '',
+        security: 'WPA',
+        hidden: false
+      })
     } else if (type === 'contact') {
-      defaultContent = 'BEGIN:VCARD\nVERSION:3.0\nFN:John Doe\nTEL:+1234567890\nEMAIL:john@example.com\nEND:VCARD'
+      // Default vCard JSON format
+      defaultContent = JSON.stringify({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        organization: '',
+        title: '',
+        address: '',
+        website: '',
+        image: ''
+      })
     }
     
     setQrData({
@@ -173,87 +195,49 @@ export default function PublicQRGenerator({
           </div>
 
           {/* Content Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {qrData.type === 'url' && 'Website URL'}
-              {qrData.type === 'text' && 'Text Content'}
-              {qrData.type === 'wifi' && 'WiFi Details'}
-              {qrData.type === 'contact' && 'vCard Data'}
-            </label>
-            <textarea
-              value={qrData.content}
-              onChange={(e) => setQrData({ ...qrData, content: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-mono text-sm"
-              rows={qrData.type === 'contact' ? 5 : 3}
-              placeholder={
-                qrData.type === 'url' ? 'https://example.com' :
-                qrData.type === 'text' ? 'Enter your text here...' :
-                qrData.type === 'wifi' ? 'WIFI:T:WPA;S:NetworkName;P:Password;;' :
-                'BEGIN:VCARD...'
-              }
-            />
-            {qrData.type === 'wifi' && (
-              <p className="mt-2 text-xs text-gray-600">
-                Format: WIFI:T:WPA;S:NetworkName;P:Password;;
-              </p>
-            )}
-            {qrData.type === 'contact' && (
-              <p className="mt-2 text-xs text-gray-600">
-                vCard format required. Edit the template above.
-              </p>
-            )}
-          </div>
-
-          {/* Customization */}
-          <div className="space-y-4 pt-4 border-t border-gray-200">
+          {qrData.type === 'wifi' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                WiFi Configuration
+              </label>
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                <WiFiInput
+                  value={qrData.content}
+                  onChange={(value) => setQrData({ ...qrData, content: value })}
+                />
+              </div>
+            </div>
+          ) : qrData.type === 'contact' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Contact Card
+              </label>
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                <VCardInput
+                  value={qrData.content}
+                  onChange={(value) => setQrData({ ...qrData, content: value })}
+                />
+              </div>
+            </div>
+          ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size: {qrData.size}px
+                {qrData.type === 'url' && 'Website URL'}
+                {qrData.type === 'text' && 'Text Content'}
               </label>
-              <input
-                type="range"
-                min="128"
-                max="512"
-                step="32"
-                value={qrData.size}
-                onChange={(e) => setQrData({
-                  ...qrData,
-                  size: parseInt(e.target.value)
-                })}
-                className="w-full"
+              <textarea
+                value={qrData.content}
+                onChange={(e) => setQrData({ ...qrData, content: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                rows={3}
+                placeholder={
+                  qrData.type === 'url' ? 'https://example.com' :
+                  'Enter your text here...'
+                }
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  QR Color
-                </label>
-                <input
-                  type="color"
-                  value={qrData.color.dark}
-                  onChange={(e) => setQrData({
-                    ...qrData,
-                    color: { ...qrData.color, dark: e.target.value }
-                  })}
-                  className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Background
-                </label>
-                <input
-                  type="color"
-                  value={qrData.color.light}
-                  onChange={(e) => setQrData({
-                    ...qrData,
-                    color: { ...qrData.color, light: e.target.value }
-                  })}
-                  className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
+          )}
+
         </div>
 
         {/* QR Code Preview */}
@@ -289,19 +273,18 @@ export default function PublicQRGenerator({
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-left">
-              <p className="text-blue-900 font-medium mb-2">🚀 Unlock Premium Features</p>
+              <p className="text-blue-900 font-medium mb-2">🚀 Unlock Pro Features</p>
               <ul className="text-blue-800 space-y-1 mb-3">
                 <li>✓ Track scans with advanced analytics</li>
                 <li>✓ Add custom logos & frames</li>
                 <li>✓ Export as SVG & PDF formats</li>
                 <li>✓ Create dynamic & editable QR codes</li>
-                <li>✓ Team collaboration features</li>
               </ul>
               <button
-                onClick={() => window.location.href = '/auth/signup'}
+                onClick={() => window.location.href = '/auth/signup?plan=pro'}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
               >
-                Sign Up Free →
+                Get Pro Plan →
               </button>
             </div>
           </div>

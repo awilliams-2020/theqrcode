@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Check, CheckCheck, Trash2, Filter } from 'lucide-react'
 
@@ -9,10 +9,10 @@ interface Notification {
   type: string
   title: string
   message: string
-  actionUrl?: string
+  actionUrl?: string | null
   priority: string
   isRead: boolean
-  createdAt: string
+  createdAt: string | Date
 }
 
 interface NotificationsListProps {
@@ -23,7 +23,12 @@ export default function NotificationsList({ initialNotifications }: Notification
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [loading, setLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const filteredNotifications = filter === 'unread' 
     ? notifications.filter(n => !n.isRead)
@@ -111,6 +116,15 @@ export default function NotificationsList({ initialNotifications }: Notification
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
+    // Only calculate relative time on client side to avoid hydration mismatch
+    if (!isMounted) {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      })
+    }
+    
     const now = new Date()
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
 
@@ -251,7 +265,7 @@ export default function NotificationsList({ initialNotifications }: Notification
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">
-                      {formatDate(notification.createdAt)}
+                      {formatDate(notification.createdAt instanceof Date ? notification.createdAt.toISOString() : notification.createdAt)}
                     </span>
 
                     {!notification.isRead && (

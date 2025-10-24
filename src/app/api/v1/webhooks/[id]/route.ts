@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 /**
  * GET /api/v1/webhooks/[id]
- * Get a specific webhook by ID (Business plan only)
+ * Get a specific webhook by ID
  */
 async function getWebhook(req: NextRequest, auth: any, params: { id: string }): Promise<NextResponse> {
   const startTime = Date.now()
@@ -71,7 +71,7 @@ async function getWebhook(req: NextRequest, auth: any, params: { id: string }): 
 
 /**
  * PUT /api/v1/webhooks/[id]
- * Update a specific webhook (Business plan only)
+ * Update a specific webhook
  */
 async function updateWebhook(req: NextRequest, auth: any, params: { id: string }): Promise<NextResponse> {
   const startTime = Date.now()
@@ -156,7 +156,7 @@ async function updateWebhook(req: NextRequest, auth: any, params: { id: string }
 
 /**
  * DELETE /api/v1/webhooks/[id]
- * Delete a specific webhook (Business plan only)
+ * Delete a specific webhook
  */
 async function deleteWebhook(req: NextRequest, auth: any, params: { id: string }): Promise<NextResponse> {
   const startTime = Date.now()
@@ -195,7 +195,7 @@ async function deleteWebhook(req: NextRequest, auth: any, params: { id: string }
   }
 }
 
-// Export handlers with authentication (Business plan only)
+// Export handlers with authentication
 export const GET = withApiAuth(getWebhook, {
   requiredPermissions: ['webhooks:manage']
 })

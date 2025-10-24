@@ -46,15 +46,14 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   
   const isLandingPage = landingPages.includes(pathname || '')
   
-  // Use default padding during SSR, then conditionally adjust on client
-  const mainClassName = !isMounted 
-    ? "pt-16 bg-white min-h-screen" // Default during SSR
-    : pathname?.startsWith('/display/') || pathname?.startsWith('/menu/') || isLandingPage
-      ? "bg-white min-h-screen" // No padding on display routes, menu routes, and landing pages
-      : "pt-16 bg-white min-h-screen" // Normal padding
+  // Use consistent padding logic to avoid hydration mismatch
+  const shouldRemovePadding = pathname?.startsWith('/display/') || pathname?.startsWith('/menu/') || isLandingPage
+  const mainClassName = shouldRemovePadding 
+    ? "bg-white min-h-screen" // No padding on display routes, menu routes, and landing pages
+    : "pt-16 bg-white min-h-screen" // Normal padding
   
   // Don't show engagement features on display routes, menu routes, landing pages, or auth pages
-  const showEngagementFeatures = isMounted && 
+  const shouldShowEngagementFeatures = 
     !pathname?.startsWith('/display/') && 
     !pathname?.startsWith('/menu/') &&
     !isLandingPage &&
@@ -63,14 +62,22 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   return (
     <>
       {/* Announcement Banner - shown to all users on applicable pages */}
-      {showEngagementFeatures && session && <AnnouncementBanner />}
+      {shouldShowEngagementFeatures && session && (
+        <div suppressHydrationWarning>
+          {isMounted && <AnnouncementBanner />}
+        </div>
+      )}
       
       <main className={mainClassName}>
         {children}
       </main>
       
       {/* Feedback Button - shown to authenticated users */}
-      {showEngagementFeatures && session && <FeedbackButton />}
+      {shouldShowEngagementFeatures && session && (
+        <div suppressHydrationWarning>
+          {isMounted && <FeedbackButton />}
+        </div>
+      )}
     </>
   )
 }

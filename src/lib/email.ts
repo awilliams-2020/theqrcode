@@ -1,21 +1,127 @@
 import nodemailer from 'nodemailer'
 
+// Determine which email provider to use
+const getEmailProvider = () => {
+  // Check explicit EMAIL_PROVIDER setting first
+  if (process.env.EMAIL_PROVIDER) {
+    return process.env.EMAIL_PROVIDER.toLowerCase()
+  }
+  // Fallback to existing logic for backwards compatibility
+  if (process.env.RESEND_API_KEY) {
+    return 'resend'
+  }
+  return 'smtp'
+}
+
+// Get proper from address based on provider
+const getFromAddress = () => {
+  const provider = getEmailProvider()
+  if (provider === 'resend') {
+    return process.env.SMTP_FROM || 'noreply@theqrcode.io'
+  }
+  return process.env.SMTP_FROM || process.env.SMTP_USER
+}
+
+// Get proper reply-to address based on provider
+const getReplyToAddress = () => {
+  const provider = getEmailProvider()
+  if (provider === 'resend') {
+    return process.env.REPLY_TO_EMAIL || 'support@theqrcode.io'
+  }
+  return process.env.SMTP_FROM || process.env.SMTP_USER
+}
+
 // Create reusable transporter
 export const createTransporter = () => {
-  const port = parseInt(process.env.SMTP_PORT || '465')
-  const config = {
-    host: process.env.SMTP_HOST || 'mail.redbudway.com',
-    port: port,
-    secure: process.env.SMTP_SECURE === 'true' || port === 465, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
+  const provider = getEmailProvider()
+
+  // Use Resend if provider is set to 'resend' or RESEND_API_KEY is available (backwards compatibility)
+  if (provider === 'resend' || process.env.RESEND_API_KEY) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is required when EMAIL_PROVIDER is set to "resend"')
+    }
+    
+    return nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+    })
   }
 
-  return nodemailer.createTransport(config)
+  // Use custom SMTP server
+  if (provider === 'smtp' || !process.env.EMAIL_PROVIDER) {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      throw new Error('SMTP_HOST, SMTP_USER, and SMTP_PASS are required when EMAIL_PROVIDER is set to "smtp"')
+    }
+
+    const port = parseInt(process.env.SMTP_PORT || '465')
+    const config = {
+      host: process.env.SMTP_HOST || 'mail.redbudway.com',
+      port: port,
+      secure: process.env.SMTP_SECURE === 'true' || port === 465, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+    }
+
+    return nodemailer.createTransport(config)
+  }
+
+  throw new Error(`Invalid EMAIL_PROVIDER: ${provider}. Must be either "resend" or "smtp"`)
+}
+
+// Create email options with proper headers to avoid spam
+export const createEmailOptions = (options: {
+  to: string
+  subject: string
+  text?: string
+  html?: string
+  replyTo?: string
+  listUnsubscribe?: string
+}) => {
+  const fromAddress = getFromAddress()
+  const replyToAddress = options.replyTo || getReplyToAddress()
+  
+  const emailOptions: any = {
+    from: fromAddress,
+    to: options.to,
+    subject: options.subject,
+    replyTo: replyToAddress,
+    // Add proper headers to avoid spam filters
+    headers: {
+      'X-Mailer': 'TheQRCode.io',
+      'X-Priority': '3', // Normal priority
+      'X-MSMail-Priority': 'Normal',
+      'Importance': 'Normal',
+      'MIME-Version': '1.0',
+      'X-Unsubscribed': 'No',
+    }
+  }
+
+  // Add list unsubscribe header if provided (for marketing emails)
+  if (options.listUnsubscribe) {
+    emailOptions.headers['List-Unsubscribe'] = `<${options.listUnsubscribe}>`
+    emailOptions.headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click'
+  }
+
+  if (options.text) {
+    emailOptions.text = options.text
+  }
+
+  if (options.html) {
+    emailOptions.html = options.html
+  }
+
+  return emailOptions
 }
 
 // Email template for contact form submissions
@@ -43,8 +149,7 @@ export const sendContactEmail = async (data: ContactFormData) => {
   const subjectLabel = subjectLabels[data.subject] || data.subject
 
   // Email to support team
-  const supportEmail = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const supportEmail = createEmailOptions({
     to: process.env.CONTACT_EMAIL || 'support@theqrcode.io',
     replyTo: data.email,
     subject: `Contact Form: ${subjectLabel} - ${data.firstName} ${data.lastName}`,
@@ -82,11 +187,10 @@ ${data.message}
   </p>
 </div>
     `,
-  }
+  })
 
   // Auto-reply to user
-  const userEmail = {
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const userEmail = createEmailOptions({
     to: data.email,
     subject: 'Thanks for contacting TheQRCode.io',
     text: `
@@ -139,7 +243,7 @@ The TheQRCode.io Support Team
   </div>
 </div>
     `,
-  }
+  })
 
   // Send both emails
   await Promise.all([

@@ -4,9 +4,13 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('Instrumentation registered for Node.js runtime')
+    
     // Import monitoring setup
     const { setupGlobalMonitoring } = await import('./src/lib/monitoring-setup')
     setupGlobalMonitoring()
+    
+    // Import Sentry server instrumentation
+    await import('./sentry.server.config')
   }
 }
 

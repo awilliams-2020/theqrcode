@@ -49,13 +49,13 @@ export interface DashboardProps {
   currentPlan: string
   isTrialActive?: boolean
   planDisplayName?: string
-  isAdmin?: boolean
 }
 
 export interface QRCodeCardProps {
   qr: QRCode
   onEdit: () => void
   onDelete: () => void
+  onShare: () => void
 }
 
 export interface QRGeneratorModalProps {
@@ -69,17 +69,19 @@ export interface QRGeneratorModalProps {
 export interface WiFiConfig {
   ssid: string
   password: string
-  security: 'WPA' | 'WEP' | 'nopass'
+  security: 'WPA' | 'WPA2' | 'WEP' | 'nopass'
   hidden?: boolean
 }
 
 export interface ContactConfig {
-  firstName: string
-  lastName: string
+  firstName?: string
+  lastName?: string
   organization?: string
-  phone?: string
+  phone: string // Required field
   email?: string
   url?: string
+  website?: string
+  title?: string
   address?: string
 }
 
@@ -96,10 +98,20 @@ export interface QRCodeOptions {
     color?: string
     size?: number
   }
+  styling?: QRStylingOptions
   logo?: {
     file: File
     size?: number
   }
+}
+
+export interface QRStylingOptions {
+  dotsType?: QRDotType
+  cornersSquareType?: QRCornerSquareType
+  cornersDotType?: QRCornerDotType
+  backgroundType?: QRBackgroundType
+  gradientDirection?: number
+  gradientColorStops?: Array<{ offset: number; color: string }>
 }
 
 export interface MenuItem {
@@ -128,6 +140,34 @@ export interface MenuData {
   }
 }
 
+export interface QRShareMessage {
+  id: string
+  qrCodeId: string
+  message: string
+  shareMethod: ShareMethod
+  createdAt: Date
+}
+
+export interface QRShareOptions {
+  message: string
+  shareMethod: ShareMethod
+  email?: string
+  subject?: string
+}
+
+export type ShareMethod = 'social' | 'email' | 'sms' | 'link' | 'download'
+
+export interface ShareTemplate {
+  id: string
+  name: string
+  message: string
+  category: 'business' | 'wifi' | 'contact' | 'event' | 'email' | 'text' | 'general'
+}
+
 export type PlanType = 'free' | 'starter' | 'pro' | 'business'
 export type QRCodeType = 'url' | 'text' | 'wifi' | 'contact' | 'email' | 'menu'
 export type FrameStyle = 'square' | 'rounded' | 'circle' | 'dashed'
+export type QRDotType = 'square' | 'dots' | 'rounded' | 'extra-rounded' | 'classy' | 'classy-rounded'
+export type QRCornerSquareType = 'square' | 'dot' | 'extra-rounded'
+export type QRCornerDotType = 'square' | 'dot'
+export type QRBackgroundType = 'solid' | 'linear-gradient' | 'radial-gradient'

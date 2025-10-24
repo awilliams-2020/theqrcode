@@ -88,6 +88,11 @@ interface MenuItem {
 - Added handler for `menu` type QR codes
 - Redirects scans to `/menu/[shortCode]` page
 - Maintains existing scan tracking and analytics
+- **Added "Powered by TheQRCode.io" footer to all QR type HTML pages:**
+  - Email addresses - shows footer after email actions
+  - WiFi networks - shows footer after connection instructions
+  - Plain text - shows footer after copy button
+  - Consistent styling across all types (subtle gray with hover effect)
 
 ### 7. Restaurant Landing Page Updates
 **Location:** `src/components/landing/RestaurantLanding.tsx`
@@ -223,7 +228,8 @@ Potential improvements for future versions:
 - [x] **Page refresh within 2 minutes doesn't increase scan count**
 - [x] **Scan deduplication works (30-second refresh window, 2-minute tracking window)**
 - [x] **Footer sticks to bottom of screen on menu pages**
-- [x] **"Powered by TheQRCode.io" footer added to WiFi, VCard, Plain text, and Email displays**
+- [x] **"Powered by TheQRCode.io" footer added to WiFi, VCard, Plain text, and Email displays (display page)**
+- [x] **"Powered by TheQRCode.io" footer added to WiFi, Email, and Plain text after scan (track API)**
 - [x] No linter errors in new code
 
 ## Deployment Notes

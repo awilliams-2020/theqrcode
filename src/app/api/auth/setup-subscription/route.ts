@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     let subscription
     let shouldRedirectToCheckout = false
-    let requestedPlan = plan
+    const requestedPlan = plan
 
     if (existingSubscription) {
       // Update existing subscription with selected plan

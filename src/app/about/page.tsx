@@ -38,10 +38,10 @@ const values = [
 
 const team = [
   {
-    name: 'Alex Johnson',
-    role: 'Founder & CEO',
-    bio: 'Former product manager at leading tech companies with 10+ years experience in analytics and user experience. Passionate about making QR code technology accessible to businesses of all sizes.',
-    image: '/team/alex.jpg'
+    name: 'Adam Williams',
+    role: 'Founder & Senior Software Engineer',
+    bio: '8-year Senior Software Engineer with extensive experience in full-stack development, system architecture, and modern web technologies. Passionate about building scalable solutions and making QR code technology accessible to businesses of all sizes.',
+    image: '/1662127477733.jpg'
   }
 ]
 
@@ -87,7 +87,7 @@ export default function AboutPage() {
                   platform that combines easy-to-use QR code generation with powerful analytics 
                   and tracking capabilities.
                 </p>
-                <p>
+                <p className="hidden">
                   Today, we serve thousands of businesses worldwide, from small local shops to 
                   large enterprises, helping them leverage QR codes to connect with their customers 
                   and drive meaningful engagement.
@@ -109,7 +109,7 @@ export default function AboutPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -174,8 +174,12 @@ export default function AboutPage() {
           </div>
           <div className="max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="bg-gray-200 h-48 w-48 rounded-full mx-auto mb-6 flex items-center justify-center">
-                <Users className="h-16 w-16 text-gray-400" />
+              <div className="h-48 w-48 mx-auto mb-6 overflow-hidden rounded-full border-4 border-blue-100">
+                <img
+                  src={team[0].image}
+                  alt={team[0].name}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">
                 {team[0].name}
@@ -241,8 +245,8 @@ export default function AboutPage() {
             Ready to Join Our Community?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Start creating professional QR codes with analytics today. 
-            Join thousands of businesses already using TheQRCode.io.
+            Start creating professional QR codes with analytics today.
+            <span className="hidden"> Join thousands of businesses already using TheQRCode.io.</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

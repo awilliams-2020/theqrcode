@@ -1,6 +1,6 @@
 'use client'
 
-import { Wifi, QrCode, Store, Hotel, Coffee, Building2, Shield, Zap, CheckCircle2, Users, BarChart3, Smartphone } from 'lucide-react'
+import { Wifi, QrCode, Store, Hotel, Coffee, Building2, Shield, Zap, CheckCircle2, Users, BarChart3, Smartphone, Clock, Award } from 'lucide-react'
 import Link from 'next/link'
 import PublicQRGenerator from '../PublicQRGenerator'
 
@@ -236,24 +236,27 @@ export default function WiFiQRLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Benefits & Trust Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Hospitality Businesses Worldwide
+            Why Businesses Choose WiFi QR Codes
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-purple-600 mb-2">5K+</div>
-              <p className="text-gray-600">Businesses Using WiFi QR Codes</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Instant Setup</h3>
+              <p className="text-gray-600">Create and deploy WiFi QR codes in under 2 minutes. No technical knowledge required.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-purple-600 mb-2">500K+</div>
-              <p className="text-gray-600">Guest Connections Per Month</p>
+              <Shield className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Secure & Reliable</h3>
+              <p className="text-gray-600">Enterprise-grade security with 99.9% uptime. Your guest data is always protected.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-purple-600 mb-2">98%</div>
-              <p className="text-gray-600">Customer Satisfaction</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first WiFi QR code at no cost. Upgrade when you need analytics and advanced features.</p>
             </div>
           </div>
         </div>

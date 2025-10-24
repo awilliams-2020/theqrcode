@@ -1,6 +1,6 @@
 'use client'
 
-import { Dumbbell, QrCode, Calendar, Users, BarChart3, Clock, CheckCircle2, TrendingUp, Smartphone, Heart } from 'lucide-react'
+import { Dumbbell, QrCode, Calendar, Users, BarChart3, Clock, CheckCircle2, TrendingUp, Smartphone, Heart, Shield, Award } from 'lucide-react'
 import Link from 'next/link'
 
 export default function FitnessLanding() {
@@ -278,24 +278,27 @@ export default function FitnessLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Features Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Fitness Professionals Worldwide
+            Built for Fitness Professionals Worldwide
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-green-600 mb-2">300+</div>
-              <p className="text-gray-600">Fitness Trainers</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Update Schedules Instantly</h3>
+              <p className="text-gray-600">Class cancelled? Time changed? Update your QR code content immediately without reprinting posters and flyers.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-green-600 mb-2">15K+</div>
-              <p className="text-gray-600">Client Interactions Per Month</p>
+              <Shield className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Track Client Engagement</h3>
+              <p className="text-gray-600">See which clients are most engaged, what times work best, and which marketing materials get the most scans.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-green-600 mb-2">40%</div>
-              <p className="text-gray-600">Average Booking Increase</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first QR code at no cost. Upgrade only when you need advanced analytics and bulk creation features.</p>
             </div>
           </div>
         </div>

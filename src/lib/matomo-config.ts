@@ -21,7 +21,7 @@ export const MatomoCustomDimensions = {
   USER_ID: 1,                    // User ID (for logged-in users)
   SUBSCRIPTION_PLAN: 2,          // free, starter, pro, business
   SUBSCRIPTION_STATUS: 3,        // active, trialing, past_due, canceled
-  USER_ROLE: 4,                  // user, admin
+  USER_ROLE: 4,                  // user
   
   // Action-scoped dimensions (apply to specific actions)
   QR_CODE_ID: 5,                 // QR Code ID

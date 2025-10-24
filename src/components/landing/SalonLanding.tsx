@@ -279,7 +279,7 @@ export default function SalonLanding() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="px-4 py-20 bg-white">
+      <section className="px-4 py-20 bg-white hidden">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
             Trusted by Beauty Professionals

@@ -23,7 +23,7 @@ export default function TrialBanner({ trialEndsAt, status, currentPlan = 'pro', 
       case 'starter':
         return '100 QR codes, 10,000 scans, and advanced analytics'
       case 'pro':
-        return '500 QR codes, 50,000 scans, and advanced analytics'
+        return '500 QR codes, 500,000 scans, and advanced analytics'
       case 'business':
         return 'unlimited QR codes, unlimited scans, and enterprise analytics'
       default:

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { QrCode, ExternalLink, BarChart3 } from 'lucide-react'
+import { QRGenerator } from '@/lib/qr-generator'
 
 interface PageProps {
   params: Promise<{
@@ -21,11 +22,8 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
     const fetchQRCodeData = async () => {
       try {
         const { shortCode } = await params
-        // Fetch both data and image in parallel
-        const [infoResponse, imageResponse] = await Promise.all([
-          fetch(`/api/qr-info/${shortCode}`),
-          fetch(`/api/qr-image/${shortCode}`)
-        ])
+        // Fetch QR code info
+        const infoResponse = await fetch(`/api/qr-info/${shortCode}`)
         
         if (infoResponse.status === 404) {
           setError('QR code not found')
@@ -33,17 +31,34 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
           return
         }
 
-        if (!infoResponse.ok || !imageResponse.ok) {
+        if (!infoResponse.ok) {
           throw new Error('Failed to fetch QR code data')
         }
 
-        const [infoData, imageData] = await Promise.all([
-          infoResponse.json(),
-          imageResponse.json()
-        ])
-        
+        const infoData = await infoResponse.json()
         setQrCodeData(infoData)
-        setQrCodeImage(imageData.qrImage)
+        
+        // Generate QR code client-side with styling options
+        const settings = infoData.settings as any
+        
+        // Use window.location to determine the correct base URL for the current environment
+        const isDev = typeof window !== 'undefined' && window.location.hostname === 'dev.theqrcode.io'
+        const baseUrl = isDev ? 'https://dev.theqrcode.io' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io')
+        
+        const qrContent = infoData.isDynamic 
+          ? `${baseUrl}/r/${shortCode}` 
+          : infoData.content
+        
+        const qrImage = await QRGenerator.generateQRCode({
+          type: infoData.type as any,
+          content: qrContent,
+          size: settings?.size || 256,
+          color: settings?.color || { dark: '#000000', light: '#FFFFFF' },
+          frame: settings?.frame || undefined,
+          styling: settings?.styling || undefined
+        })
+        
+        setQrCodeImage(qrImage)
       } catch (err) {
         console.error('Error fetching QR code data:', err)
         setError('Failed to load QR code')
@@ -371,7 +386,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                         </div>
                         
                         {/* Password */}
-                        {wifiData.password && (
+                        {wifiData.password && wifiData.security !== 'nopass' && (
                           <div className="flex items-center py-3 border-b border-gray-100">
                             <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-4">
                               <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -432,7 +447,7 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                           <p>1. Go to your device's WiFi settings</p>
                           <p>2. Look for "{wifiData.ssid}" in the network list</p>
                           <p>3. Enter the password when prompted</p>
-                          {wifiData.password && (
+                          {wifiData.password && wifiData.security !== 'nopass' && (
                             <p className="mt-2 font-medium">💡 Tip: You can copy the password above to paste it easily!</p>
                           )}
                         </div>

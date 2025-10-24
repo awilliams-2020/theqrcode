@@ -1,6 +1,6 @@
 'use client'
 
-import { QrCode, Palette, Download, BarChart3, Shield, Zap, CheckCircle2, Wifi, Mail, User, FileText } from 'lucide-react'
+import { QrCode, Palette, Download, BarChart3, Shield, Zap, CheckCircle2, Wifi, Mail, User, FileText, Clock, Users, Award } from 'lucide-react'
 import Link from 'next/link'
 import PublicQRGenerator from '../PublicQRGenerator'
 
@@ -53,8 +53,7 @@ export default function QRGeneratorLanding() {
     'Download high-resolution QR codes',
     'Real-time analytics dashboard',
     'Priority customer support',
-    'API access for automation',
-    'Team collaboration features'
+    'API access for automation'
   ]
 
   return (
@@ -89,6 +88,7 @@ export default function QRGeneratorLanding() {
           <PublicQRGenerator 
             title="Generate Your QR Code Now"
             description="Create and download your custom QR code for free"
+            allowedTypes={['url', 'text', 'wifi', 'contact']}
           />
         </div>
       </section>
@@ -147,7 +147,7 @@ export default function QRGeneratorLanding() {
               <h2 className="text-4xl font-bold text-white mb-6">
                 Why Choose TheQRCode.io?
               </h2>
-              <p className="text-xl text-blue-100 mb-8">
+              <p className="text-xl text-blue-100 mb-8 hidden">
                 Join thousands of businesses using our platform to create, manage, and track their QR codes.
               </p>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -195,24 +195,27 @@ export default function QRGeneratorLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Reliability Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Businesses Worldwide
+            Built for Reliability & Trust
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">10K+</div>
-              <p className="text-gray-600">Active Users</p>
+              <Shield className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Enterprise Security</h3>
+              <p className="text-gray-600">Your QR codes are secure with 256-bit encryption and enterprise-grade infrastructure.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">1M+</div>
-              <p className="text-gray-600">QR Codes Created</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">99.9% Uptime</h3>
+              <p className="text-gray-600">Reliable service with monitoring and automatic failover for maximum availability.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-blue-600 mb-2">99.9%</div>
-              <p className="text-gray-600">Uptime</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">No credit card required. Create unlimited QR codes and upgrade when you need more features.</p>
             </div>
           </div>
         </div>

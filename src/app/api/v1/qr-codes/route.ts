@@ -20,7 +20,8 @@ async function getQRCodes(req: NextRequest, auth: any): Promise<NextResponse> {
 
     const where: any = { 
       userId: auth.userId,
-      isDeleted: false // Exclude soft-deleted QR codes
+      isDeleted: false, // Exclude soft-deleted QR codes
+      isSandbox: auth.environment === 'sandbox' // Filter by environment
     }
     
     if (type) {
@@ -62,6 +63,7 @@ async function getQRCodes(req: NextRequest, auth: any): Promise<NextResponse> {
         shortUrl: qr.shortUrl,
         settings: qr.settings,
         isDynamic: qr.isDynamic,
+        isSandbox: qr.isSandbox,
         scanCount: qr.scans.length,
         lastScanned: qr.scans[0]?.scannedAt || null,
         createdAt: qr.createdAt,
@@ -120,11 +122,14 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
     const currentPlan = subscription?.plan || 'free'
     const limits = planLimits[currentPlan as keyof typeof planLimits]
 
-    if (limits.qrCodes !== -1) {
+    if (limits.qrCodes !== -1 && auth.environment === 'production') {
+      // Only check limits for production environment
+      // Sandbox QR codes don't count towards plan limits
       const currentCount = await prisma.qrCode.count({
         where: { 
           userId: auth.userId,
-          isDeleted: false // Only count non-deleted QR codes
+          isDeleted: false,
+          isSandbox: false // Only count production QR codes towards limits
         }
       })
 
@@ -144,7 +149,8 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
         content,
         shortUrl: null,
         settings: settings || {},
-        isDynamic: isDynamic || false
+        isDynamic: isDynamic || false,
+        isSandbox: auth.environment === 'sandbox'
       }
     })
 
@@ -181,6 +187,7 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
       shortUrl: qrCode.shortUrl,
       settings: qrCode.settings,
       isDynamic: qrCode.isDynamic,
+      isSandbox: qrCode.isSandbox,
       qrImage,
       createdAt: qrCode.createdAt,
       updatedAt: qrCode.updatedAt

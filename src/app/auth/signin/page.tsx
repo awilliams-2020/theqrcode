@@ -42,7 +42,23 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Failed to sign in. Please try again.')
       } else if (result?.ok) {
-        router.push('/dashboard')
+        // Check if user exists in database
+        try {
+          const response = await fetch('/api/auth/check-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+          
+          if (response.ok) {
+            router.push('/dashboard')
+          } else {
+            // User doesn't exist, redirect to error page
+            router.push('/auth/error?error=Signin')
+          }
+        } catch (checkError) {
+          // If check fails, redirect to error page
+          router.push('/auth/error?error=Signin')
+        }
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
@@ -64,7 +80,23 @@ export default function SignInPage() {
       if (result?.error) {
         setError('Failed to sign in. Please try again.')
       } else if (result?.ok) {
-        router.push('/dashboard')
+        // Check if user exists in database
+        try {
+          const response = await fetch('/api/auth/check-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+          
+          if (response.ok) {
+            router.push('/dashboard')
+          } else {
+            // User doesn't exist, redirect to error page
+            router.push('/auth/error?error=Signin')
+          }
+        } catch (checkError) {
+          // If check fails, redirect to error page
+          router.push('/auth/error?error=Signin')
+        }
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')

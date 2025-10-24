@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { QrCode, Download, Copy, X, Save, Check, Utensils } from 'lucide-react'
 import { QRGenerator as QRGen } from '@/lib/qr-generator'
 import { QRCodeOptions, MenuData } from '@/types'
-import { QRCode, QRGeneratorModalProps, QRCodeFormData } from '@/types'
+import { QRCode, QRGeneratorModalProps, QRCodeFormData, QRStylingOptions } from '@/types'
 import { getPlanFeatures } from '@/utils/plan-utils'
-import { QR_CODE_SIZES, FRAME_SIZES, LOGO_CONSTRAINTS } from '@/constants'
+import { QR_CODE_SIZES, FRAME_SIZES, LOGO_CONSTRAINTS, QR_DOT_TYPES, QR_CORNER_SQUARE_TYPES, QR_CORNER_DOT_TYPES, QR_BACKGROUND_TYPES } from '@/constants'
 import MenuBuilder from './MenuBuilder'
+import WiFiInput from './WiFiInput'
+import VCardInput from './VCardInput'
 
 export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan = 'free', isTrialActive = false }: QRGeneratorModalProps) {
   const [formData, setFormData] = useState({
@@ -21,6 +23,12 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
       style: (qrCode?.settings?.frame as any)?.style || 'square',
       color: (qrCode?.settings?.frame as any)?.color || '#000000',
       size: (qrCode?.settings?.frame as any)?.size || FRAME_SIZES.DEFAULT
+    },
+    styling: (qrCode?.settings?.styling as QRStylingOptions) || { 
+      dotsType: 'rounded',
+      cornersSquareType: 'extra-rounded',
+      cornersDotType: 'dot',
+      backgroundType: 'solid'
     },
     logo: {
       enabled: (qrCode?.settings?.logo as any)?.enabled || false,
@@ -56,9 +64,10 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     {
       title: 'WiFi Network',
       content: JSON.stringify({
-        ssid: 'My WiFi',
-        password: 'password123',
-        security: 'WPA'
+        ssid: 'Coffee Shop WiFi',
+        password: 'Welcome2024',
+        security: 'WPA',
+        hidden: false
       }),
       type: 'wifi' as const,
       description: 'Share WiFi credentials easily'
@@ -68,8 +77,10 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
       content: JSON.stringify({
         firstName: 'John',
         lastName: 'Doe',
+        phone: '+1-555-0123',
         email: 'john@example.com',
-        phone: '+1-555-0123'
+        organization: 'Example Corp',
+        title: 'CEO'
       }),
       type: 'contact' as const,
       description: 'Share contact information'
@@ -151,6 +162,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
           size: formData.size,
           color: formData.color,
           frame: formData.frame,
+          styling: formData.styling,
           logo: formData.logo.enabled && logoFile ? {
             file: logoFile,
             size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
@@ -178,7 +190,8 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
         settings: {
           size: formData.size,
           color: formData.color,
-          frame: formData.frame
+          frame: formData.frame,
+          styling: formData.styling
         },
         id: qrCode?.id
       }
@@ -306,7 +319,22 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
 
   // Show menu builder if menu type is selected
   if (showMenuBuilder && formData.type === 'menu') {
-    const existingMenuData = formData.content ? JSON.parse(formData.content) : undefined
+    let existingMenuData: MenuData | undefined
+    
+    // Try to parse existing content as menu data
+    if (formData.content && formData.content.trim()) {
+      try {
+        const parsed = JSON.parse(formData.content)
+        // Validate it's actually menu data (has categories array)
+        if (parsed && Array.isArray(parsed.categories)) {
+          existingMenuData = parsed as MenuData
+        }
+      } catch (error) {
+        // Invalid JSON or not menu data, start fresh
+        console.log('Content is not valid menu data, starting fresh')
+      }
+    }
+    
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex flex-col">
@@ -377,6 +405,30 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     </button>
                   </div>
                 </div>
+              ) : formData.type === 'wifi' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    WiFi Configuration
+                  </label>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <WiFiInput
+                      value={formData.content}
+                      onChange={(value) => setFormData({ ...formData, content: value })}
+                    />
+                  </div>
+                </div>
+              ) : formData.type === 'contact' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Contact Card
+                  </label>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <VCardInput
+                      value={formData.content}
+                      onChange={(value) => setFormData({ ...formData, content: value })}
+                    />
+                  </div>
+                </div>
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -410,10 +462,74 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                       // Don't allow menu type for non-pro users
                       return
                     }
+                    
+                    // When switching to a different type, validate content compatibility
+                    let newContent = formData.content
+                    
                     if (newType === 'menu') {
+                      // Check if content is valid menu data
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.categories || !Array.isArray(parsed.categories)) {
+                          // Not valid menu data, clear it
+                          newContent = ''
+                        }
+                      } catch {
+                        // Invalid JSON, clear it
+                        newContent = ''
+                      }
                       setShowMenuBuilder(true)
+                    } else if (newType === 'wifi') {
+                      // Initialize empty WiFi data if content is not WiFi format
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.ssid) {
+                          newContent = JSON.stringify({
+                            ssid: '',
+                            password: '',
+                            security: 'WPA',
+                            hidden: false
+                          })
+                        }
+                      } catch {
+                        newContent = JSON.stringify({
+                          ssid: '',
+                          password: '',
+                          security: 'WPA',
+                          hidden: false
+                        })
+                      }
+                    } else if (newType === 'contact') {
+                      // Initialize empty VCard data if content is not VCard format
+                      try {
+                        const parsed = JSON.parse(formData.content || '{}')
+                        if (!parsed.phone) {
+                          newContent = JSON.stringify({
+                            firstName: '',
+                            lastName: '',
+                            phone: '',
+                            email: '',
+                            organization: '',
+                            title: '',
+                            address: '',
+                            website: ''
+                          })
+                        }
+                      } catch {
+                        newContent = JSON.stringify({
+                          firstName: '',
+                          lastName: '',
+                          phone: '',
+                          email: '',
+                          organization: '',
+                          title: '',
+                          address: '',
+                          website: ''
+                        })
+                      }
                     }
-                    setFormData({ ...formData, type: newType })
+                    
+                    setFormData({ ...formData, type: newType, content: newContent })
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 >
@@ -568,76 +684,196 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <div className="space-y-4">
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-900">Frame Style</h4>
+                        <h4 className="text-sm font-medium text-gray-900">QR Code Styling</h4>
                         {!planFeatures.hasProFeatures && (
                           <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
                             Pro
                           </span>
                         )}
                       </div>
-                      <div className="space-y-3">
-                        <select
-                          value={formData.frame.style}
-                            onChange={(e) => {
-                              const newStyle = e.target.value as 'square' | 'rounded' | 'circle' | 'dashed'
-                              const newSize = newStyle === 'circle' && formData.frame.size < 10 ? 10 : formData.frame.size
-                              setFormData({
-                                ...formData,
-                                frame: {
-                                  ...formData.frame,
-                                  style: newStyle,
-                                  size: newSize
-                                }
-                              })
-                            }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                          <option value="square">Square</option>
-                          <option value="rounded">Rounded</option>
-                          <option value="circle">Circle</option>
-                          <option value="dashed">Dashed</option>
-                        </select>
+                      
+                      <div className="space-y-4">
+                        {/* Dot Type */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Frame Color
+                            Dot Style
                           </label>
-                          <input
-                            type="color"
-                            value={formData.frame.color}
+                          <select
+                            value={formData.styling.dotsType || 'rounded'}
                             onChange={(e) => setFormData({
                               ...formData,
-                              frame: {
-                                ...formData.frame,
-                                color: e.target.value
+                              styling: {
+                                ...formData.styling,
+                                dotsType: e.target.value as any
                               }
                             })}
-                            className="w-full h-10 border border-gray-300 rounded-lg"
-                          />
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            {Object.entries(QR_DOT_TYPES).map(([key, value]) => (
+                              <option key={key} value={value}>
+                                {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
+                              </option>
+                            ))}
+                          </select>
                         </div>
+
+                        {/* Corner Square Type */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Frame Size: {formData.frame.size}px
+                            Corner Square Style
                           </label>
-                          <input
-                            type="range"
-                            min={formData.frame.style === 'circle' ? FRAME_SIZES.CIRCLE_MIN : FRAME_SIZES.MIN}
-                            max={FRAME_SIZES.MAX}
-                            step={FRAME_SIZES.STEP}
-                            value={formData.frame.size}
+                          <select
+                            value={formData.styling.cornersSquareType || 'extra-rounded'}
                             onChange={(e) => setFormData({
                               ...formData,
-                              frame: {
-                                ...formData.frame,
-                                size: parseInt(e.target.value)
+                              styling: {
+                                ...formData.styling,
+                                cornersSquareType: e.target.value as any
                               }
                             })}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>Thin</span>
-                            <span>Thick</span>
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            {Object.entries(QR_CORNER_SQUARE_TYPES).map(([key, value]) => (
+                              <option key={key} value={value}>
+                                {key.charAt(0) + key.slice(1).toLowerCase().replace('_', ' ')}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Corner Dot Type */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Corner Dot Style
+                          </label>
+                          <select
+                            value={formData.styling.cornersDotType || 'dot'}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              styling: {
+                                ...formData.styling,
+                                cornersDotType: e.target.value as any
+                              }
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            {Object.entries(QR_CORNER_DOT_TYPES).map(([key, value]) => (
+                              <option key={key} value={value}>
+                                {key.charAt(0) + key.slice(1).toLowerCase()}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Background Type */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Background Style
+                          </label>
+                          <select
+                            value={formData.styling.backgroundType || 'solid'}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              styling: {
+                                ...formData.styling,
+                                backgroundType: e.target.value as any,
+                                // Reset gradient settings when changing type
+                                gradientColorStops: e.target.value === 'solid' ? undefined : 
+                                  formData.styling.gradientColorStops || [
+                                    { offset: 0, color: formData.color.light },
+                                    { offset: 1, color: '#F3F4F6' }
+                                  ]
+                              }
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          >
+                            {Object.entries(QR_BACKGROUND_TYPES).map(([key, value]) => (
+                              <option key={key} value={value}>
+                                {key.charAt(0) + key.slice(1).toLowerCase().replace('-', ' ').replace('_', ' ')}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Gradient Settings */}
+                        {(formData.styling.backgroundType === 'linear-gradient' || formData.styling.backgroundType === 'radial-gradient') && (
+                          <div className="space-y-3 border-t pt-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Gradient Direction (degrees)
+                              </label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                value={formData.styling.gradientDirection || 0}
+                                onChange={(e) => setFormData({
+                                  ...formData,
+                                  styling: {
+                                    ...formData.styling,
+                                    gradientDirection: parseInt(e.target.value)
+                                  }
+                                })}
+                                className="w-full"
+                              />
+                              <div className="text-xs text-gray-500 text-center mt-1">
+                                {formData.styling.gradientDirection || 0}°
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Gradient Colors
+                              </label>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs text-gray-600 mb-1">Start Color</label>
+                                  <input
+                                    type="color"
+                                    value={formData.styling.gradientColorStops?.[0]?.color || formData.color.light}
+                                    onChange={(e) => {
+                                      const stops = formData.styling.gradientColorStops || [
+                                        { offset: 0, color: formData.color.light },
+                                        { offset: 1, color: '#F3F4F6' }
+                                      ]
+                                      stops[0].color = e.target.value
+                                      setFormData({
+                                        ...formData,
+                                        styling: {
+                                          ...formData.styling,
+                                          gradientColorStops: [...stops]
+                                        }
+                                      })
+                                    }}
+                                    className="w-full h-8 border border-gray-300 rounded"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-gray-600 mb-1">End Color</label>
+                                  <input
+                                    type="color"
+                                    value={formData.styling.gradientColorStops?.[1]?.color || '#F3F4F6'}
+                                    onChange={(e) => {
+                                      const stops = formData.styling.gradientColorStops || [
+                                        { offset: 0, color: formData.color.light },
+                                        { offset: 1, color: '#F3F4F6' }
+                                      ]
+                                      stops[1].color = e.target.value
+                                      setFormData({
+                                        ...formData,
+                                        styling: {
+                                          ...formData.styling,
+                                          gradientColorStops: [...stops]
+                                        }
+                                      })
+                                    }}
+                                    className="w-full h-8 border border-gray-300 rounded"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -695,7 +931,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                 ) : (
                   <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-900">Advanced Customization</h4>
+                      <h4 className="text-sm font-medium text-gray-900">Advanced QR Code Styling & Logo Embedding</h4>
                       {!planFeatures.hasProFeatures && (
                         <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
                           Pro
@@ -703,8 +939,29 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                       )}
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
-                      Logo embedding, frame styles, and advanced design options
+                      Professional QR code styling with custom dot patterns, corner designs, gradient backgrounds, and logo embedding
                     </p>
+                    
+                    {/* Preview of styling options */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
+                        <div className="text-xs font-medium text-gray-700 mb-1">Dot Styles</div>
+                        <div className="text-xs text-gray-500">Square, Rounded, Classy, etc.</div>
+                      </div>
+                      <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
+                        <div className="text-xs font-medium text-gray-700 mb-1">Corner Styles</div>
+                        <div className="text-xs text-gray-500">Custom corner square & dots</div>
+                      </div>
+                      <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
+                        <div className="text-xs font-medium text-gray-700 mb-1">Gradient Backgrounds</div>
+                        <div className="text-xs text-gray-500">Linear & radial gradients</div>
+                      </div>
+                      <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
+                        <div className="text-xs font-medium text-gray-700 mb-1">Logo Embedding</div>
+                        <div className="text-xs text-gray-500">Professional logo integration</div>
+                      </div>
+                    </div>
+                    
                     <button
                       onClick={() => window.location.href = '/pricing'}
                       className="text-sm text-purple-600 hover:text-purple-800 font-medium"

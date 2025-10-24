@@ -90,6 +90,7 @@ describe('QR Codes API', () => {
       userId: testUser.id,
       permissions: testApiKey.permissions,
       rateLimit: testApiKey.rateLimit,
+      environment: 'production', // Set to production to trigger limit checks
       isActive: true,
       expiresAt: null
     })
@@ -212,7 +213,7 @@ describe('QR Codes API', () => {
     it('should return 403 when QR code limit is reached', async () => {
       const { prisma } = require('@/lib/prisma')
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'free' })
-      prisma.qrCode.count.mockResolvedValue(10) // Free plan limit
+      prisma.qrCode.count.mockResolvedValue(10) // Free plan limit is 10
 
       const request = createMockRequest('POST', '/api/v1/qr-codes', {
         name: 'New QR Code',
@@ -256,7 +257,7 @@ describe('QR Codes API', () => {
       const request = createMockRequest('GET', '/api/v1/qr-codes/qr1')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await GET_QR(requestWithAuth, { params: { id: 'qr1' } })
+      const response = await GET_QR(requestWithAuth, { params: Promise.resolve({ id: 'qr1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -272,7 +273,7 @@ describe('QR Codes API', () => {
       const request = createMockRequest('GET', '/api/v1/qr-codes/nonexistent')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await GET_QR(requestWithAuth, { params: { id: 'nonexistent' } })
+      const response = await GET_QR(requestWithAuth, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -303,7 +304,7 @@ describe('QR Codes API', () => {
       })
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await PUT(requestWithAuth, { params: { id: 'qr1' } })
+      const response = await PUT(requestWithAuth, { params: Promise.resolve({ id: 'qr1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -320,7 +321,7 @@ describe('QR Codes API', () => {
       })
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await PUT(requestWithAuth, { params: { id: 'nonexistent' } })
+      const response = await PUT(requestWithAuth, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -337,7 +338,7 @@ describe('QR Codes API', () => {
       const request = createMockRequest('DELETE', '/api/v1/qr-codes/qr1')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await DELETE(requestWithAuth, { params: { id: 'qr1' } })
+      const response = await DELETE(requestWithAuth, { params: Promise.resolve({ id: 'qr1' }) })
 
       expect(response.status).toBe(204)
     })
@@ -349,7 +350,7 @@ describe('QR Codes API', () => {
       const request = createMockRequest('DELETE', '/api/v1/qr-codes/nonexistent')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await DELETE(requestWithAuth, { params: { id: 'nonexistent' } })
+      const response = await DELETE(requestWithAuth, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)

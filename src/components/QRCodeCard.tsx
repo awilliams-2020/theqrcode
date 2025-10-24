@@ -1,17 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { QrCode, BarChart3, Edit, Trash2, Copy, Download, Eye, Check, X } from 'lucide-react'
+import { QrCode, BarChart3, Edit, Trash2, Copy, Download, Eye, Check, X, Share2 } from 'lucide-react'
 import { QRGenerator } from '@/lib/qr-generator'
 import { useToast } from '@/hooks/useToast'
 import { QRCode, QRCodeCardProps } from '@/types'
 import { useUserTimezone } from '@/hooks/useUserTimezone'
 import { formatTimeAgoInTimezone } from '@/lib/date-utils'
+import QRShareModal from './QRShareModal'
 
-export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
+export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCardProps) {
   const [showActions, setShowActions] = useState(false)
   const [qrCodeImage, setQrCodeImage] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -54,7 +56,8 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
                 content: qr.content,
                 size: (qr.settings?.size as number) || 256,
                 color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
-                frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined
+                frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,
+                styling: (qr.settings?.styling as any) || undefined
               })
           setQrCodeImage(qrImage)
         } catch (error) {
@@ -126,6 +129,11 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
     setShowActions(false)
   }
 
+  const handleShare = () => {
+    setShowShareModal(true)
+    setShowActions(false)
+  }
+
   const confirmDelete = () => {
     onDelete()
     setShowDeleteConfirm(false)
@@ -175,6 +183,13 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
+              </button>
+              <button
+                onClick={handleShare}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
               </button>
               <button
                 onClick={handleCopyLink}
@@ -462,19 +477,6 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
                 </div>
               )}
 
-              {/* Analytics Info */}
-              {qr.isDynamic && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                  <div className="flex items-center mb-1">
-                    <BarChart3 className="h-4 w-4 text-blue-600 mr-2" />
-                    <h5 className="font-medium text-blue-900">Analytics Enabled</h5>
-                  </div>
-                  <p className="text-sm text-blue-700">
-                    This QR code tracks scans and provides detailed analytics.
-                  </p>
-                </div>
-              )}
-
               {/* Action Buttons */}
               <div className="flex space-x-3">
                 <button
@@ -529,6 +531,15 @@ export default function QRCodeCard({ qr, onEdit, onDelete }: QRCodeCardProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && qrCodeImage && (
+        <QRShareModal
+          qrCode={qr}
+          qrCodeImage={qrCodeImage}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   )

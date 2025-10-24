@@ -1,6 +1,6 @@
 'use client'
 
-import { Music, QrCode, Calendar, Users, BarChart3, Mic2, CheckCircle2, TrendingUp, Smartphone, Heart } from 'lucide-react'
+import { Music, QrCode, Calendar, Users, BarChart3, Mic2, CheckCircle2, TrendingUp, Smartphone, Heart, Shield, Award, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default function MusicianLanding() {
@@ -278,24 +278,27 @@ export default function MusicianLanding() {
         </div>
       </section>
 
-      {/* Social Proof Section */}
+      {/* Trust & Features Section */}
       <section className="px-4 py-20 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-12">
-            Trusted by Independent Musicians
+            Built for Independent Musicians
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8">
-              <div className="text-5xl font-bold text-violet-600 mb-2">250+</div>
-              <p className="text-gray-600">Musicians & DJs</p>
+              <TrendingUp className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Track Fan Engagement</h3>
+              <p className="text-gray-600">See which venues generate the most interest, what times fans engage most, and which platforms they prefer for streaming.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-violet-600 mb-2">20K+</div>
-              <p className="text-gray-600">Fan Interactions Per Month</p>
+              <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Update EPK Anytime</h3>
+              <p className="text-gray-600">New single released? Press coverage? Update your EPK without reprinting business cards or promotional materials.</p>
             </div>
             <div className="p-8">
-              <div className="text-5xl font-bold text-violet-600 mb-2">65%</div>
-              <p className="text-gray-600">More Streaming Followers</p>
+              <Award className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
+              <p className="text-gray-600">Create your first music QR code at no cost. Upgrade only when you need advanced analytics and bulk creation features.</p>
             </div>
           </div>
         </div>

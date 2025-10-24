@@ -17,6 +17,7 @@ import {
   trackUserEvent,
   trackSubscriptionEvent,
   trackAPIEvent,
+  isMatomoConfigured,
   type MatomoPageViewParams,
   type MatomoEventParams,
   type MatomoGoalParams,
@@ -102,6 +103,11 @@ export function useMatomo(): UseMatomoReturn {
  */
 export function useMatomoUserId(userId: string | null | undefined): void {
   useEffect(() => {
+    // Only track in production and when Matomo is configured
+    if (!isMatomoConfigured()) {
+      return;
+    }
+
     if (userId) {
       setUserId(userId);
     } else {

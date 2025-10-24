@@ -13,8 +13,8 @@ export default async function DashboardPage() {
   }
 
   
-  // Get user's QR codes, subscription info, and admin status
-  const [qrCodes, subscription, user] = await Promise.all([
+  // Get user's QR codes and subscription info
+  const [qrCodes, subscription] = await Promise.all([
     prisma.qrCode.findMany({
       where: { 
         userId: session.user.id,
@@ -35,10 +35,6 @@ export default async function DashboardPage() {
     prisma.subscription.findUnique({
       where: { userId: session.user.id }
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { isAdmin: true }
-    })
   ])
   
   // Calculate usage stats
@@ -79,7 +75,6 @@ export default async function DashboardPage() {
       currentPlan={effectivePlan}
       isTrialActive={isTrialActive || false}
       planDisplayName={isTrialActive ? `${PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]} (Trial)` : PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]}
-      isAdmin={user?.isAdmin || false}
     />
   )
 }

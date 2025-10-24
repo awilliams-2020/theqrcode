@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { constructWebhookEvent } from '@/lib/stripe'
 import Stripe from 'stripe'
 import { trackSubscription } from '@/lib/matomo-tracking'
+import { captureException } from '@/lib/sentry'
 
 // Disable body parsing, need raw body for webhook signature verification
 export const runtime = 'nodejs'
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error('Webhook error:', error)
+    captureException(error, { endpoint: '/api/stripe/webhook', method: 'POST' })
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
@@ -118,7 +120,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       where: { userId }
     })
 
-    const isUpgrade = previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan
+    const isUpgrade = Boolean(previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan)
 
     // Update or create subscription record
     await prisma.subscription.upsert({

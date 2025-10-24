@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
+import { captureException } from '@/lib/sentry'
 
 function extractIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Health check failed:', error)
+    captureException(error, { endpoint: '/api/health', method: 'GET' })
     
     endRequestTiming(requestId, request.nextUrl.pathname, request.method, 503,
       request.headers.get('user-agent') || undefined, extractIP(request))
@@ -108,9 +110,13 @@ async function testExternalServices() {
   }
   
   // Test email service (if configured)
-  if (process.env.SMTP_HOST) {
+  const emailProvider = process.env.EMAIL_PROVIDER?.toLowerCase()
+  const hasResendConfig = process.env.RESEND_API_KEY && (emailProvider === 'resend' || !emailProvider)
+  const hasSmtpConfig = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && (emailProvider === 'smtp' || !emailProvider)
+  
+  if (hasResendConfig || hasSmtpConfig) {
     services.email = {
-      status: 'healthy', // Simplified - in production, actually test SMTP
+      status: 'healthy', // Simplified - in production, actually test email service
       responseTime: 0
     }
   }

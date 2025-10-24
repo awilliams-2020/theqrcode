@@ -26,13 +26,19 @@ export async function GET(req: NextRequest) {
       where: {
         isActive: true,
         startDate: { lte: now },
-        OR: [
-          { endDate: null },
-          { endDate: { gte: now } },
-        ],
-        OR: [
-          { targetPlans: { has: 'all' } },
-          { targetPlans: { has: userPlan } },
+        AND: [
+          {
+            OR: [
+              { endDate: null },
+              { endDate: { gte: now } },
+            ],
+          },
+          {
+            OR: [
+              { targetPlans: { has: 'all' } },
+              { targetPlans: { has: userPlan } },
+            ],
+          },
         ],
       },
       orderBy: [

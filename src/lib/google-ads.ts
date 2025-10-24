@@ -1,140 +1,207 @@
-/**
- * Google Ads Conversion Tracking Utilities
- * 
- * Usage:
- * 1. Set up environment variables in .env.local
- * 2. Call tracking functions after conversion events
- */
+// Using REST API approach instead of heavy SDK
 
-// Conversion event types
-export type ConversionEvent = 
-  | 'trial_signup'
-  | 'demo_usage'
-  | 'paid_subscription'
-  | 'api_key_created'
-  | 'business_plan_upgrade';
-
-// Conversion values for different events
-const CONVERSION_VALUES: Record<ConversionEvent, number> = {
-  trial_signup: 20.0,
-  demo_usage: 5.0,
-  paid_subscription: 0, // Will be replaced with actual value
-  api_key_created: 15.0,
-  business_plan_upgrade: 50.0,
-};
-
-/**
- * Track a Google Ads conversion event
- * @param event - The type of conversion event
- * @param value - Optional custom value (overrides default)
- * @param transactionId - Optional unique transaction ID
- */
-export function trackConversion(
-  event: ConversionEvent,
-  value?: number,
-  transactionId?: string
-): void {
-  // Only run on client-side
-  if (typeof window === 'undefined') return;
-  
-  // Check if gtag is loaded
-  if (!window.gtag) {
-    console.warn('Google Ads gtag not loaded');
-    return;
-  }
-
-  // Get conversion ID from environment
-  const conversionId = getConversionId(event);
-  if (!conversionId) {
-    console.warn(`No conversion ID configured for event: ${event}`);
-    return;
-  }
-
-  // Track the conversion
-  const conversionValue = value ?? CONVERSION_VALUES[event];
-  
-  window.gtag('event', 'conversion', {
-    'send_to': conversionId,
-    'value': conversionValue,
-    'currency': 'USD',
-    ...(transactionId && { 'transaction_id': transactionId }),
-  });
-
-  console.log(`Google Ads conversion tracked: ${event}`, {
-    value: conversionValue,
-    transactionId,
-  });
+interface GoogleAdsConfig {
+  customerId: string
+  developerToken: string
+  clientId: string
+  clientSecret: string
 }
 
-/**
- * Get the conversion ID for a specific event type
- */
-function getConversionId(event: ConversionEvent): string | undefined {
-  const baseId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
-  if (!baseId) return undefined;
-
-  const conversionLabel = getConversionLabel(event);
-  if (!conversionLabel) return undefined;
-
-  return `${baseId}/${conversionLabel}`;
-}
-
-/**
- * Get the conversion label from environment variables
- */
-function getConversionLabel(event: ConversionEvent): string | undefined {
-  switch (event) {
-    case 'trial_signup':
-      return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_TRIAL;
-    case 'demo_usage':
-      return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_DEMO;
-    case 'paid_subscription':
-      return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_PAYMENT;
-    case 'api_key_created':
-      return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_API;
-    case 'business_plan_upgrade':
-      return process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_BUSINESS;
-    default:
-      return undefined;
+export function getGoogleAdsConfig(): GoogleAdsConfig {
+  return {
+    customerId: process.env.GOOGLE_ADS_CUSTOMER_ID || '',
+    developerToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || '',
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   }
 }
 
-/**
- * Track a page view (useful for remarketing)
- */
-export function trackPageView(url: string): void {
-  if (typeof window === 'undefined') return;
+export async function getGoogleAdsClient(accessToken: string) {
+  const config = getGoogleAdsConfig()
   
-  if (!window.gtag) return;
+  if (!config.customerId || !config.developerToken || !config.clientId || !config.clientSecret) {
+    throw new Error('Google Ads API configuration is incomplete')
+  }
 
-  const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
-  if (!adsId) return;
-
-  window.gtag('config', adsId, {
-    page_path: url,
-  });
+  // Return a REST API client configuration
+  return {
+    customerId: config.customerId,
+    developerToken: config.developerToken,
+    accessToken,
+    baseUrl: 'https://googleads.googleapis.com/v16'
+  }
 }
 
-/**
- * Set custom parameters for enhanced conversions (optional)
- */
-export function setUserData(userData: {
-  email?: string;
-  phone?: string;
-  address?: {
-    first_name?: string;
-    last_name?: string;
-    country?: string;
-    postal_code?: string;
-  };
-}): void {
-  if (typeof window === 'undefined') return;
-  
-  if (!window.gtag) return;
+export async function getCampaigns(accessToken: string) {
+  try {
+    const client = await getGoogleAdsClient(accessToken)
+    
+    const response = await fetch(`${client.baseUrl}/customers/${client.customerId}/campaigns:search`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${client.accessToken}`,
+        'developer-token': client.developerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type
+          FROM campaign
+          ORDER BY campaign.name
+          LIMIT 20
+        `
+      })
+    })
 
-  const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
-  if (!adsId) return;
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.statusText}`)
+    }
 
-  window.gtag('set', 'user_data', userData);
+    const data = await response.json()
+    return data.results || []
+  } catch (error) {
+    console.error('Error fetching campaigns:', error)
+    throw new Error('Failed to fetch campaigns')
+  }
 }
 
+export async function getCampaignPerformance(accessToken: string, campaignId: string, startDate: string, endDate: string) {
+  try {
+    const client = await getGoogleAdsClient(accessToken)
+    
+    const response = await fetch(`${client.baseUrl}/customers/${client.customerId}/googleAds:search`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${client.accessToken}`,
+        'developer-token': client.developerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          SELECT 
+            campaign.id, 
+            campaign.name,
+            metrics.impressions,
+            metrics.clicks,
+            metrics.cost_micros,
+            metrics.conversions,
+            segments.date
+          FROM campaign
+          WHERE campaign.id = ${campaignId}
+          AND segments.date BETWEEN '${startDate}' AND '${endDate}'
+          ORDER BY segments.date
+        `
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    return data.results || []
+  } catch (error) {
+    console.error('Error fetching campaign performance:', error)
+    throw new Error('Failed to fetch campaign performance')
+  }
+}
+
+export async function createCampaign(accessToken: string, campaignData: any) {
+  try {
+    const client = await getGoogleAdsClient(accessToken)
+    
+    const response = await fetch(`${client.baseUrl}/customers/${client.customerId}/campaigns:mutate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${client.accessToken}`,
+        'developer-token': client.developerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        operations: [{
+          create: {
+            name: campaignData.name,
+            advertising_channel_type: campaignData.type,
+            status: campaignData.status,
+            budget: {
+              amount_micros: campaignData.budget * 1000000, // Convert to micros
+              delivery_method: 'STANDARD',
+            },
+          }
+        }]
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    return data.results?.[0] || null
+  } catch (error) {
+    console.error('Error creating campaign:', error)
+    throw new Error('Failed to create campaign')
+  }
+}
+
+export async function updateCampaign(accessToken: string, campaignId: string, updates: any) {
+  try {
+    const client = await getGoogleAdsClient(accessToken)
+    
+    const response = await fetch(`${client.baseUrl}/customers/${client.customerId}/campaigns:mutate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${client.accessToken}`,
+        'developer-token': client.developerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        operations: [{
+          update: {
+            resource_name: `customers/${client.customerId}/campaigns/${campaignId}`,
+            ...updates
+          }
+        }]
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    return data.results?.[0] || null
+  } catch (error) {
+    console.error('Error updating campaign:', error)
+    throw new Error('Failed to update campaign')
+  }
+}
+
+export async function deleteCampaign(accessToken: string, campaignId: string) {
+  try {
+    const client = await getGoogleAdsClient(accessToken)
+    
+    const response = await fetch(`${client.baseUrl}/customers/${client.customerId}/campaigns:mutate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${client.accessToken}`,
+        'developer-token': client.developerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        operations: [{
+          remove: `customers/${client.customerId}/campaigns/${campaignId}`
+        }]
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Google Ads API error: ${response.statusText}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting campaign:', error)
+    throw new Error('Failed to delete campaign')
+  }
+}

@@ -72,10 +72,10 @@ async function getScans(req: NextRequest, auth: any): Promise<NextResponse> {
         browser: scan.browser,
         country: scan.country,
         city: scan.city,
-        ip: scan.ip,
+        ip: scan.ipAddress || null,
         userAgent: scan.userAgent,
-        latitude: scan.latitude,
-        longitude: scan.longitude
+        latitude: null, // Not available in current schema
+        longitude: null // Not available in current schema
       })),
       pagination: {
         page,

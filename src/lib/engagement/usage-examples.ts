@@ -147,8 +147,8 @@ export async function announceNewFeature(
   description: string,
   targetPlans: string[]
 ) {
-  // This would be called via admin API
-  // POST /api/admin/announcements
+  // This would be called via API
+  // POST /api/announcements
   const announcementData = {
     title: `New Feature: ${featureName}`,
     content: description,
@@ -250,11 +250,11 @@ export async function notifyTrialExpiring(userId: string, daysLeft: number) {
 }
 
 // ============================================================================
-// EXAMPLE 9: Admin Creating Email Campaign
+// EXAMPLE 9: Creating Email Campaign
 // ============================================================================
 
 export async function createEmailCampaign() {
-  // POST /api/admin/campaigns
+  // POST /api/campaigns
   const campaignData = {
     name: 'Summer Promotion 2025',
     subject: '50% Off All Plans - Limited Time!',

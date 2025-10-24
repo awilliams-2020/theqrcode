@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { ApiKeyManager } from '@/lib/api-key-utils'
 import { prisma } from '@/lib/prisma'
+import { captureException } from '@/lib/sentry'
 
 /**
  * GET /api/v1/api-keys
@@ -40,6 +41,7 @@ async function getApiKeys(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ data: apiKeys })
   } catch (error) {
     console.error('Error fetching API keys:', error)
+    captureException(error, { endpoint: '/api/v1/api-keys', method: 'GET' })
     return NextResponse.json({ 
       error: 'Failed to fetch API keys',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -60,11 +62,16 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
     }
 
     const body = await req.json()
-    const { name, permissions, expiresAt } = body
+    const { name, permissions, environment = 'production', expiresAt } = body
 
     // Validate required fields
     if (!name) {
       return NextResponse.json({ error: 'Missing required field: name' }, { status: 400 })
+    }
+
+    // Validate environment
+    if (environment !== 'production' && environment !== 'sandbox') {
+      return NextResponse.json({ error: 'Environment must be either "production" or "sandbox"' }, { status: 400 })
     }
 
     // Check if user has Pro plan or is in trial
@@ -120,6 +127,7 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
       name,
       permissions: finalPermissions,
       rateLimit: planRateLimit,
+      environment,
       expiresAt: expiresAt ? new Date(expiresAt) : undefined
     })
 
@@ -131,6 +139,7 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json(response, { status: 201 })
   } catch (error) {
     console.error('Error creating API key:', error)
+    captureException(error, { endpoint: '/api/v1/api-keys', method: 'POST' })
     return NextResponse.json({ 
       error: 'Failed to create API key',
       details: error instanceof Error ? error.message : 'Unknown error'

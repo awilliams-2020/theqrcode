@@ -5,15 +5,16 @@ import { markNotificationAsRead } from '@/lib/engagement/notifications'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const notification = await markNotificationAsRead(params.id, session.user.id)
+    const notification = await markNotificationAsRead(id, session.user.id)
 
     return NextResponse.json({
       success: true,
