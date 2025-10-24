@@ -10,12 +10,7 @@ export default function SentryProvider({ children }: { children: React.ReactNode
   const { data: session } = useSession()
 
   useEffect(() => {
-    // Skip Sentry user context for admin routes
-    if (pathname?.startsWith('/admin')) {
-      return
-    }
-
-    // Set user context for non-admin routes
+    // Set user context
     if (session?.user) {
       setUser({
         id: session.user.id || '',

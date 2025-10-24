@@ -7,7 +7,7 @@ import { formatTimeAgoInTimezone } from '@/lib/date-utils'
 
 interface Notification {
   id: string
-  type: 'scan' | 'milestone' | 'alert'
+  type: string
   message: string
   timestamp: Date
   read: boolean

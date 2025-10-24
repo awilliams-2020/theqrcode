@@ -76,7 +76,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Create QR Codes in 30 Seconds
+              Create QR Codes
               <span className="block text-blue-600">No Signup Required</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
@@ -86,7 +86,9 @@ export default function LandingPage() {
           </div>
 
           {/* Embedded QR Generator */}
-          <PublicQRGenerator />
+          <PublicQRGenerator 
+            allowedTypes={['url', 'text', 'wifi', 'contact']}
+          />
 
           {/* Trust Badges */}
           <div className="mt-12 text-center">
@@ -276,6 +278,11 @@ export default function LandingPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Support & Legal</h3>
               <ul className="space-y-2">
+                <li>
+                  <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
+                    Help
+                  </Link>
+                </li>
                 <li>
                   <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
                     FAQ

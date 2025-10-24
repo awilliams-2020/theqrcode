@@ -22,7 +22,7 @@ const performanceMetrics: PerformanceMetric[] = []
 const MAX_METRICS = 10000 // Keep only last 10k metrics
 
 // System statistics tracking
-let systemStats: SystemStats = {
+const systemStats: SystemStats = {
   startTime: Date.now(),
   totalRequests: 0,
   totalErrors: 0,
@@ -114,7 +114,7 @@ export function getSystemRuntime(): {
 }
 
 export function getRealErrorRate(timeRange?: { start: Date; end: Date }): number {
-  let metrics = getPerformanceMetrics(timeRange)
+  const metrics = getPerformanceMetrics(timeRange)
   if (metrics.length === 0) return 0
   
   const errorCount = metrics.filter(metric => metric.statusCode >= 400).length

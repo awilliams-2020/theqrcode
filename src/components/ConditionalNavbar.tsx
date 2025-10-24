@@ -12,11 +12,6 @@ export default function ConditionalNavbar() {
     setIsMounted(true)
   }, [])
   
-  // Always show navbar during SSR, then conditionally hide on client
-  if (!isMounted) {
-    return <Navbar />
-  }
-  
   // Hide navbar on display routes and all landing pages
   const landingPages = [
     '/qr-code-for-restaurants',
@@ -39,8 +34,9 @@ export default function ConditionalNavbar() {
     pathname?.startsWith('/menu/') ||
     landingPages.includes(pathname || '')
   
+  // Use suppressHydrationWarning to prevent hydration mismatch
   if (shouldHideNavbar) {
-    return null
+    return <div suppressHydrationWarning>{isMounted ? null : <Navbar />}</div>
   }
   
   return <Navbar />

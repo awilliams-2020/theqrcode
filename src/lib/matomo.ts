@@ -141,11 +141,14 @@ function isMatomoAvailable(): boolean {
  * Check if Matomo is configured (has required env vars and is in production)
  */
 export function isMatomoConfigured(): boolean {
-  return !!(
-    process.env.NEXT_PUBLIC_MATOMO_URL && 
-    process.env.NEXT_PUBLIC_MATOMO_SITE_ID && 
-    process.env.NODE_ENV === 'production'
-  );
+  // Check if we're in browser and have the required environment variables
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  
+  // Check if Matomo is configured by looking for the global _paq object
+  // This is set by the Matomo initialization script in layout.tsx
+  return !!(window._paq && typeof window._paq.push === 'function');
 }
 
 /**

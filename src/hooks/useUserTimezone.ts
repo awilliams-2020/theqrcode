@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 // Global cache for timezone data to prevent multiple API calls
-let timezoneCache: {
+const timezoneCache: {
   data: string | null
   promise: Promise<string> | null
   fallback: string

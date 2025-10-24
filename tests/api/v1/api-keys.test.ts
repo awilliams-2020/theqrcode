@@ -400,7 +400,7 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest('GET', '/api/v1/api-keys/key1')
 
-      const response = await GET_KEY(request, { params: { id: 'key1' } })
+      const response = await GET_KEY(request, { params: Promise.resolve({ id: 'key1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -422,7 +422,7 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest('GET', '/api/v1/api-keys/nonexistent')
 
-      const response = await GET_KEY(request, { params: { id: 'nonexistent' } })
+      const response = await GET_KEY(request, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -460,7 +460,7 @@ describe('API Keys Management', () => {
         permissions: ['qr:read', 'analytics:read'],
       })
 
-      const response = await PUT(request, { params: { id: 'key1' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: 'key1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -483,7 +483,7 @@ describe('API Keys Management', () => {
         name: 'Updated API Key',
       })
 
-      const response = await PUT(request, { params: { id: 'nonexistent' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -505,7 +505,7 @@ describe('API Keys Management', () => {
         permissions: ['webhooks:manage'], // Not allowed for pro plan
       })
 
-      const response = await PUT(request, { params: { id: 'key1' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: 'key1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(403)
@@ -527,7 +527,7 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest('DELETE', '/api/v1/api-keys/key1')
 
-      const response = await DELETE(request, { params: { id: 'key1' } })
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'key1' }) })
 
       expect(response.status).toBe(204)
     })
@@ -545,7 +545,7 @@ describe('API Keys Management', () => {
 
       const request = createMockRequest('DELETE', '/api/v1/api-keys/nonexistent')
 
-      const response = await DELETE(request, { params: { id: 'nonexistent' } })
+      const response = await DELETE(request, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)

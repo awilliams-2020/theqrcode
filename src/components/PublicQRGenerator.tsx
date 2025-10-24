@@ -238,56 +238,6 @@ export default function PublicQRGenerator({
             </div>
           )}
 
-          {/* Customization */}
-          <div className="space-y-4 pt-4 border-t border-gray-200">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size: {qrData.size}px
-              </label>
-              <input
-                type="range"
-                min="128"
-                max="512"
-                step="32"
-                value={qrData.size}
-                onChange={(e) => setQrData({
-                  ...qrData,
-                  size: parseInt(e.target.value)
-                })}
-                className="w-full"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  QR Color
-                </label>
-                <input
-                  type="color"
-                  value={qrData.color.dark}
-                  onChange={(e) => setQrData({
-                    ...qrData,
-                    color: { ...qrData.color, dark: e.target.value }
-                  })}
-                  className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Background
-                </label>
-                <input
-                  type="color"
-                  value={qrData.color.light}
-                  onChange={(e) => setQrData({
-                    ...qrData,
-                    color: { ...qrData.color, light: e.target.value }
-                  })}
-                  className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* QR Code Preview */}
@@ -323,7 +273,7 @@ export default function PublicQRGenerator({
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-left">
-              <p className="text-blue-900 font-medium mb-2">🚀 Unlock Premium Features</p>
+              <p className="text-blue-900 font-medium mb-2">🚀 Unlock Pro Features</p>
               <ul className="text-blue-800 space-y-1 mb-3">
                 <li>✓ Track scans with advanced analytics</li>
                 <li>✓ Add custom logos & frames</li>
@@ -331,10 +281,10 @@ export default function PublicQRGenerator({
                 <li>✓ Create dynamic & editable QR codes</li>
               </ul>
               <button
-                onClick={() => window.location.href = '/auth/signup'}
+                onClick={() => window.location.href = '/auth/signup?plan=pro'}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
               >
-                Sign Up Free →
+                Get Pro Plan →
               </button>
             </div>
           </div>

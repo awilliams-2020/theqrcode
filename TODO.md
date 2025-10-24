@@ -22,7 +22,7 @@
   - [ ] High-intent QR generator campaign ($30-50/day)
   - [ ] Feature-specific campaigns ($20-30/day)
   - [ ] Business/Enterprise campaign ($15-25/day)
-- [ ] Keyword research and negative keyword list
+- [x] Keyword research and negative keyword list ✅
 - [ ] Ad copy and extensions setup
 - [ ] Budget: Start with $50-65/day ($1,500-2,000/month)
 - [ ] Set up remarketing campaigns (Month 2+)

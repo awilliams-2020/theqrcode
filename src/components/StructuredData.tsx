@@ -1,7 +1,7 @@
 'use client'
 
 interface StructuredDataProps {
-  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage' | 'BreadcrumbList' | 'Product' | 'Service' | 'Article' | 'HowTo'
+  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage' | 'BreadcrumbList' | 'Product' | 'Service' | 'Article' | 'HowTo' | 'TechArticle' | 'Course'
   data: any
 }
 
@@ -16,11 +16,6 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "url": "https://theqrcode.io",
           "logo": "https://theqrcode.io/logo.png",
           "description": "Professional QR code generator with advanced analytics and tracking capabilities.",
-          "foundingDate": "2024",
-          "sameAs": [
-            "https://twitter.com/theqrcode",
-            "https://linkedin.com/company/theqrcode"
-          ],
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "customer service",
@@ -36,11 +31,6 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "name": "TheQRCode.io",
           "url": "https://theqrcode.io",
           "description": "Generate beautiful QR codes and track their performance with detailed analytics.",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://theqrcode.io/search?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-          },
           ...data
         }
       
@@ -53,17 +43,37 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "operatingSystem": "Web Browser",
           "description": "Professional QR code generator with advanced analytics and tracking capabilities.",
           "url": "https://theqrcode.io",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD",
-            "availability": "https://schema.org/InStock"
+          "screenshot": "https://theqrcode.io/og",
+          "dateModified": new Date().toISOString().split('T')[0],
+          "author": {
+            "@type": "Organization",
+            "name": "TheQRCode.io"
           },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "150"
-          },
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Free Plan",
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock",
+              "description": "Free QR code generation with basic analytics"
+            },
+            {
+              "@type": "Offer",
+              "name": "Pro Plan",
+              "price": "9",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock",
+              "description": "Advanced analytics and unlimited QR codes"
+            }
+          ],
+          "featureList": [
+            "QR Code Generation",
+            "Analytics Tracking",
+            "Custom Branding",
+            "API Access",
+            "Bulk Generation"
+          ],
           ...data
         }
       
@@ -112,11 +122,6 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             "availability": "https://schema.org/InStock",
             "url": data.url || "https://theqrcode.io"
           },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "150"
-          },
           ...data
         }
       
@@ -136,8 +141,6 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "availableChannel": {
             "@type": "ServiceChannel",
             "serviceUrl": "https://theqrcode.io",
-            "serviceSmsNumber": "+1-555-0123",
-            "servicePhone": "+1-555-0123"
           },
           ...data
         }
@@ -163,6 +166,65 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             "url": step.url,
             "image": step.image
           })) || [],
+          ...data
+        }
+      
+      case 'TechArticle':
+        return {
+          "@context": "https://schema.org",
+          "@type": "TechArticle",
+          "headline": data.headline || "QR Code Generation Guide",
+          "description": data.description || "Complete guide to QR code generation and analytics",
+          "author": {
+            "@type": "Person",
+            "name": data.author || "TheQRCode.io Team"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "TheQRCode.io",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://theqrcode.io/logo.png"
+            }
+          },
+          "datePublished": data.datePublished || new Date().toISOString(),
+          "dateModified": data.dateModified || new Date().toISOString(),
+          "image": data.image || "https://theqrcode.io/og",
+          "url": data.url || "https://theqrcode.io",
+          "wordCount": data.wordCount || 1000,
+          "timeRequired": data.timeRequired || "PT5M",
+          "proficiencyLevel": data.proficiencyLevel || "Beginner",
+          ...data
+        }
+      
+      case 'Course':
+        return {
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": data.name || "QR Code Marketing Masterclass",
+          "description": data.description || "Learn how to use QR codes effectively for business marketing",
+          "provider": {
+            "@type": "Organization",
+            "name": "TheQRCode.io",
+            "url": "https://theqrcode.io"
+          },
+          "courseMode": "online",
+          "educationalLevel": "beginner",
+          "timeRequired": "PT2H",
+          "coursePrerequisites": "Basic computer skills",
+          "syllabusSections": data.syllabus || [
+            {
+              "@type": "Syllabus",
+              "name": "Introduction to QR Codes",
+              "description": "Understanding QR code basics"
+            }
+          ],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
           ...data
         }
       

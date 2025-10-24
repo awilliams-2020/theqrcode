@@ -120,7 +120,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       where: { userId }
     })
 
-    const isUpgrade = previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan
+    const isUpgrade = Boolean(previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan)
 
     // Update or create subscription record
     await prisma.subscription.upsert({

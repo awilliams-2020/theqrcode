@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Set last modified to a more realistic date (recent but not exactly now)
   const recentUpdate = new Date(now.getTime() - 24 * 60 * 60 * 1000) // 1 day ago
   const weeklyUpdate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) // 1 week ago
+  const monthlyUpdate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // 1 month ago
   
   return [
     // Main pages
@@ -287,6 +288,133 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
+    },
+    // High-impact SEO content
+    {
+      url: `${baseUrl}/blog/free-qr-code-generator-no-signup`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-size-calculator-guide`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/restaurant-qr-code-menu-setup-5-minutes`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    
+    // Additional high-value blog posts
+    {
+      url: `${baseUrl}/blog/qr-code-marketing-strategies-2025`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-vs-barcode-differences`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-design-best-practices`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-security-best-practices`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-tracking-analytics-guide`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-api-integration-tutorial`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-print-sizes-guide`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/blog/qr-code-mobile-optimization`,
+      lastModified: monthlyUpdate,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    
+    // High-value tool pages
+    {
+      url: `${baseUrl}/qr-code-size-calculator`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/qr-code-readability-checker`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/qr-code-roi-calculator`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/qr-code-compliance-checker`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    
+    // Industry-specific landing pages (no local variations)
+    {
+      url: `${baseUrl}/restaurant-qr-code-solutions`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/real-estate-qr-code-marketing`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/retail-qr-code-strategies`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/healthcare-qr-code-solutions`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/education-qr-code-tools`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
     },
   ]
 }

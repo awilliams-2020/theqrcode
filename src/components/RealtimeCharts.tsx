@@ -15,7 +15,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js'
-import { Bar, Pie } from 'react-chartjs-2'
+const { Bar, Pie } = require('react-chartjs-2')
 
 // Register Chart.js components
 ChartJS.register(
@@ -462,7 +462,7 @@ export default function RealtimeCharts({ scans, className = '' }: RealtimeCharts
           
           {chartData.countries.length > 0 ? (
             <div className="h-64">
-              <Bar 
+              <Bar
                 data={countryChartData} 
                 options={{
                   ...countryChartOptions,

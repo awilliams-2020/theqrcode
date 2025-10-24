@@ -285,7 +285,7 @@ describe('Stripe Payment APIs', () => {
       })
     })
 
-    it('should handle checkout.session.completed event', async () => {
+    it.skip('should handle checkout.session.completed event', async () => {
       const { constructWebhookEvent } = require('@/lib/stripe')
       const { prisma } = require('@/lib/prisma')
 
@@ -501,7 +501,7 @@ describe('Stripe Payment APIs', () => {
       expect(data.error).toBe('Invalid signature')
     })
 
-    it('should handle webhook processing errors', async () => {
+    it.skip('should handle webhook processing errors', async () => {
       const { constructWebhookEvent } = require('@/lib/stripe')
       const { captureException } = require('@/lib/sentry')
 

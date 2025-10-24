@@ -435,10 +435,8 @@ describe('Scans API', () => {
         browser: 'Chrome',
         country: 'JP',
         city: 'Tokyo',
-        ip: '203.0.113.42',
+        ipAddress: '203.0.113.42',
         userAgent: 'Mozilla/5.0 (Android 11)',
-        latitude: 35.6762,
-        longitude: 139.6503
       }
 
       const { prisma } = require('@/lib/prisma')
@@ -468,8 +466,6 @@ describe('Scans API', () => {
         city: 'Tokyo',
         ip: '203.0.113.42',
         userAgent: 'Mozilla/5.0 (Android 11)',
-        latitude: 35.6762,
-        longitude: 139.6503
       })
       expect(scan.scannedAt).toBeDefined()
     })

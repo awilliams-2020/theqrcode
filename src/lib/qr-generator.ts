@@ -305,7 +305,7 @@ export class QRGenerator {
     }
     
     // Update SVG dimensions and add frame
-    let updatedSvg = svgString
+    const updatedSvg = svgString
       .replace(/width="[^"]*"/, `width="${totalSize}"`)
       .replace(/height="[^"]*"/, `height="${totalSize}"`)
       .replace(/viewBox="[^"]*"/, `viewBox="0 0 ${totalSize} ${totalSize}"`)

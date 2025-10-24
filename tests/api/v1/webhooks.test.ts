@@ -284,7 +284,7 @@ describe('Webhooks API (Business Plan)', () => {
       const request = createMockRequest('GET', '/api/v1/webhooks/webhook1')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await GET_WEBHOOK(requestWithAuth, { params: { id: 'webhook1' } })
+      const response = await GET_WEBHOOK(requestWithAuth, { params: Promise.resolve({ id: 'webhook1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -301,7 +301,7 @@ describe('Webhooks API (Business Plan)', () => {
       const request = createMockRequest('GET', '/api/v1/webhooks/nonexistent')
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await GET_WEBHOOK(requestWithAuth, { params: { id: 'nonexistent' } })
+      const response = await GET_WEBHOOK(requestWithAuth, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -335,7 +335,7 @@ describe('Webhooks API (Business Plan)', () => {
       })
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await PUT(requestWithAuth, { params: { id: 'webhook1' } })
+      const response = await PUT(requestWithAuth, { params: Promise.resolve({ id: 'webhook1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -353,7 +353,7 @@ describe('Webhooks API (Business Plan)', () => {
       })
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await PUT(requestWithAuth, { params: { id: 'nonexistent' } })
+      const response = await PUT(requestWithAuth, { params: Promise.resolve({ id: 'nonexistent' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -369,7 +369,7 @@ describe('Webhooks API (Business Plan)', () => {
       })
       const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
 
-      const response = await PUT(requestWithAuth, { params: { id: 'webhook1' } })
+      const response = await PUT(requestWithAuth, { params: Promise.resolve({ id: 'webhook1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(400)

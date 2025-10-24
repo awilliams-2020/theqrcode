@@ -167,7 +167,7 @@ export class QRGeneratorServer {
       errorCorrectionLevel: errorCorrectionLevel as 'L' | 'M' | 'Q' | 'H'
     }
     
-    let svgString = await QRCode.toString(qrContent, { ...qrOptions, type: 'svg' })
+    const svgString = await QRCode.toString(qrContent, { ...qrOptions, type: 'svg' })
     
     return svgString
   }

@@ -126,7 +126,7 @@ export function withApiAuth(
   handler: (req: NextRequest, auth: ApiAuthResult, params?: any) => Promise<NextResponse>,
   options: ApiAuthOptions = {}
 ) {
-  return async (req: NextRequest, context?: { params?: any }): Promise<NextResponse> => {
+  return async (req: NextRequest, context?: { params?: Promise<any> }): Promise<NextResponse> => {
     const authResult = await authenticateApiRequest(req, options)
     
     if (!authResult.success) {
@@ -140,7 +140,8 @@ export function withApiAuth(
     }
 
     try {
-      return await handler(req, authResult.data!, context?.params)
+      const params = context?.params ? await context.params : undefined
+      return await handler(req, authResult.data!, params)
     } catch (error) {
       console.error('API handler error:', error)
       return NextResponse.json(

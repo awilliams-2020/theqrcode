@@ -49,7 +49,6 @@ export interface DashboardProps {
   currentPlan: string
   isTrialActive?: boolean
   planDisplayName?: string
-  isAdmin?: boolean
 }
 
 export interface QRCodeCardProps {

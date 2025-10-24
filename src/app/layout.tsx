@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
@@ -26,11 +26,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   description: 'Generate beautiful QR codes and track their performance with detailed analytics. Perfect for businesses, marketers, and developers. Free trial available. Dynamic QR codes for restaurants, real estate, events, and more.',
   keywords: [
@@ -45,13 +49,6 @@ export const metadata: Metadata = {
   applicationName: 'TheQRCode.io',
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
-  colorScheme: 'light',
-  themeColor: '#ffffff',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
   formatDetection: {
     email: false,
     address: false,
@@ -110,6 +107,14 @@ export const metadata: Metadata = {
   category: 'technology',
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  colorScheme: 'light',
+  themeColor: '#ffffff',
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -122,10 +127,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Favicon links for better SEO compatibility */}
+        {/* Comprehensive favicon links for better Google Ads compatibility */}
+        <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
+        <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+        <meta name="msapplication-TileImage" content="/favicon.ico" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
         <StructuredData 
           type="Organization" 
           data={{
@@ -155,7 +165,7 @@ export default function RootLayout({
         />
         
         {/* Matomo Analytics - Only load in production */}
-        {matomoUrl && matomoSiteId && process.env.NODE_ENV === 'production' && (
+        {matomoUrl && matomoSiteId && (
           <>
             <Script id="matomo-init" strategy="beforeInteractive">
               {`
@@ -169,10 +179,24 @@ export default function RootLayout({
             <Script 
               id="matomo-tracker"
               src={`${matomoUrl}/matomo.js`}
-              strategy="afterInteractive"
+              strategy="beforeInteractive"
             />
           </>
         )}
+
+        {/* Google Analytics */}
+        <Script 
+          src="https://www.googletagmanager.com/gtag/js?id=AW-584884144"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-584884144');
+          `}
+        </Script>
       </head>
       <body className={inter.className}>
         <Providers>

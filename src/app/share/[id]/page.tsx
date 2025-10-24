@@ -4,17 +4,17 @@ import { QRGenerator } from '@/lib/qr-generator'
 import QRShareDisplay from '@/components/QRShareDisplay'
 
 interface SharePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     msg?: string
-  }
+  }>
 }
 
 export default async function SharePage({ params, searchParams }: SharePageProps) {
-  const { id } = params
-  const { msg } = searchParams
+  const { id } = await params
+  const { msg } = await searchParams
 
   // Get the QR code
   const qrCode = await prisma.qrCode.findFirst({
@@ -22,12 +22,30 @@ export default async function SharePage({ params, searchParams }: SharePageProps
       id,
       isDeleted: false
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      content: true,
+      shortUrl: true,
+      settings: true,
+      isDynamic: true,
+      createdAt: true,
       user: {
         select: {
           name: true,
           email: true
         }
+      },
+      scans: {
+        select: {
+          id: true,
+          scannedAt: true,
+          device: true,
+          country: true
+        },
+        orderBy: { scannedAt: 'desc' },
+        take: 10
       }
     }
   })
@@ -55,7 +73,7 @@ export default async function SharePage({ params, searchParams }: SharePageProps
 
   return (
     <QRShareDisplay
-      qrCode={qrCode}
+      qrCode={qrCode as any}
       qrCodeImage={qrCodeImage}
       message={message}
     />
@@ -63,8 +81,8 @@ export default async function SharePage({ params, searchParams }: SharePageProps
 }
 
 export async function generateMetadata({ params, searchParams }: SharePageProps) {
-  const { id } = params
-  const { msg } = searchParams
+  const { id } = await params
+  const { msg } = await searchParams
 
   try {
     const qrCode = await prisma.qrCode.findFirst({

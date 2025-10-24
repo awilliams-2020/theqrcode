@@ -8,13 +8,21 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
+# Copy package files first for better caching
 COPY package.json package-lock.json* ./
-RUN npm ci
+
+# Use BuildKit cache mount for npm cache
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
 COPY . .
 
 # Accept build arguments for Stripe environment variables
@@ -32,11 +40,13 @@ ENV STRIPE_PRO_PRICE_ID=$STRIPE_PRO_PRICE_ID
 ENV STRIPE_BUSINESS_PRICE_ID=$STRIPE_BUSINESS_PRICE_ID
 ENV STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client with cache mount
+RUN --mount=type=cache,target=/root/.npm \
+    npx prisma generate
 
-# Build the application
-RUN npm run build
+# Build the application with cache mount
+RUN --mount=type=cache,target=/root/.npm \
+    npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner

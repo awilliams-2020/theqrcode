@@ -13,7 +13,8 @@ import {
   LogIn,
   UserPlus,
   Settings,
-  TrendingUp
+  TrendingUp,
+  MessageSquare
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 
@@ -71,6 +72,7 @@ export default function Navbar() {
   const navigationItems = (session ? [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'Analytics', href: '/analytics', icon: TrendingUp },
+    { name: 'Feedback', href: '/dashboard/feedback', icon: MessageSquare },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ] : []).filter(item => item.href !== pathname)
 
@@ -96,13 +98,9 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Desktop Navigation Loading */}
+            {/* Desktop Navigation Loading - only show if there would be navigation items */}
             <div className="hidden md:flex items-center space-x-4">
-              {/* Skeleton for navigation button - matches real button structure */}
-              <div className="flex items-center space-x-2 px-3 py-2 rounded-lg">
-                <LoadingSkeleton className="h-4 w-4 rounded" />
-                <LoadingSkeleton className="h-4 w-16" />
-              </div>
+              {/* Navigation skeleton is removed since we don't know if user will be authenticated */}
             </div>
 
             {/* Desktop Auth Section Loading */}
@@ -136,11 +134,7 @@ export default function Navbar() {
           {isOpen && (
             <div ref={mobileMenuRef} className="md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
-                {/* Mobile Navigation Items Loading - matches real nav structure */}
-                <div className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium rounded-lg">
-                  <LoadingSkeleton className="h-5 w-5 rounded" />
-                  <LoadingSkeleton className="h-5 w-20" />
-                </div>
+                {/* Mobile Navigation Items Loading - removed since we don't know if user will be authenticated */}
 
                 {/* Mobile Auth Section Loading - matches real auth structure */}
                 <div className="border-t border-gray-200 pt-3 mt-3">

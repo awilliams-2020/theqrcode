@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate date range
     const now = new Date()
-    let startDate = new Date()
+    const startDate = new Date()
     
     switch (timeRange) {
       case '1h':

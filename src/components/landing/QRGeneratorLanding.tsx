@@ -88,6 +88,7 @@ export default function QRGeneratorLanding() {
           <PublicQRGenerator 
             title="Generate Your QR Code Now"
             description="Create and download your custom QR code for free"
+            allowedTypes={['url', 'text', 'wifi', 'contact']}
           />
         </div>
       </section>
