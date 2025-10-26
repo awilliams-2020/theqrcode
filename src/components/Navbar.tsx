@@ -13,8 +13,7 @@ import {
   LogIn,
   UserPlus,
   Settings,
-  TrendingUp,
-  MessageSquare
+  TrendingUp
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 
@@ -72,7 +71,6 @@ export default function Navbar() {
   const navigationItems = (session ? [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'Analytics', href: '/analytics', icon: TrendingUp },
-    { name: 'Feedback', href: '/dashboard/feedback', icon: MessageSquare },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ] : []).filter(item => item.href !== pathname)
 

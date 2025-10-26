@@ -1,5 +1,4 @@
 import { NextAuthOptions } from 'next-auth'
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
 import CredentialsProvider from 'next-auth/providers/credentials'
@@ -12,7 +11,7 @@ import { verifyPassword } from './password'
 import { trackUser } from './matomo-tracking'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  // Removed PrismaAdapter since Session table was removed and we're using JWT strategy
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -111,6 +110,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async session({ session, token, user }) {
+      console.log('[Auth] Session callback - token sub:', token?.sub, 'user:', user?.id)
+      
       // For JWT strategy, user info comes from token
       // For database strategy, it comes from user
       if (session.user) {
@@ -125,10 +126,11 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async jwt({ token, user, account }) {
+      console.log('[Auth] JWT callback - token sub:', token?.sub)
+      
       // Add user id to token on sign in
       if (user) {
         token.sub = user.id
-        
         
         // Track user login in Matomo (async, don't block)
         prisma.subscription.findUnique({

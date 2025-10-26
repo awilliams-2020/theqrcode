@@ -14,6 +14,8 @@ const FeedbackButton = dynamic(() => import('./FeedbackButton'), {
   ssr: false,
 })
 
+
+
 interface ConditionalMainProps {
   children: React.ReactNode
 }
@@ -61,6 +63,7 @@ export default function ConditionalMain({ children }: ConditionalMainProps) {
   
   return (
     <>
+      
       {/* Announcement Banner - shown to all users on applicable pages */}
       {shouldShowEngagementFeatures && session && (
         <div suppressHydrationWarning>

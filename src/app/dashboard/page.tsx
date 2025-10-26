@@ -8,7 +8,12 @@ import Dashboard from '@/components/Dashboard'
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   
+  console.log('[DashboardPage] Session found:', !!session)
+  console.log('[DashboardPage] Session user ID:', session?.user?.id)
+  
+  // If no session, redirect to sign-in
   if (!session?.user?.id) {
+    console.log('[DashboardPage] No session found, redirecting to sign-in')
     redirect('/auth/signin')
   }
 
@@ -17,7 +22,7 @@ export default async function DashboardPage() {
   const [qrCodes, subscription] = await Promise.all([
     prisma.qrCode.findMany({
       where: { 
-        userId: session.user.id,
+        userId: session?.user?.id || '',
         isDeleted: false // Exclude soft-deleted QR codes
       },
       include: {
@@ -32,9 +37,9 @@ export default async function DashboardPage() {
       },
       orderBy: { createdAt: 'desc' }
     }),
-    prisma.subscription.findUnique({
+    session?.user?.id ? prisma.subscription.findUnique({
       where: { userId: session.user.id }
-    }),
+    }) : null,
   ])
   
   // Calculate usage stats
@@ -59,22 +64,22 @@ export default async function DashboardPage() {
   
   return (
     <Dashboard 
-      qrCodes={qrCodes.map(qr => ({
-        ...qr,
-        shortUrl: qr.shortUrl || undefined,
-        settings: (qr.settings as Record<string, unknown>) || {},
-        scans: qr.scans.map(scan => ({
-          ...scan,
-          device: scan.device || undefined,
-          country: scan.country || undefined
-        }))
-      }))}
-      subscription={serializedSubscription}
-      totalScans={totalScans}
-      limits={limits}
-      currentPlan={effectivePlan}
-      isTrialActive={isTrialActive || false}
-      planDisplayName={isTrialActive ? `${PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]} (Trial)` : PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]}
-    />
+        qrCodes={qrCodes.map(qr => ({
+          ...qr,
+          shortUrl: qr.shortUrl || undefined,
+          settings: (qr.settings as Record<string, unknown>) || {},
+          scans: qr.scans.map(scan => ({
+            ...scan,
+            device: scan.device || undefined,
+            country: scan.country || undefined
+          }))
+        }))}
+        subscription={serializedSubscription}
+        totalScans={totalScans}
+        limits={limits}
+        currentPlan={effectivePlan}
+        isTrialActive={isTrialActive || false}
+        planDisplayName={isTrialActive ? `${PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]} (Trial)` : PLAN_DISPLAY_NAMES[effectivePlan as keyof typeof PLAN_DISPLAY_NAMES]}
+      />
   )
 }

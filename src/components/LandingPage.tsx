@@ -2,6 +2,7 @@
 
 import { QrCode, BarChart3, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
+import Script from 'next/script'
 import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 import PublicQRGenerator from './PublicQRGenerator'
 
@@ -71,6 +72,16 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Google Analytics Conversion Tracking for HomePage */}
+      <Script id="google-conversion-tracking" strategy="afterInteractive">
+        {`
+          gtag('event', 'conversion', {
+              'send_to': 'AW-584884144/bqVLCNXV96obELC_8pYC',
+              'value': 1.0,
+              'currency': 'USD'
+          });
+        `}
+      </Script>
       {/* Hero Section with Generator */}
       <section className="px-4 py-12 md:py-20">
         <div className="max-w-7xl mx-auto">

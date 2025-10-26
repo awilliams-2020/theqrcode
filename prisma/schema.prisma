@@ -25,13 +25,6 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
 model User {
   id            String        @id @default(cuid())
@@ -49,7 +42,6 @@ model User {
   accounts      Account[]
   apiKeys       ApiKey[]
   qrCodes       QrCode[]
-  sessions      Session[]
   subscription  Subscription?
   webhooks      Webhook[]
   qrShares      QrShare[]
@@ -367,3 +359,4 @@ model DowntimeIncident {
   @@index([startedAt])
   @@index([resolved, startedAt])
 }
+
