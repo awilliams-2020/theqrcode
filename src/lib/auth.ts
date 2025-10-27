@@ -127,14 +127,34 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // Add user id to token on sign in
       if (user) {
-        token.sub = user.id
-        
-        // Track user login in Matomo (async, don't block)
-        prisma.subscription.findUnique({
-          where: { userId: user.id }
-        }).then(subscription => {
-          trackUser.login(user.id, subscription?.plan || 'free').catch(() => {});
-        }).catch(() => {});
+        // For OAuth providers, we need to look up the actual database user
+        if (account?.provider === 'google' || account?.provider === 'github') {
+          // Look up the user in the database by email
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! }
+          })
+          if (dbUser) {
+            token.sub = dbUser.id
+            // Track user login in Matomo (async, don't block)
+            prisma.subscription.findUnique({
+              where: { userId: dbUser.id }
+            }).then(subscription => {
+              trackUser.login(dbUser.id, subscription?.plan || 'free').catch(() => {});
+            }).catch(() => {});
+          } else {
+            // Fallback to the user ID from the OAuth provider
+            token.sub = user.id
+          }
+        } else {
+          // For credentials provider, use the user.id directly
+          token.sub = user.id
+          // Track user login in Matomo (async, don't block)
+          prisma.subscription.findUnique({
+            where: { userId: user.id }
+          }).then(subscription => {
+            trackUser.login(user.id, subscription?.plan || 'free').catch(() => {});
+          }).catch(() => {});
+        }
       }
       return token
     },
