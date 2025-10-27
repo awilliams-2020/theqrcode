@@ -173,19 +173,16 @@ export async function setupEngagementJobs() {
 
   // Daily at 9 AM: Send trial reminders
   cron.schedule('0 9 * * *', async () => {
-    console.log('Running daily engagement tasks...')
     await sendTrialEndingReminders()
   })
 
   // Weekly on Monday at 10 AM: Re-engagement emails
   cron.schedule('0 10 * * 1', async () => {
-    console.log('Running weekly engagement tasks...')
     await sendReEngagementEmails()
   })
 
   // Monthly on 1st at 10 AM: Usage insights
   cron.schedule('0 10 1 * *', async () => {
-    console.log('Running monthly engagement tasks...')
     await sendMonthlyInsights()
   })
   */

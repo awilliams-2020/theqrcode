@@ -8,12 +8,8 @@ import Dashboard from '@/components/Dashboard'
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   
-  console.log('[DashboardPage] Session found:', !!session)
-  console.log('[DashboardPage] Session user ID:', session?.user?.id)
-  
   // If no session, redirect to sign-in
   if (!session?.user?.id) {
-    console.log('[DashboardPage] No session found, redirecting to sign-in')
     redirect('/auth/signin')
   }
 

@@ -168,7 +168,7 @@ export function useRealtimePolling(userId: string) {
         setNotifications(formattedNotifications)
       }
     } catch (error) {
-      console.error('Failed to fetch analytics notifications:', error)
+      // Failed to fetch analytics notifications
     }
   }, [userId, session?.user?.id])
 
@@ -258,7 +258,7 @@ export function useRealtimePolling(userId: string) {
         )
       )
     } catch (error) {
-      console.error('Failed to mark notification as read:', error)
+      // Failed to mark notification as read
     }
   }, [])
 
@@ -277,7 +277,7 @@ export function useRealtimePolling(userId: string) {
       // Update local state
       setNotifications(prev => prev.map(notif => ({ ...notif, read: true })))
     } catch (error) {
-      console.error('Failed to clear notifications:', error)
+      // Failed to clear notifications
     }
   }, [])
 

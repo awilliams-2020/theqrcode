@@ -1,27 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
+import { NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  
-  // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/settings', '/billing', '/api-keys', '/monitoring', '/notifications']
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-  
-  if (isProtectedRoute) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    })
-    
-    if (!token) {
-      // Redirect to sign-in page
-      const signInUrl = new URL('/auth/signin', request.url)
-      signInUrl.searchParams.set('callbackUrl', request.url)
-      return NextResponse.redirect(signInUrl)
-    }
-  }
-  
+export function middleware(req: any) {
+  // Simple middleware that just passes through
+  // Authentication will be handled at the page level
   return NextResponse.next()
 }
 

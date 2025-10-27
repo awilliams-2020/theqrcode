@@ -12,6 +12,7 @@ import { trackUser } from './matomo-tracking'
 
 export const authOptions: NextAuthOptions = {
   // Removed PrismaAdapter since Session table was removed and we're using JWT strategy
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -110,8 +111,6 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async session({ session, token, user }) {
-      console.log('[Auth] Session callback - token sub:', token?.sub, 'user:', user?.id)
-      
       // For JWT strategy, user info comes from token
       // For database strategy, it comes from user
       if (session.user) {
@@ -126,8 +125,6 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async jwt({ token, user, account }) {
-      console.log('[Auth] JWT callback - token sub:', token?.sub)
-      
       // Add user id to token on sign in
       if (user) {
         token.sub = user.id
@@ -136,10 +133,8 @@ export const authOptions: NextAuthOptions = {
         prisma.subscription.findUnique({
           where: { userId: user.id }
         }).then(subscription => {
-          trackUser.login(user.id, subscription?.plan || 'free').catch(err => 
-            console.error('[Auth] Login tracking failed:', err instanceof Error ? err.message : 'Unknown error')
-          );
-        }).catch(err => console.error('[Auth] Subscription fetch for tracking failed:', err instanceof Error ? err.message : 'Unknown error'));
+          trackUser.login(user.id, subscription?.plan || 'free').catch(() => {});
+        }).catch(() => {});
       }
       return token
     },
@@ -192,21 +187,16 @@ export const authOptions: NextAuthOptions = {
               data: { stripeCustomerId: stripeCustomer.id }
             })
           } catch (stripeError) {
-            console.error('[Auth] Stripe customer creation failed (will retry later):', stripeError instanceof Error ? stripeError.message : 'Unknown error')
+            // Stripe customer creation failed, will retry later
           }
         }
 
         // Track user signup for OAuth users (async, don't block)
-        trackUser.signup(user.id).catch(err => 
-          console.error('[Auth] Signup tracking failed:', err instanceof Error ? err.message : 'Unknown error')
-        );
+        trackUser.signup(user.id).catch(() => {});
 
         // Send welcome email asynchronously (don't block signup)
-        sendWelcomeEmail(user.id).catch(error => {
-          console.error('[Auth] Welcome email failed:', error instanceof Error ? error.message : 'Unknown error')
-        })
+        sendWelcomeEmail(user.id).catch(() => {})
       } catch (error) {
-        console.error('[Auth] Subscription creation failed:', error instanceof Error ? error.message : 'Unknown error')
         throw error
       }
     },
