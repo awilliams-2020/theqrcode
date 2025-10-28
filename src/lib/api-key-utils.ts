@@ -226,7 +226,8 @@ export class ApiKeyManager {
           'qr:read',
           'qr:write', 
           'analytics:read',
-          'webhooks:manage'
+          'webhooks:manage',
+          'bulk:write'
         ]
       case 'business':
         return [

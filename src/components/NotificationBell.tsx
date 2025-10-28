@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { X } from 'lucide-react'
 
 interface Notification {
@@ -9,13 +10,13 @@ interface Notification {
   type: string
   title: string
   message: string
-  actionUrl?: string
   priority: string
   isRead: boolean
   createdAt: string
 }
 
 export default function NotificationBell() {
+  const { data: session, status } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -24,11 +25,22 @@ export default function NotificationBell() {
   const popoverRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetchNotifications()
-    // Poll for new notifications every 60 seconds
-    const interval = setInterval(fetchNotifications, 60000)
-    return () => clearInterval(interval)
-  }, [])
+    // Only fetch notifications if we're in the browser and have a valid session
+    if (typeof window !== 'undefined' && status === 'authenticated' && session?.user?.id) {
+      // Add a small delay to ensure session is established
+      const timeoutId = setTimeout(() => {
+        fetchNotifications()
+      }, 100)
+      
+      // Poll for new notifications every 60 seconds
+      const interval = setInterval(fetchNotifications, 60000)
+      
+      return () => {
+        clearTimeout(timeoutId)
+        clearInterval(interval)
+      }
+    }
+  }, [status, session?.user?.id])
 
   // Handle click outside to close popover
   useEffect(() => {
@@ -51,13 +63,31 @@ export default function NotificationBell() {
   }, [isOpen])
 
   const fetchNotifications = async () => {
+    // Don't fetch if not authenticated
+    if (status !== 'authenticated' || !session?.user?.id) {
+      return
+    }
+
     try {
       // Fetch only non-analytics notifications for navbar bell
-      const res = await fetch('/api/notifications?category=general')
+      const res = await fetch('/api/notifications?category=general', {
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      }
+      
       const data = await res.json()
+      
       if (data.success) {
         setNotifications(data.notifications)
         setUnreadCount(data.unreadCount)
+      } else {
+        throw new Error(data.error || 'Failed to fetch notifications')
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
@@ -65,25 +95,62 @@ export default function NotificationBell() {
   }
 
   const markAsRead = async (notificationId: string) => {
+    // Don't proceed if not authenticated
+    if (status !== 'authenticated' || !session?.user?.id) {
+      return
+    }
+
     try {
-      await fetch(`/api/notifications/${notificationId}`, {
+      const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
-      fetchNotifications()
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        fetchNotifications()
+      } else {
+        throw new Error(result.error || 'Failed to mark notification as read')
+      }
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
     }
   }
 
   const markAllAsRead = async () => {
+    // Don't proceed if not authenticated
+    if (status !== 'authenticated' || !session?.user?.id) {
+      return
+    }
+
     try {
       setLoading(true)
-      await fetch('/api/notifications', {
+      const response = await fetch('/api/notifications', {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'markAllRead' }),
       })
-      fetchNotifications()
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        fetchNotifications()
+      } else {
+        throw new Error(result.error || 'Failed to mark all notifications as read')
+      }
     } catch (error) {
       console.error('Failed to mark all as read:', error)
     } finally {
@@ -94,14 +161,6 @@ export default function NotificationBell() {
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id)
-    }
-    if (notification.actionUrl) {
-      // Ensure absolute navigation by using window.location for root paths
-      if (notification.actionUrl.startsWith('/')) {
-        window.location.href = notification.actionUrl
-      } else {
-        router.push(notification.actionUrl)
-      }
     }
     setIsOpen(false)
   }
@@ -195,9 +254,9 @@ export default function NotificationBell() {
                     <div
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`p-3 md:p-4 transition-colors ${
-                        notification.actionUrl ? 'cursor-pointer hover:bg-gray-50 active:bg-gray-100' : 'cursor-default'
-                      } ${!notification.isRead ? 'bg-blue-50' : ''}`}
+                      className={`p-3 md:p-4 transition-colors cursor-pointer hover:bg-gray-50 active:bg-gray-100 ${
+                        !notification.isRead ? 'bg-blue-50' : ''
+                      }`}
                     >
                       <div className="flex items-start space-x-2 md:space-x-3">
                         <span className="text-xl md:text-2xl flex-shrink-0">{getTypeIcon(notification.type)}</span>

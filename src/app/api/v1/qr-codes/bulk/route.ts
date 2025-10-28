@@ -6,7 +6,7 @@ import { URLShortener } from '@/lib/url-shortener'
 
 /**
  * POST /api/v1/qr-codes/bulk
- * Create multiple QR codes in a single request (Business plan only)
+ * Create multiple QR codes in a single request (Pro plan and above)
  */
 async function createBulkQRCodes(req: NextRequest, auth: any): Promise<NextResponse> {
   const startTime = Date.now()
@@ -157,7 +157,7 @@ async function createBulkQRCodes(req: NextRequest, auth: any): Promise<NextRespo
 
 /**
  * DELETE /api/v1/qr-codes/bulk
- * Delete multiple QR codes in a single request (Business plan only)
+ * Delete multiple QR codes in a single request (Pro plan and above)
  */
 async function deleteBulkQRCodes(req: NextRequest, auth: any): Promise<NextResponse> {
   const startTime = Date.now()
@@ -225,7 +225,7 @@ async function deleteBulkQRCodes(req: NextRequest, auth: any): Promise<NextRespo
   }
 }
 
-// Export handlers with authentication (Business plan only)
+// Export handlers with authentication (Pro plan and above)
 export const POST = withApiAuth(createBulkQRCodes, {
   requiredPermissions: ['bulk:write']
 })

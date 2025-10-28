@@ -187,7 +187,7 @@ const endpoints = [
     method: 'POST',
     path: '/api/v1/qr-codes/bulk',
     description: 'Create multiple QR codes in a single request (up to 100)',
-    tier: 'Business',
+    tier: 'Pro',
     requestFields: [
       { name: 'qrCodes', type: 'array', required: true, description: 'Array of QR codes to create (max 100)' },
       { name: 'qrCodes[].name', type: 'string', required: true, description: 'Display name for the QR code' },
@@ -257,7 +257,7 @@ const endpoints = [
     method: 'DELETE',
     path: '/api/v1/qr-codes/bulk',
     description: 'Delete multiple QR codes in a single request (up to 100)',
-    tier: 'Business',
+    tier: 'Pro',
     requestFields: [
       { name: 'qrCodeIds', type: 'array', required: true, description: 'Array of QR code IDs to delete (max 100)' }
     ],

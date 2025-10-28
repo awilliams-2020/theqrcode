@@ -36,7 +36,6 @@ export async function onUserSignup(userId: string) {
     type: 'update', // Changed from 'tip' to 'update' to avoid pro restrictions
     title: 'Welcome to TheQRCode.io! 🎉',
     message: 'Start by creating your first QR code. Click here to get started.',
-    actionUrl: '/dashboard',
     priority: 'normal',
   })
 }
@@ -95,7 +94,6 @@ export async function onQrCodeScanned(userId: string, totalScans: number) {
         type: 'milestone',
         title: '100 Scans Milestone! 🎉',
         message: "Congratulations on reaching 100 scans! Upgrade to unlock detailed analytics on device types, locations, and trends.",
-        actionUrl: undefined,
         priority: 'normal',
       })
     }
@@ -120,7 +118,6 @@ export async function onPlanUpgrade(userId: string, newPlan: string) {
     type: 'update',
     title: `Welcome to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}! 🚀`,
     message: `You now have access to: ${features.join(', ')}`,
-    actionUrl: '/dashboard',
     priority: 'high',
   })
 }
@@ -217,7 +214,6 @@ export async function notifyPaymentIssue(userId: string) {
     type: 'usage_alert',
     title: 'Payment Issue ⚠️',
     message: 'There was an issue processing your payment. Please update your payment method.',
-    actionUrl: '/dashboard/billing',
     priority: 'urgent',
   })
 }
@@ -228,7 +224,6 @@ export async function notifyTrialExpiring(userId: string, daysLeft: number) {
     type: 'plan_limit',
     title: `Trial Ending in ${daysLeft} Days`,
     message: 'Upgrade now to keep your QR codes active and unlock advanced features.',
-    actionUrl: '/pricing',
     priority: 'high',
   })
 }

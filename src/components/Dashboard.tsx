@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { QrCode, Plus, BarChart3, Download, Settings, Shield } from 'lucide-react'
 import QRGeneratorModal from './QRGeneratorModal'
 import QRCodeCard from './QRCodeCard'
+import SelectableQRCodeCard from './SelectableQRCodeCard'
+import BulkOperations from './BulkOperations'
 import TrialBanner from './TrialBanner'
 import { useToast } from '@/hooks/useToast'
 import { useSubscriptionRefresh } from '@/hooks/useSubscriptionRefresh'
@@ -17,6 +19,16 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
   const { refreshSubscription } = useSubscriptionRefresh()
   const [showGenerator, setShowGenerator] = useState(false)
   const [selectedQR, setSelectedQR] = useState<QRCode | null>(null)
+  const [selectedQRIds, setSelectedQRIds] = useState<string[]>([])
+  const [showBulkMode, setShowBulkMode] = useState(false)
+  
+  // Auto-enable bulk mode for Pro users when they have QR codes
+  useEffect(() => {
+    const hasProAccess = currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'business'))
+    if (hasProAccess && qrCodes.length > 0) {
+      setShowBulkMode(true)
+    }
+  }, [currentPlan, isTrialActive, qrCodes.length])
   const { showSuccess, showError, showWarning } = useToast()
 
   // Handle Stripe checkout success/cancel
@@ -55,6 +67,57 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
     setShowGenerator(false)
     setSelectedQR(null)
   }
+
+  // Bulk operations functions
+  const handleBulkDelete = async (qrIds: string[]) => {
+    try {
+      // Delete QR codes one by one (could be optimized with a bulk API call)
+      for (const qrId of qrIds) {
+        await deleteQRCode(qrId)
+      }
+      
+      // Refresh the page to update the QR codes list
+      window.location.reload()
+    } catch (error) {
+      console.error('Bulk delete error:', error)
+      throw error
+    }
+  }
+
+  const handleBulkDownload = async (qrIds: string[]) => {
+    try {
+      // Download each QR code individually
+      for (const qrId of qrIds) {
+        const qr = qrCodes.find(q => q.id === qrId)
+        if (qr) {
+          // Generate QR code image and download
+          const { QRGenerator } = await import('@/lib/qr-generator')
+          const qrImage = await QRGenerator.generateQRCode({
+            type: qr.type as any,
+            content: qr.content,
+            size: (qr.settings?.size as number) || 256,
+            color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
+            frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,
+            styling: (qr.settings?.styling as any) || undefined
+          })
+          
+          const link = document.createElement('a')
+          link.href = qrImage
+          link.download = `${qr.name.replace(/\s+/g, '_')}.png`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          
+          // Small delay between downloads
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+    } catch (error) {
+      console.error('Bulk download error:', error)
+      throw error
+    }
+  }
+
 
   const handleSaveQR = async (qrData: QRCodeFormData) => {
     const isEdit = !!qrData.id
@@ -286,6 +349,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                     <span>View Analytics</span>
                   </button>
                 )}
+                
+                
                 <button
                   onClick={() => {
                     setSelectedQR(null)
@@ -310,15 +375,45 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
             </div>
           ) : (
             <div className="p-6">
+              {/* Bulk Operations Component */}
+              <BulkOperations
+                qrCodes={qrCodes}
+                selectedIds={selectedQRIds}
+                onSelectionChange={setSelectedQRIds}
+                onBulkDelete={handleBulkDelete}
+                onBulkDownload={handleBulkDownload}
+                currentPlan={currentPlan}
+                isTrialActive={isTrialActive}
+              />
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {qrCodes.map((qr) => (
-                  <QRCodeCard
-                    key={qr.id}
-                    qr={qr}
-                    onEdit={() => handleEditQR(qr)}
-                    onDelete={() => handleDeleteQR(qr.id)}
-                    onShare={() => {}} // Share functionality is handled within QRCodeCard
-                  />
+                  showBulkMode ? (
+                    <SelectableQRCodeCard
+                      key={qr.id}
+                      qr={qr}
+                      onEdit={() => handleEditQR(qr)}
+                      onDelete={() => handleDeleteQR(qr.id)}
+                      onShare={() => {}} // Share functionality is handled within QRCodeCard
+                      isSelected={selectedQRIds.includes(qr.id)}
+                      onToggleSelection={() => {
+                        if (selectedQRIds.includes(qr.id)) {
+                          setSelectedQRIds(selectedQRIds.filter(id => id !== qr.id))
+                        } else {
+                          setSelectedQRIds([...selectedQRIds, qr.id])
+                        }
+                      }}
+                      showSelection={showBulkMode}
+                    />
+                  ) : (
+                    <QRCodeCard
+                      key={qr.id}
+                      qr={qr}
+                      onEdit={() => handleEditQR(qr)}
+                      onDelete={() => handleDeleteQR(qr.id)}
+                      onShare={() => {}} // Share functionality is handled within QRCodeCard
+                    />
+                  )
                 ))}
               </div>
             </div>

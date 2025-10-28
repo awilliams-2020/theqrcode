@@ -58,6 +58,12 @@ export interface QRCodeCardProps {
   onShare: () => void
 }
 
+export interface SelectableQRCodeCardProps extends QRCodeCardProps {
+  isSelected: boolean
+  onToggleSelection: () => void
+  showSelection: boolean
+}
+
 export interface QRGeneratorModalProps {
   qrCode?: QRCode | null
   onSave: (qrData: QRCodeFormData) => void

@@ -57,6 +57,7 @@ export const PLANS = {
       'Frame styles',
       'Priority support',
       'API access',
+      'Bulk operations',
     ],
     limits: {
       qrCodes: 500,

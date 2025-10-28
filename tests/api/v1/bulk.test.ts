@@ -85,7 +85,7 @@ jest.mock('@/lib/rate-limiter', () => ({
   },
 }))
 
-describe('Bulk Operations API (Business Plan)', () => {
+describe('Bulk Operations API (Pro Plan and above)', () => {
   let testUser: any
   let testApiKey: any
 
@@ -103,6 +103,262 @@ describe('Bulk Operations API (Business Plan)', () => {
       rateLimit: testApiKey.rateLimit,
       isActive: true,
       expiresAt: null
+    })
+  })
+
+  describe('Pro Plan Access', () => {
+    let proUser: any
+    let proApiKey: any
+
+    beforeEach(async () => {
+      proUser = await createTestUser('pro')
+      proApiKey = await createTestApiKey(proUser.id, ['bulk:write'])
+      
+      // Mock API key validation for Pro plan
+      const { prisma } = require('@/lib/prisma')
+      prisma.apiKey.findUnique.mockResolvedValue({
+        id: proApiKey.id,
+        userId: proUser.id,
+        permissions: proApiKey.permissions,
+        rateLimit: proApiKey.rateLimit,
+        isActive: true,
+        expiresAt: null
+      })
+    })
+
+    it('should allow Pro plan users to create bulk QR codes', async () => {
+      const mockQRCodes = [
+        {
+          id: 'qr1',
+          name: 'Pro Bulk QR 1',
+          type: 'url',
+          content: 'https://example1.com',
+          settings: {},
+          isDynamic: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+
+      const { prisma } = require('@/lib/prisma')
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
+      prisma.qrCode.count.mockResolvedValue(0)
+      prisma.qrCode.create.mockResolvedValueOnce(mockQRCodes[0])
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
+        qrCodes: [
+          {
+            name: 'Pro Bulk QR 1',
+            type: 'url',
+            content: 'https://example1.com',
+          },
+        ],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, proApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(data.summary.total).toBe(1)
+      expect(data.summary.successful).toBe(1)
+      expect(data.summary.failed).toBe(0)
+      expect(data.created).toHaveLength(1)
+    })
+
+    it('should allow Pro plan users to delete bulk QR codes', async () => {
+      const { prisma } = require('@/lib/prisma')
+      prisma.qrCode.findMany.mockResolvedValue([
+        { id: 'qr1' },
+      ])
+      prisma.qrCode.updateMany.mockResolvedValue({ count: 1 })
+
+      const request = createMockRequest('DELETE', '/api/v1/qr-codes/bulk', {
+        qrCodeIds: ['qr1'],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, proApiKey.key)
+
+      const response = await DELETE(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.summary.total).toBe(1)
+      expect(data.summary.deleted).toBe(1)
+      expect(data.summary.notFound).toBe(0)
+    })
+  })
+
+  describe('Access Control', () => {
+    it('should deny access to users without Pro plan or above', async () => {
+      const freeUser = await createTestUser('free')
+      const freeApiKey = await createTestApiKey(freeUser.id, []) // No bulk:write permission
+      
+      // Mock API key validation for free plan
+      const { prisma } = require('@/lib/prisma')
+      prisma.apiKey.findUnique.mockResolvedValue({
+        id: freeApiKey.id,
+        userId: freeUser.id,
+        permissions: freeApiKey.permissions,
+        rateLimit: freeApiKey.rateLimit,
+        isActive: true,
+        expiresAt: null
+      })
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
+        qrCodes: [
+          {
+            name: 'Test QR',
+            type: 'url',
+            content: 'https://example.com',
+          },
+        ],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, freeApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.error).toContain('Insufficient permissions')
+    })
+
+    it('should deny access to users with insufficient permissions', async () => {
+      const starterUser = await createTestUser('starter')
+      const starterApiKey = await createTestApiKey(starterUser.id, ['qr:read']) // No bulk:write permission
+      
+      // Mock API key validation for starter plan
+      const { prisma } = require('@/lib/prisma')
+      prisma.apiKey.findUnique.mockResolvedValue({
+        id: starterApiKey.id,
+        userId: starterUser.id,
+        permissions: starterApiKey.permissions,
+        rateLimit: starterApiKey.rateLimit,
+        isActive: true,
+        expiresAt: null
+      })
+
+      const request = createMockRequest('DELETE', '/api/v1/qr-codes/bulk', {
+        qrCodeIds: ['qr1'],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, starterApiKey.key)
+
+      const response = await DELETE(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.error).toContain('Insufficient permissions')
+    })
+  })
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle empty QR codes array', async () => {
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
+        qrCodes: []
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.error).toContain('qrCodes must be a non-empty array')
+    })
+
+    it('should handle malformed QR code data', async () => {
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
+        qrCodes: [
+          {
+            name: 'Valid QR',
+            type: 'url',
+            content: 'https://valid.com',
+          },
+          {
+            name: 'Invalid QR',
+            // Missing type and content
+          },
+        ],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(400)
+      expect(data.error).toContain('Each QR code must have name, type, and content')
+    })
+
+    it('should handle Pro plan limit enforcement', async () => {
+      const { prisma } = require('@/lib/prisma')
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
+      prisma.qrCode.count.mockResolvedValue(450) // Close to Pro limit of 500
+
+      const qrCodes = Array(60).fill(null).map((_, i) => ({
+        name: `QR ${i}`,
+        type: 'url',
+        content: `https://example${i}.com`,
+      }))
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', { qrCodes })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.error).toContain('Bulk operation would exceed QR code limit')
+    })
+
+    it('should handle database errors gracefully', async () => {
+      // Mock console.error to suppress expected error output
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      
+      const { prisma } = require('@/lib/prisma')
+      prisma.subscription.findUnique.mockRejectedValue(new Error('Database connection failed'))
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
+        qrCodes: [
+          {
+            name: 'Test QR',
+            type: 'url',
+            content: 'https://example.com',
+          },
+        ],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(500)
+      expect(data.error).toContain('Failed to create bulk QR codes')
+      
+      // Restore console.error
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle bulk delete with mixed valid and invalid IDs', async () => {
+      const { prisma } = require('@/lib/prisma')
+      prisma.qrCode.findMany.mockResolvedValue([
+        { id: 'valid1' },
+        { id: 'valid2' },
+        // 'invalid1' and 'invalid2' are not found
+      ])
+      prisma.qrCode.updateMany.mockResolvedValue({ count: 2 })
+
+      const request = createMockRequest('DELETE', '/api/v1/qr-codes/bulk', {
+        qrCodeIds: ['valid1', 'valid2', 'invalid1', 'invalid2'],
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await DELETE(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.summary.total).toBe(4)
+      expect(data.summary.deleted).toBe(2)
+      expect(data.summary.notFound).toBe(2)
+      expect(data.notFound).toContain('invalid1')
+      expect(data.notFound).toContain('invalid2')
     })
   })
 

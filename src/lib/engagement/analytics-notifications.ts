@@ -3,24 +3,6 @@ import { createNotification } from './notifications'
 
 const prisma = new PrismaClient()
 
-// Helper function to get the appropriate action URL based on user's plan
-async function getAnalyticsActionUrl(userId: string, qrCodeId?: string): Promise<string | undefined> {
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId },
-    select: { plan: true }
-  })
-  
-  const plan = subscription?.plan || 'free'
-  const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
-  
-  // Free plan users don't get a redirect - just show the notification info
-  if (!hasAnalyticsAccess) {
-    return undefined
-  }
-  
-  // Paid plan users go to analytics or specific QR code page
-  return qrCodeId ? `/dashboard/qr-codes/${qrCodeId}` : '/analytics'
-}
 
 // Types for analytics events
 export interface AnalyticsEvent {
@@ -83,14 +65,11 @@ export async function detectScanSpike(userId: string, qrCodeId?: string) {
         qrCodeName = qrCode?.name || 'your QR code'
       }
 
-      const actionUrl = await getAnalyticsActionUrl(userId, qrCodeId)
-      
       await createNotification({
         userId,
         type: 'analytics_spike',
         title: '🚀 Traffic Spike Detected!',
         message: `${qrCodeName} received ${recentScans} scans in the last hour (${percentageIncrease}% above average). Great job!`,
-        actionUrl,
         priority: 'high',
       })
 
@@ -138,14 +117,11 @@ export async function notifyNewLocation(userId: string, qrCodeId: string, countr
 
       const countryCount = uniqueCountries.length
 
-      const actionUrl = await getAnalyticsActionUrl(userId, qrCodeId)
-      
       await createNotification({
         userId,
         type: 'analytics_location',
         title: '🌍 New Location Detected!',
         message: `${qrCode?.name || 'Your QR code'} was just scanned in ${city}, ${country}! That's country #${countryCount} for this QR code.`,
-        actionUrl,
         priority: 'normal',
       })
 
@@ -201,14 +177,11 @@ export async function notifyDeviceTrend(userId: string, qrCodeId?: string) {
       }
 
       if (trendMessage) {
-        const actionUrl = await getAnalyticsActionUrl(userId, qrCodeId)
-        
         await createNotification({
           userId,
           type: 'analytics_trend',
           title: '📊 Device Trend Insight',
           message: trendMessage,
-          actionUrl,
           priority: 'low',
         })
 
@@ -269,14 +242,11 @@ export async function sendHourlyAnalyticsSummary(userId: string) {
       
       const uniqueCountries = new Set(recentScans.map(s => s.country).filter(Boolean)).size
 
-      const actionUrl = await getAnalyticsActionUrl(userId)
-      
       await createNotification({
         userId,
         type: 'analytics_summary',
         title: '⏱️ Hourly Analytics Summary',
         message: `You received ${recentScans.length} scans in the last hour from ${uniqueCountries} ${uniqueCountries === 1 ? 'country' : 'countries'}. Top performer: ${topQRCode[1].name} (${topQRCode[1].count} scans)`,
-        actionUrl,
         priority: 'normal',
       })
 
@@ -334,14 +304,11 @@ export async function sendDailyAnalyticsDigest(userId: string) {
         }
       })
 
-      const actionUrl = await getAnalyticsActionUrl(userId)
-      
       await createNotification({
         userId,
         type: 'analytics_summary',
         title: '📊 Daily Analytics Digest',
         message: `${trend} ${todayScans} scans today from ${uniqueCountries.length} ${uniqueCountries.length === 1 ? 'country' : 'countries'}. ${changeText}.`,
-        actionUrl,
         priority: 'normal',
       })
 
@@ -403,14 +370,11 @@ export async function notifyPerformanceRecord(userId: string, qrCodeId: string, 
     if (currentScans > historicalMax && currentScans >= 10) {
       const timeLabel = metric === 'hourly' ? 'hour' : 'day'
       
-      const actionUrl = await getAnalyticsActionUrl(userId, qrCodeId)
-      
       await createNotification({
         userId,
         type: 'analytics_record',
         title: '🏆 New Performance Record!',
         message: `${qrCode.name} just hit a new record: ${currentScans} scans in the last ${timeLabel}! Your best performance yet.`,
-        actionUrl,
         priority: 'high',
       })
 
@@ -459,14 +423,11 @@ export async function notifyScanVelocity(userId: string) {
         })
 
         if (!recentVelocityNotification) {
-          const actionUrl = await getAnalyticsActionUrl(userId)
-          
           await createNotification({
             userId,
             type: 'analytics_spike',
             title: '⚡ High-Speed Scanning Detected!',
             message: threshold.message,
-            actionUrl,
             priority: 'urgent',
           })
 

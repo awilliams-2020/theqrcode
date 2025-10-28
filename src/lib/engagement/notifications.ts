@@ -19,7 +19,6 @@ export interface NotificationData {
   type: 'usage_alert' | 'plan_limit' | 'milestone' | 'tip' | 'update' | 'analytics_spike' | 'analytics_location' | 'analytics_trend' | 'analytics_summary' | 'analytics_record'
   title: string
   message: string
-  actionUrl?: string
   priority?: 'low' | 'normal' | 'high' | 'urgent'
 }
 
@@ -59,7 +58,6 @@ export async function createNotification(data: NotificationData) {
       type: data.type,
       title: data.title,
       message: data.message,
-      actionUrl: data.actionUrl,
       priority: data.priority || 'normal',
     },
   })
@@ -173,7 +171,6 @@ export async function notifyPlanLimitApproaching(userId: string, resourceType: s
       type: 'plan_limit',
       title: `Approaching ${resourceType} Limit`,
       message: `You've used ${current} of ${limit} ${resourceType}. Consider upgrading your plan.`,
-      actionUrl: '/pricing',
       priority: percentage >= 95 ? 'urgent' : 'high',
     })
   }
@@ -194,7 +191,6 @@ export async function notifyMilestone(userId: string, milestone: string, count: 
     type: 'milestone',
     title: 'Milestone Achieved!',
     message,
-    // No actionUrl for milestone notifications to prevent dashboard redirect
     priority: 'normal',
   })
 }
@@ -220,32 +216,26 @@ export async function sendUsageTip(userId: string) {
     {
       title: 'Pro Tip: Use Dynamic QR Codes',
       message: 'Dynamic QR codes allow you to change the destination URL without reprinting. Perfect for marketing campaigns!',
-      actionUrl: '/dashboard',
     },
     {
       title: 'Track Your Success',
       message: 'Check your analytics dashboard to see which QR codes perform best and optimize your strategy.',
-      actionUrl: '/analytics',
     },
     {
       title: 'Customize Your QR Codes',
       message: 'Add colors and logos to make your QR codes match your brand identity. Stand out from the crowd!',
-      actionUrl: '/dashboard',
     },
     {
       title: 'Export Your Data',
       message: 'Did you know you can export your analytics data for deeper analysis? Check it out in the analytics section.',
-      actionUrl: '/analytics',
     },
     {
       title: 'Advanced Analytics',
       message: 'Use location tracking and device analytics to understand your audience better and optimize your campaigns.',
-      actionUrl: '/analytics',
     },
     {
       title: 'Bulk Operations',
       message: 'Create and manage multiple QR codes at once using our bulk operations feature. Perfect for large campaigns!',
-      actionUrl: '/dashboard',
     },
   ]
 
@@ -256,7 +246,6 @@ export async function sendUsageTip(userId: string) {
     type: 'tip',
     title: randomTip.title,
     message: randomTip.message,
-    actionUrl: randomTip.actionUrl,
     priority: 'low',
   })
 }

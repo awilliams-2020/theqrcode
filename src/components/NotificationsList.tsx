@@ -9,7 +9,6 @@ interface Notification {
   type: string
   title: string
   message: string
-  actionUrl?: string | null
   priority: string
   isRead: boolean
   createdAt: string | Date
@@ -74,14 +73,6 @@ export default function NotificationsList({ initialNotifications }: Notification
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id)
-    }
-    if (notification.actionUrl) {
-      // Ensure absolute navigation by using window.location for root paths
-      if (notification.actionUrl.startsWith('/')) {
-        window.location.href = notification.actionUrl
-      } else {
-        router.push(notification.actionUrl)
-      }
     }
   }
 
@@ -231,9 +222,9 @@ export default function NotificationsList({ initialNotifications }: Notification
             <div
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
-              className={`p-6 transition-colors ${
-                notification.actionUrl ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'
-              } ${!notification.isRead ? 'bg-blue-50/30' : ''}`}
+              className={`p-6 transition-colors cursor-pointer hover:bg-gray-50 ${
+                !notification.isRead ? 'bg-blue-50/30' : ''
+              }`}
             >
               <div className="flex items-start gap-4">
                 {/* Icon */}

@@ -11,6 +11,7 @@ import {
   trackGoal as clientTrackGoal,
   trackEcommerce,
   isMatomoConfigured,
+  getMatomoConfig,
   type MatomoEcommerceItem,
 } from './matomo';
 import {
@@ -204,7 +205,13 @@ export const trackQRCode = {
       userAgent?: string;
     }
   ) {
-    if (!isMatomoConfigured()) return;
+    // For server-side tracking, we need to check the server-side configuration
+    const matomoConfig = getMatomoConfig();
+    
+    if (!matomoConfig) {
+      console.log('Matomo: Server config not available, skipping QR code tracking');
+      return;
+    }
     
     const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'}/dashboard`;
     
@@ -259,7 +266,13 @@ export const trackQRCode = {
       );
     }
 
-    await Promise.all(promises);
+    const results = await Promise.all(promises);
+    
+    // Log only if tracking failed
+    const failedCount = results.filter(r => r === false).length;
+    if (failedCount > 0) {
+      console.log(`Matomo: ${failedCount}/${results.length} tracking requests failed`);
+    }
   },
 
   /**

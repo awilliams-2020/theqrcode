@@ -345,8 +345,10 @@ export async function serverTrack(
   params: MatomoServerTrackParams
 ): Promise<boolean> {
   try {
+    const matomoConfig = getMatomoConfig();
+    
     // Early returns for invalid conditions
-    if (process.env.NODE_ENV !== 'production' || !getMatomoConfig()) {
+    if (process.env.NODE_ENV !== 'production' || !matomoConfig) {
       return false;
     }
 
@@ -364,7 +366,9 @@ export async function serverTrack(
     // Add custom dimensions
     if (params.customDimensions) {
       Object.entries(params.customDimensions).forEach(([key, value]) => {
-        trackingParams[`dimension${key}`] = value;
+        if (value !== undefined && value !== null && value !== '') {
+          trackingParams[`dimension${key}`] = value;
+        }
       });
     }
 
@@ -390,6 +394,7 @@ export async function serverTrack(
         if (!params.goal) throw new Error('Goal parameters required');
         Object.assign(trackingParams, {
           idgoal: params.goal.id,
+          action_name: 'Goal Conversion', // Required for goal tracking
           ...(params.goal.revenue && { revenue: params.goal.revenue }),
         });
         break;
@@ -415,13 +420,16 @@ export async function serverTrack(
     }
 
     // Build URL and make request
-    const response = await fetch(buildTrackingUrl(trackingParams), {
+    const trackingUrl = buildTrackingUrl(trackingParams);
+    
+    const response = await fetch(trackingUrl, {
       method: 'GET',
       headers: { 'User-Agent': params.userAgent || 'TheQRCode.io Server' },
     });
 
     return response.ok;
   } catch (error) {
+    console.error('Matomo tracking error:', error instanceof Error ? error.message : String(error));
     return false;
   }
 }

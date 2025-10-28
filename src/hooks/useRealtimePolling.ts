@@ -162,8 +162,7 @@ export function useRealtimePolling(userId: string) {
           type: notif.type,
           message: `${notif.title}: ${notif.message}`,
           timestamp: new Date(notif.createdAt),
-          read: notif.isRead,
-          actionUrl: notif.actionUrl
+          read: notif.isRead
         }))
         
         setNotifications(formattedNotifications)
@@ -232,17 +231,17 @@ export function useRealtimePolling(userId: string) {
 
     // Initial fetch
     fetchData()
-    fetchAnalyticsNotifications()
+    fetchGeneralNotifications()
 
     // Start polling interval
     const interval = setInterval(fetchData, 2000)
-    const notificationInterval = setInterval(fetchAnalyticsNotifications, 5000) // Poll notifications every 5 seconds
+    const notificationInterval = setInterval(fetchGeneralNotifications, 5000) // Poll notifications every 5 seconds
 
     return () => {
       clearInterval(interval)
       clearInterval(notificationInterval)
     }
-  }, [userId, session?.user?.id, fetchAnalyticsNotifications])
+  }, [userId, session?.user?.id, fetchGeneralNotifications])
 
   // Mark notification as read
   const markNotificationAsRead = useCallback(async (notificationId: string) => {
