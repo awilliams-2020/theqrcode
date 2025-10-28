@@ -2,8 +2,11 @@
 
 import { Home, QrCode, Users, FileText, BarChart3, Calendar, CheckCircle2, TrendingUp, Smartphone, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 
 export default function OpenHouseLanding() {
+  const { trackCTA, trackDemo } = useLandingPageTracking('open-house');
+  
   const useCases = [
     {
       icon: Home,
@@ -102,13 +105,19 @@ export default function OpenHouseLanding() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button
-                  onClick={() => window.location.href = '/auth/signup?plan=starter'}
+                  onClick={() => {
+                    trackCTA('Create Open House QR', 'hero', 'starter');
+                    window.location.href = '/auth/signup?plan=starter';
+                  }}
                   className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
                 >
                   Create Open House QR →
                 </button>
                 <button
-                  onClick={() => window.location.href = '/qr-code-generator'}
+                  onClick={() => {
+                    trackDemo();
+                    window.location.href = '/qr-code-generator';
+                  }}
                   className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:border-gray-400 transition-colors bg-white"
                 >
                   View Demo
@@ -269,7 +278,10 @@ export default function OpenHouseLanding() {
               </div>
             </div>
             <button
-              onClick={() => window.location.href = '/auth/signup?plan=starter'}
+              onClick={() => {
+                trackCTA('Get Started', 'pricing', 'starter');
+                window.location.href = '/auth/signup?plan=starter';
+              }}
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-slate-600 text-white text-lg font-semibold rounded-lg hover:from-blue-700 hover:to-slate-700 transition-colors shadow-lg"
             >
               Start Your Free Trial →

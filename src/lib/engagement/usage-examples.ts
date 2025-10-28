@@ -30,10 +30,10 @@ export async function onUserSignup(userId: string) {
   // Send welcome email
   await sendWelcomeEmail(userId)
   
-  // Create welcome notification
+  // Create welcome notification (not a pro tip, so it's allowed for all users)
   await createNotification({
     userId,
-    type: 'tip',
+    type: 'update', // Changed from 'tip' to 'update' to avoid pro restrictions
     title: 'Welcome to TheQRCode.io! 🎉',
     message: 'Start by creating your first QR code. Click here to get started.',
     actionUrl: '/dashboard',
@@ -57,16 +57,10 @@ export async function onQrCodeCreated(userId: string, qrCodeCount: number, planL
     await notifyMilestone(userId, 'qr_codes', qrCodeCount)
   }
 
-  // Send usage tip for first QR code
+  // Send usage tip for first QR code (only for pro users)
   if (qrCodeCount === 1) {
-    await createNotification({
-      userId,
-      type: 'tip',
-      title: 'Pro Tip: Make it Dynamic',
-      message: 'Dynamic QR codes let you change the destination without reprinting. Perfect for marketing!',
-      actionUrl: '/dashboard',
-      priority: 'low',
-    })
+    // This will be handled by the sendUsageTip function which already has plan restrictions
+    await sendUsageTip(userId)
   }
 }
 
@@ -92,15 +86,8 @@ export async function onQrCodeScanned(userId: string, totalScans: number) {
     const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
     
     if (hasAnalyticsAccess) {
-      // Paid users: encourage them to check analytics
-      await createNotification({
-        userId,
-        type: 'tip',
-        title: 'Check Your Analytics! 📊',
-        message: "You've got 100 scans! View detailed analytics to see how your QR codes are performing.",
-        actionUrl: '/analytics',
-        priority: 'normal',
-      })
+      // Paid users: encourage them to check analytics (use sendUsageTip for pro users)
+      await sendUsageTip(userId)
     } else {
       // Free users: celebrate the milestone without any redirect
       await createNotification({

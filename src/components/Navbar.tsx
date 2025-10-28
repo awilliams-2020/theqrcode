@@ -16,6 +16,7 @@ import {
   TrendingUp
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
+import { useMatomo } from '@/hooks/useMatomo'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -24,6 +25,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const matomo = useMatomo()
 
   // Handle scroll effect
   useEffect(() => {
@@ -66,6 +68,24 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' })
+  }
+
+  const handleSignInClick = () => {
+    matomo.trackEvent({
+      category: 'CTA',
+      action: 'click',
+      name: 'signin-navbar'
+    })
+    router.push('/auth/signin')
+  }
+
+  const handleSignUpClick = () => {
+    matomo.trackEvent({
+      category: 'CTA',
+      action: 'click',
+      name: 'signup-navbar'
+    })
+    router.push('/auth/signup')
   }
 
   const navigationItems = (session ? [
@@ -216,14 +236,14 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => router.push('/auth/signin')}
+                  onClick={handleSignInClick}
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>Sign In</span>
                 </button>
                 <button
-                  onClick={() => router.push('/auth/signup')}
+                  onClick={handleSignUpClick}
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   <UserPlus className="h-4 w-4" />
@@ -302,14 +322,14 @@ export default function Navbar() {
               ) : (
                 <div className="space-y-2">
                   <button
-                    onClick={() => router.push('/auth/signin')}
+                    onClick={handleSignInClick}
                     className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
                     <LogIn className="h-5 w-5" />
                     <span>Sign In</span>
                   </button>
                   <button
-                    onClick={() => router.push('/auth/signup')}
+                    onClick={handleSignUpClick}
                     className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
                   >
                     <UserPlus className="h-5 w-5" />

@@ -139,12 +139,12 @@ export function useRealtimePolling(userId: string) {
     setIsConnected(false)
   }, [])
 
-  // Fetch analytics notifications
-  const fetchAnalyticsNotifications = useCallback(async () => {
+  // Fetch general notifications (includes milestones)
+  const fetchGeneralNotifications = useCallback(async () => {
     if (!userId || !session?.user?.id) return
 
     try {
-      const response = await fetch('/api/notifications?category=analytics', {
+      const response = await fetch('/api/notifications?category=general', {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache'
@@ -162,7 +162,8 @@ export function useRealtimePolling(userId: string) {
           type: notif.type,
           message: `${notif.title}: ${notif.message}`,
           timestamp: new Date(notif.createdAt),
-          read: notif.isRead
+          read: notif.isRead,
+          actionUrl: notif.actionUrl
         }))
         
         setNotifications(formattedNotifications)

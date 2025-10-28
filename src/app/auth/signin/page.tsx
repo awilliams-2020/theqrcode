@@ -30,44 +30,28 @@ export default function SignInPage() {
   }, [router])
 
   const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    setError('')
+    
     try {
-      setIsGoogleLoading(true)
-      setError('')
-      
-      const result = await signIn('google', {
-        redirect: false,
+      // Let NextAuth.js handle the redirect and error page
+      await signIn('google', {
         callbackUrl: '/dashboard'
       })
-
-      if (result?.error) {
-        setError('Failed to sign in. Please try again.')
-      } else if (result?.ok) {
-        router.push('/dashboard')
-      }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsGoogleLoading(false)
     }
   }
 
   const handleGitHubSignIn = async () => {
+    setIsGitHubLoading(true)
+    setError('')
+    
     try {
-      setIsGitHubLoading(true)
-      setError('')
-      
-      const result = await signIn('github', {
-        redirect: false,
+      // Let NextAuth.js handle the redirect and error page
+      await signIn('github', {
         callbackUrl: '/dashboard'
       })
-
-      if (result?.error) {
-        setError('Failed to sign in. Please try again.')
-      } else if (result?.ok) {
-        router.push('/dashboard')
-      }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsGitHubLoading(false)
     }

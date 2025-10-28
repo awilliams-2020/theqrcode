@@ -7,12 +7,14 @@ import QRGeneratorModal from './QRGeneratorModal'
 import QRCodeCard from './QRCodeCard'
 import TrialBanner from './TrialBanner'
 import { useToast } from '@/hooks/useToast'
+import { useSubscriptionRefresh } from '@/hooks/useSubscriptionRefresh'
 import { QRCode, QRCodeFormData, Subscription, DashboardProps } from '@/types'
 import { createQRCode, updateQRCode, deleteQRCode } from '@/utils/api'
 import { captureException } from '@/lib/sentry'
 
 export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName }: DashboardProps) {
   const router = useRouter()
+  const { refreshSubscription } = useSubscriptionRefresh()
   const [showGenerator, setShowGenerator] = useState(false)
   const [selectedQR, setSelectedQR] = useState<QRCode | null>(null)
   const { showSuccess, showError, showWarning } = useToast()
@@ -27,10 +29,12 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
     if (success === 'true' && sessionId) {
       showSuccess(
         'Subscription Activated!',
-        'Your subscription has been successfully activated. Enjoy your premium features!'
+        'Your subscription has been successfully activated. Refreshing your data...'
       )
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
+      // Refresh subscription data to get updated plan
+      refreshSubscription()
     } else if (canceled === 'true') {
       showWarning(
         'Checkout Canceled',
@@ -39,7 +43,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [showSuccess, showWarning])
+  }, [showSuccess, showWarning, refreshSubscription])
 
 
   const handleEditQR = (qr: QRCode) => {

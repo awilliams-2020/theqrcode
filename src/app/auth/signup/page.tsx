@@ -3,30 +3,20 @@
 import { signIn, getSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { QrCode, CheckCircle, Mail, ArrowLeft, Lock } from 'lucide-react'
+import { QrCode, CheckCircle, ArrowLeft, Lock } from 'lucide-react'
 
-// Use standard NextAuth signIn for OAuth providers
-const signInSignup = (provider: string, options: any) => {
-  signIn(provider, {
-    ...options,
-    callbackUrl: options.callbackUrl || '/dashboard'
-  })
-}
 
-type AuthMethod = 'oauth' | 'password' | 'otp'
+type AuthMethod = 'oauth' | 'password'
 
 function SignUpForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isGitHubLoading, setIsGitHubLoading] = useState(false)
-  const [isOTPLoading, setIsOTPLoading] = useState(false)
   const [isPasswordLoading, setIsPasswordLoading] = useState(false)
   const [error, setError] = useState('')
   const [authMethod, setAuthMethod] = useState<AuthMethod>('oauth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState('free')
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -52,7 +42,6 @@ function SignUpForm() {
       setIsGoogleLoading(true)
       setError('')
       
-      
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
         await fetch('/api/auth/signup-plan', {
@@ -64,8 +53,8 @@ function SignUpForm() {
         })
       }
       
-      // Use custom signup OAuth flow
-      signInSignup('google', {
+      // Use standard OAuth flow
+      await signIn('google', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
       })
     } catch (error) {
@@ -80,7 +69,6 @@ function SignUpForm() {
       setIsGitHubLoading(true)
       setError('')
       
-      
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
         await fetch('/api/auth/signup-plan', {
@@ -92,8 +80,8 @@ function SignUpForm() {
         })
       }
       
-      // Use custom signup OAuth flow
-      signInSignup('github', {
+      // Use standard OAuth flow
+      await signIn('github', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
       })
     } catch (error) {
@@ -103,94 +91,6 @@ function SignUpForm() {
     }
   }
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!email) {
-      setError('Please enter your email')
-      return
-    }
-
-    try {
-      setIsOTPLoading(true)
-      setError('')
-
-      const response = await fetch('/api/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Failed to send code')
-        return
-      }
-
-      setOtpSent(true)
-      setError('')
-    } catch (error) {
-      setError('Failed to send code. Please try again.')
-    } finally {
-      setIsOTPLoading(false)
-    }
-  }
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!otpCode || otpCode.length !== 6) {
-      setError('Please enter the 6-digit code')
-      return
-    }
-
-    try {
-      setIsOTPLoading(true)
-      setError('')
-
-      // Store the selected plan if not free
-      if (selectedPlan !== 'free') {
-        await fetch('/api/auth/signup-plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ plan: selectedPlan }),
-        })
-      }
-
-      const result = await signIn('otp', {
-        email,
-        token: otpCode,
-        redirect: false,
-        callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard',
-      })
-
-      if (result?.error) {
-        setError(result.error)
-      } else if (result?.ok) {
-        // Force session refresh and redirect
-        await getSession()
-        if (selectedPlan !== 'free') {
-          router.push(`/auth/setup?plan=${selectedPlan}`)
-        } else {
-          router.push('/dashboard')
-        }
-        router.refresh()
-      }
-    } catch (error) {
-      setError('Failed to verify code. Please try again.')
-    } finally {
-      setIsOTPLoading(false)
-    }
-  }
-
-  const handleBackToEmail = () => {
-    setOtpSent(false)
-    setOtpCode('')
-    setError('')
-  }
 
   const handlePasswordSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -258,8 +158,6 @@ function SignUpForm() {
     setEmail('')
     setPassword('')
     setName('')
-    setOtpCode('')
-    setOtpSent(false)
     setError('')
   }
 
@@ -432,22 +330,13 @@ function SignUpForm() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => switchAuthMethod('password')}
-                  className="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Lock className="w-5 h-5 mr-2" />
-                  Password
-                </button>
-                <button
-                  onClick={() => switchAuthMethod('otp')}
-                  className="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Mail className="w-5 h-5 mr-2" />
-                  Email Code
-                </button>
-              </div>
+              <button
+                onClick={() => switchAuthMethod('password')}
+                className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Lock className="w-5 h-5 mr-2" />
+                Sign up with Password
+              </button>
             </div>
           ) : authMethod === 'password' ? (
             <form onSubmit={handlePasswordSignUp} className="space-y-4">
@@ -510,86 +399,7 @@ function SignUpForm() {
                 )}
               </button>
             </form>
-          ) : (
-            <div className="space-y-4">
-              {!otpSent ? (
-                <form onSubmit={handleSendOTP} className="space-y-4">
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email address
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isOTPLoading}
-                    className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isOTPLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Sending code...</span>
-                      </div>
-                    ) : (
-                      'Send Code'
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOTP} className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-green-700">
-                      We sent a 6-digit code to <strong>{email}</strong>
-                    </p>
-                  </div>
-                  <div>
-                    <label htmlFor="otpCode" className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter code
-                    </label>
-                    <input
-                      id="otpCode"
-                      type="text"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="123456"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest font-mono"
-                      maxLength={6}
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isOTPLoading}
-                    className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isOTPLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Verifying...</span>
-                      </div>
-                    ) : (
-                      'Verify & Create Account'
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleBackToEmail}
-                    className="w-full text-sm text-blue-600 hover:text-blue-500"
-                  >
-                    Change email address
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
+          ) : null}
 
           <div className="mt-6">
             <div className="relative">

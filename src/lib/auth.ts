@@ -3,7 +3,6 @@ import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
-import { calculateTrialEndDate } from './trial'
 import { createStripeCustomer } from './stripe'
 import { sendWelcomeEmail } from './engagement/email-automation'
 import { verifyOTPToken } from './otp'
@@ -133,18 +132,63 @@ export const authOptions: NextAuthOptions = {
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email! }
           })
-          if (dbUser) {
-            token.sub = dbUser.id
-            // Track user login in Matomo (async, don't block)
-            prisma.subscription.findUnique({
-              where: { userId: dbUser.id }
-            }).then(subscription => {
-              trackUser.login(dbUser.id, subscription?.plan || 'free').catch(() => {});
-            }).catch(() => {});
-          } else {
-            // Fallback to the user ID from the OAuth provider
-            token.sub = user.id
+          
+        if (dbUser) {
+          token.sub = dbUser.id
+          // Track user login in Matomo (async, don't block)
+          prisma.subscription.findUnique({
+            where: { userId: dbUser.id }
+          }).then(subscription => {
+            trackUser.login(dbUser.id, subscription?.plan || 'free').catch(() => {});
+          }).catch(() => {});
+        } else {
+          // User doesn't exist yet - create the user now
+          const newUser = await prisma.user.create({
+            data: {
+              email: user.email!,
+              name: user.name || null,
+              image: user.image || null,
+              emailVerified: new Date(), // OAuth users are automatically verified
+            }
+          })
+
+          // Create subscription record for new user
+          await prisma.subscription.create({
+            data: {
+              userId: newUser.id,
+              plan: 'free',
+              status: 'active',
+              trialEndsAt: null
+            }
+          })
+
+          // Try to create Stripe customer (only if Stripe is properly configured)
+          if (process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'production') {
+            try {
+              const stripeCustomer = await createStripeCustomer({
+                userId: newUser.id,
+                userEmail: newUser.email!,
+                userName: newUser.name || undefined,
+              })
+
+              // Update subscription with Stripe customer ID
+              await prisma.subscription.update({
+                where: { userId: newUser.id },
+                data: { stripeCustomerId: stripeCustomer.id }
+              })
+            } catch (stripeError) {
+              // Stripe customer creation failed, will retry later
+            }
           }
+
+          // Track user signup (async, don't block)
+          trackUser.signup(newUser.id).catch(() => {})
+
+          // Send welcome email (async, don't block)
+          sendWelcomeEmail(newUser.id).catch(() => {})
+
+          token.sub = newUser.id
+        }
         } else {
           // For credentials provider, use the user.id directly
           token.sub = user.id
@@ -158,13 +202,12 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
-    async signIn({ user, account, profile }) {
-      // For OAuth providers (Google, GitHub), allow both signup and signin
+    async signIn({ user, account }) {
+      // For OAuth providers, always allow - createUser will handle new users
       if (account?.provider === 'google' || account?.provider === 'github') {
         if (!user?.email) {
           return false
         }
-        // Allow both existing users and new signups
         return true
       }
 
@@ -175,50 +218,6 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signOut({ token }) {
       // Handle sign out if needed
-    },
-    async createUser({ user }) {
-      // Create subscription record for new users
-      try {
-        // Default to free plan with active status - the actual plan will be set by the setup-subscription API
-        // Free plans don't get trials, so no trialEndsAt
-
-        // Create subscription record first with default free plan and active status
-        await prisma.subscription.create({
-          data: {
-            userId: user.id,
-            plan: 'free' as 'free' | 'starter' | 'pro' | 'business',
-            status: 'active',
-            trialEndsAt: null
-          }
-        })
-
-        // Try to create Stripe customer (only if Stripe is properly configured)
-        if (process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'development') {
-          try {
-            const stripeCustomer = await createStripeCustomer({
-              userId: user.id,
-              userEmail: user.email!,
-              userName: user.name || undefined,
-            })
-
-            // Update subscription with Stripe customer ID
-            await prisma.subscription.update({
-              where: { userId: user.id },
-              data: { stripeCustomerId: stripeCustomer.id }
-            })
-          } catch (stripeError) {
-            // Stripe customer creation failed, will retry later
-          }
-        }
-
-        // Track user signup for OAuth users (async, don't block)
-        trackUser.signup(user.id).catch(() => {});
-
-        // Send welcome email asynchronously (don't block signup)
-        sendWelcomeEmail(user.id).catch(() => {})
-      } catch (error) {
-        throw error
-      }
     },
   },
   pages: {

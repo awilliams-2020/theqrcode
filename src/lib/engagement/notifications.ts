@@ -2,35 +2,17 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Helper function to get the appropriate action URL based on user's plan and notification type
-async function getActionUrlByPlan(userId: string, type: 'analytics' | 'milestone' | 'dashboard'): Promise<string | undefined> {
+// Helper function to check if user has pro plan access
+async function hasProPlanAccess(userId: string): Promise<boolean> {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },
     select: { plan: true }
   })
   
   const plan = subscription?.plan || 'free'
-  const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
-  
-  // Free plan users get different redirects based on notification type
-  if (!hasAnalyticsAccess) {
-    if (type === 'milestone') {
-      // Milestones are celebratory - let them go to dashboard to see their achievement
-      return '/dashboard'
-    } else if (type === 'analytics') {
-      // Analytics insights - no redirect for free users, just show the info
-      return undefined
-    }
-    // Default to dashboard for other types
-    return '/dashboard'
-  }
-  
-  // Paid plan users
-  if (type === 'analytics') {
-    return '/analytics'
-  }
-  return '/dashboard'
+  return ['pro', 'business'].includes(plan)
 }
+
 
 export interface NotificationData {
   userId: string
@@ -41,8 +23,36 @@ export interface NotificationData {
   priority?: 'low' | 'normal' | 'high' | 'urgent'
 }
 
-// Create a notification
+// Create a notification with plan-based restrictions
 export async function createNotification(data: NotificationData) {
+  // Check if this is a pro tip notification
+  if (data.type === 'tip') {
+    const hasProAccess = await hasProPlanAccess(data.userId)
+    if (!hasProAccess) {
+      // Don't create pro tip notifications for non-pro users
+      console.log(`Skipping pro tip notification for user ${data.userId} - not on pro plan`)
+      return null
+    }
+  }
+  
+  // Check if this is an analytics notification (requires paid plan)
+  const analyticsTypes = ['analytics_spike', 'analytics_location', 'analytics_trend', 'analytics_summary', 'analytics_record']
+  if (analyticsTypes.includes(data.type)) {
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: data.userId },
+      select: { plan: true }
+    })
+    
+    const plan = subscription?.plan || 'free'
+    const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+    
+    if (!hasAnalyticsAccess) {
+      // Don't create analytics notifications for free users
+      console.log(`Skipping analytics notification for user ${data.userId} - not on paid plan`)
+      return null
+    }
+  }
+  
   return prisma.notification.create({
     data: {
       userId: data.userId,
@@ -55,8 +65,18 @@ export async function createNotification(data: NotificationData) {
   })
 }
 
-// Get user notifications with optional category filtering
+// Get user notifications with optional category filtering and plan-based restrictions
 export async function getUserNotifications(userId: string, unreadOnly = false, category?: string | null) {
+  // Get user's plan to filter notifications
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId },
+    select: { plan: true }
+  })
+  
+  const plan = subscription?.plan || 'free'
+  const hasProAccess = ['pro', 'business'].includes(plan)
+  const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+  
   // Define analytics notification types
   const analyticsTypes = ['analytics_spike', 'analytics_location', 'analytics_trend', 'analytics_summary', 'analytics_record']
   const generalTypes = ['usage_alert', 'plan_limit', 'milestone', 'tip', 'update']
@@ -68,12 +88,31 @@ export async function getUserNotifications(userId: string, unreadOnly = false, c
     typeFilter = { in: generalTypes }
   }
   
+  // Build plan-based type exclusions
+  const excludedTypes: string[] = []
+  if (!hasProAccess) {
+    excludedTypes.push('tip') // Exclude pro tips for non-pro users
+  }
+  if (!hasAnalyticsAccess) {
+    excludedTypes.push(...analyticsTypes) // Exclude analytics notifications for free users
+  }
+  
+  const whereClause: any = {
+    userId,
+    ...(unreadOnly ? { isRead: false } : {}),
+    ...(category ? { type: typeFilter } : {}),
+  }
+  
+  // Add type exclusions if any
+  if (excludedTypes.length > 0) {
+    whereClause.type = {
+      notIn: excludedTypes,
+      ...(category ? typeFilter : {})
+    }
+  }
+  
   return prisma.notification.findMany({
-    where: {
-      userId,
-      ...(unreadOnly ? { isRead: false } : {}),
-      ...(category ? { type: typeFilter } : {}),
-    },
+    where: whereClause,
     orderBy: [
       { priority: 'desc' },
       { createdAt: 'desc' },
@@ -150,19 +189,17 @@ export async function notifyMilestone(userId: string, milestone: string, count: 
   const message = milestones[milestone]?.replace('{count}', count.toString())
   if (!message) return
 
-  const actionUrl = await getActionUrlByPlan(userId, 'milestone')
-
   await createNotification({
     userId,
     type: 'milestone',
     title: 'Milestone Achieved!',
     message,
-    actionUrl,
+    // No actionUrl for milestone notifications to prevent dashboard redirect
     priority: 'normal',
   })
 }
 
-// Send usage tips
+// Send usage tips - only for pro and business plans
 export async function sendUsageTip(userId: string) {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },
@@ -171,22 +208,15 @@ export async function sendUsageTip(userId: string) {
   
   const plan = subscription?.plan || 'free'
   const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+  const hasProAccess = ['pro', 'business'].includes(plan)
   
-  // Different tips for free vs paid users
-  const freeTips = [
-    {
-      title: 'Pro Tip: Use Dynamic QR Codes',
-      message: 'Dynamic QR codes allow you to change the destination URL without reprinting. Perfect for marketing campaigns!',
-      actionUrl: '/dashboard',
-    },
-    {
-      title: 'Customize Your QR Codes',
-      message: 'Add colors and logos to make your QR codes match your brand identity. Stand out from the crowd!',
-      actionUrl: '/dashboard',
-    },
-  ]
+  // Only send pro tips to pro and business plan users
+  if (!hasProAccess) {
+    return // Don't send any tips to free/starter users
+  }
   
-  const paidTips = [
+  // Pro tips for pro and business users
+  const proTips = [
     {
       title: 'Pro Tip: Use Dynamic QR Codes',
       message: 'Dynamic QR codes allow you to change the destination URL without reprinting. Perfect for marketing campaigns!',
@@ -207,10 +237,19 @@ export async function sendUsageTip(userId: string) {
       message: 'Did you know you can export your analytics data for deeper analysis? Check it out in the analytics section.',
       actionUrl: '/analytics',
     },
+    {
+      title: 'Advanced Analytics',
+      message: 'Use location tracking and device analytics to understand your audience better and optimize your campaigns.',
+      actionUrl: '/analytics',
+    },
+    {
+      title: 'Bulk Operations',
+      message: 'Create and manage multiple QR codes at once using our bulk operations feature. Perfect for large campaigns!',
+      actionUrl: '/dashboard',
+    },
   ]
 
-  const tips = hasAnalyticsAccess ? paidTips : freeTips
-  const randomTip = tips[Math.floor(Math.random() * tips.length)]
+  const randomTip = proTips[Math.floor(Math.random() * proTips.length)]
 
   await createNotification({
     userId,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 import { createOTPToken, sendOTPEmail } from '@/lib/otp'
 
 // Rate limiting: Store attempts in memory (in production, use Redis)
@@ -53,9 +54,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate and send OTP
-    const token = await createOTPToken(normalizedEmail)
-    await sendOTPEmail(normalizedEmail, token)
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    })
+
+    // Always return success even if user doesn't exist (security)
+    // This prevents email enumeration attacks
+    if (user && !user.isDeleted) {
+      // Only send OTP if user exists and is not deleted
+      const token = await createOTPToken(normalizedEmail)
+      await sendOTPEmail(normalizedEmail, token)
+    }
 
     return NextResponse.json(
       { 

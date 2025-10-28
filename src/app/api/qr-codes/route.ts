@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { QRGeneratorServer } from '@/lib/qr-generator-server'
 import { URLShortener } from '@/lib/url-shortener'
-import { notifyMilestone, notifyPlanLimitApproaching, createNotification } from '@/lib/engagement/notifications'
+import { notifyMilestone, notifyPlanLimitApproaching, createNotification, sendUsageTip } from '@/lib/engagement/notifications'
 import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
 import { trackQRCode } from '@/lib/matomo-tracking'
 import { captureException } from '@/lib/sentry'
@@ -151,16 +151,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send a tip for first QR code
+    // Send a tip for first QR code (only for pro users)
     if (newQrCodeCount === 1) {
-      createNotification({
-        userId,
-        type: 'tip',
-        title: '🎉 Congratulations on your first QR code!',
-        message: 'Track its performance in the Analytics dashboard. Pro tip: Dynamic QR codes let you change the destination anytime.',
-        actionUrl: '/analytics',
-        priority: 'normal',
-      }).catch(err => console.error('Failed to send first QR notification:', err))
+      sendUsageTip(userId).catch(err => console.error('Failed to send first QR tip:', err))
     }
 
     // Check if approaching plan limit (80%+)

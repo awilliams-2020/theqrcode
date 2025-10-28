@@ -352,6 +352,13 @@ describe('Authentication APIs', () => {
 
   describe('POST /api/auth/otp/send', () => {
     it('should send OTP successfully', async () => {
+      const { prisma } = require('@/lib/prisma')
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user123',
+        email: 'test@example.com',
+        isDeleted: false,
+      })
+
       const request = createMockRequest('POST', '/api/auth/otp/send', {
         email: 'test@example.com',
       })
@@ -362,6 +369,48 @@ describe('Authentication APIs', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.message).toBe('Code sent to your email')
+    })
+
+    it('should not send OTP if user does not exist', async () => {
+      const { prisma } = require('@/lib/prisma')
+      const { sendOTPEmail } = require('@/lib/otp')
+      prisma.user.findUnique.mockResolvedValue(null)
+
+      const request = createMockRequest('POST', '/api/auth/otp/send', {
+        email: 'nonexistent@example.com',
+      })
+
+      const response = await sendOTP(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.message).toBe('Code sent to your email')
+      // But email should not be sent
+      expect(sendOTPEmail).not.toHaveBeenCalled()
+    })
+
+    it('should not send OTP if user is deleted', async () => {
+      const { prisma } = require('@/lib/prisma')
+      const { sendOTPEmail } = require('@/lib/otp')
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user123',
+        email: 'test@example.com',
+        isDeleted: true,
+      })
+
+      const request = createMockRequest('POST', '/api/auth/otp/send', {
+        email: 'test@example.com',
+      })
+
+      const response = await sendOTP(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.message).toBe('Code sent to your email')
+      // But email should not be sent
+      expect(sendOTPEmail).not.toHaveBeenCalled()
     })
 
     it('should return 400 for invalid email format', async () => {

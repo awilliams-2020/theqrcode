@@ -2,8 +2,11 @@
 
 import { Music, QrCode, Calendar, Users, BarChart3, Mic2, CheckCircle2, TrendingUp, Smartphone, Heart, Shield, Award, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 
 export default function MusicianLanding() {
+  const { trackCTA, trackDemo } = useLandingPageTracking('musician');
+  
   const useCases = [
     {
       icon: Music,
@@ -102,13 +105,19 @@ export default function MusicianLanding() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button
-                  onClick={() => window.location.href = '/auth/signup?plan=starter'}
+                  onClick={() => {
+                    trackCTA('Create Music QR Code', 'hero', 'starter');
+                    window.location.href = '/auth/signup?plan=starter';
+                  }}
                   className="px-8 py-4 bg-violet-600 text-white text-lg font-semibold rounded-lg hover:bg-violet-700 transition-colors shadow-lg"
                 >
                   Create Music QR Code →
                 </button>
                 <button
-                  onClick={() => window.location.href = '/qr-code-generator'}
+                  onClick={() => {
+                    trackDemo();
+                    window.location.href = '/qr-code-generator';
+                  }}
                   className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:border-gray-400 transition-colors bg-white"
                 >
                   View Demo
@@ -269,7 +278,10 @@ export default function MusicianLanding() {
               </div>
             </div>
             <button
-              onClick={() => window.location.href = '/auth/signup?plan=starter'}
+              onClick={() => {
+                trackCTA('Start Your Free Trial', 'pricing', 'starter');
+                window.location.href = '/auth/signup?plan=starter';
+              }}
               className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-lg font-semibold rounded-lg hover:from-violet-700 hover:to-purple-700 transition-colors shadow-lg"
             >
               Start Your Free Trial →

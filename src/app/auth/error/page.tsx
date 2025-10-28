@@ -14,7 +14,7 @@ export default function AuthErrorPage() {
       case 'Signin':
         return {
           title: 'Account Not Found',
-          message: 'No account found with this Google/GitHub account. Please sign up first or use a different sign-in method.',
+          message: 'No account found with this email. Please sign up first to create your account.',
           action: 'Sign up for a new account'
         }
       case 'OAuthSignin':
