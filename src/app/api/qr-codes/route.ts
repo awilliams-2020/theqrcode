@@ -8,6 +8,7 @@ import { notifyMilestone, notifyPlanLimitApproaching, createNotification, sendUs
 import { startRequestTiming, endRequestTiming } from '@/lib/monitoring-setup'
 import { trackQRCode } from '@/lib/matomo-tracking'
 import { captureException } from '@/lib/sentry'
+import { logger } from '@/lib/logger'
 
 function extractIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -52,7 +53,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(qrCodes)
   } catch (error) {
-    console.error('Error fetching QR codes:', error)
+    logger.logError(error, 'API', 'Error fetching QR codes', { 
+      endpoint: '/api/qr-codes', 
+      method: 'GET',
+      requestId 
+    })
     captureException(error, { endpoint: '/api/qr-codes', method: 'GET' })
     
     endRequestTiming(requestId, request.nextUrl.pathname, request.method, 500, 
@@ -204,7 +209,12 @@ export async function POST(request: NextRequest) {
       qrImage
     })
   } catch (error) {
-    console.error('Error creating QR code:', error)
+    logger.logError(error, 'QR-CODE', 'Error creating QR code', {
+      endpoint: '/api/qr-codes',
+      method: 'POST',
+      userId: session?.user?.id,
+      requestId
+    })
     captureException(error, {
       endpoint: '/api/qr-codes',
       method: 'POST',

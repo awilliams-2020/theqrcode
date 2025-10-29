@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Bell, X, Check, AlertCircle, TrendingUp, Eye } from 'lucide-react'
-import { useUserTimezone } from '@/hooks/useUserTimezone'
-import { formatTimeAgoInTimezone } from '@/lib/date-utils'
+import { useState, useEffect, useRef } from 'react'
+import { X, Eye, TrendingUp, AlertCircle, Rocket, Globe, Smartphone, BarChart3, Trophy, Bell, Lightbulb } from 'lucide-react'
 
 interface Notification {
   id: string
   type: string
+  title?: string
   message: string
+  priority?: string
   timestamp: Date
   read: boolean
 }
@@ -30,183 +30,183 @@ export default function LiveNotifications({
 }: LiveNotificationsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-  const userTimezone = useUserTimezone()
+  const popoverRef = useRef<HTMLDivElement>(null)
 
+  // Handle click outside to close popover
   useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'scan':
-        return <Eye className="h-4 w-4 text-blue-600" />
-      case 'milestone':
-        return <TrendingUp className="h-4 w-4 text-green-600" />
-      case 'alert':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
-      case 'analytics_spike':
-        return <span className="text-lg">🚀</span>
-      case 'analytics_location':
-        return <span className="text-lg">🌍</span>
-      case 'analytics_trend':
-        return <span className="text-lg">📱</span>
-      case 'analytics_summary':
-        return <span className="text-lg">📊</span>
-      case 'analytics_record':
-        return <span className="text-lg">🏆</span>
-      default:
-        return <Bell className="h-4 w-4 text-gray-600" />
+    if (isOpen) {
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+      }, 0)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'urgent': return 'text-red-600'
+      case 'high': return 'text-orange-600'
+      case 'normal': return 'text-blue-600'
+      default: return 'text-gray-600'
     }
   }
 
-  const getNotificationColor = (type: string) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
       case 'scan':
-        return 'bg-blue-50 border-blue-200'
+        return <Eye className="h-5 w-5 text-blue-600" />
       case 'milestone':
-        return 'bg-green-50 border-green-200'
+        return <TrendingUp className="h-5 w-5 text-green-600" />
       case 'alert':
-        return 'bg-red-50 border-red-200'
+        return <AlertCircle className="h-5 w-5 text-red-600" />
       case 'analytics_spike':
-        return 'bg-yellow-50 border-yellow-200'
+        return <Rocket className="h-5 w-5 text-yellow-600" />
       case 'analytics_location':
-        return 'bg-green-50 border-green-200'
+        return <Globe className="h-5 w-5 text-green-600" />
       case 'analytics_trend':
-        return 'bg-purple-50 border-purple-200'
+        return <Smartphone className="h-5 w-5 text-purple-600" />
       case 'analytics_summary':
-        return 'bg-blue-50 border-blue-200'
+        return <BarChart3 className="h-5 w-5 text-blue-600" />
       case 'analytics_record':
-        return 'bg-orange-50 border-orange-200'
+        return <Trophy className="h-5 w-5 text-orange-600" />
+      case 'usage_alert':
+        return <AlertCircle className="h-5 w-5 text-red-600" />
+      case 'plan_limit':
+        return <BarChart3 className="h-5 w-5 text-blue-600" />
+      case 'tip':
+        return <Lightbulb className="h-5 w-5 text-yellow-600" />
+      case 'update':
+        return <Bell className="h-5 w-5 text-gray-600" />
       default:
-        return 'bg-gray-50 border-gray-200'
+        return <Bell className="h-5 w-5 text-gray-600" />
     }
   }
 
   const displayNotifications = showAll ? notifications : notifications.slice(0, 5)
-  const unreadNotifications = notifications.filter(n => !n.read)
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      onMarkAsRead(notification.id)
+    }
+  }
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Notification Bell Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <Bell className="h-6 w-6" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {/* Notifications Dropdown */}
+    <>
+      {/* Mobile backdrop overlay */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-              <div className="flex items-center space-x-2">
+        <div 
+          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <div className={`relative ${className}`} ref={popoverRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Notifications"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
+        {isOpen && (
+          <div className="fixed md:absolute right-4 md:right-0 left-4 md:left-auto top-16 md:top-auto md:mt-2 w-auto md:w-96 max-w-md bg-white rounded-lg shadow-xl z-50 border border-gray-200">
+            <div className="p-3 md:p-4 border-b border-gray-200 flex justify-between items-center gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900">Notifications</h3>
+              <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
                     onClick={onClearAll}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-xs md:text-sm text-blue-600 hover:text-blue-700 whitespace-nowrap"
                   >
                     Mark all read
                   </button>
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="md:hidden p-1 text-gray-400 hover:text-gray-600 rounded"
+                  aria-label="Close notifications"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
-            {unreadCount > 0 && (
-              <p className="text-sm text-gray-600 mt-1">
-                {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
 
-          {/* Notifications List */}
-          <div className="max-h-96 overflow-y-auto">
-            {displayNotifications.length === 0 ? (
-              <div className="p-6 text-center">
-                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No notifications yet</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  You'll see live updates here when your QR codes are scanned
-                </p>
-              </div>
-            ) : (
-              displayNotifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                    !notification.read ? getNotificationColor(notification.type) : ''
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{notification.message}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-gray-500">
-                          {isMounted 
-                            ? formatTimeAgoInTimezone(notification.timestamp, userTimezone)
-                            : 'Loading...'
-                          }
-                        </p>
+            <div className="max-h-[calc(100vh-12rem)] md:max-h-96 overflow-y-auto">
+              {displayNotifications.length === 0 ? (
+                <div className="p-6 md:p-8 text-center text-gray-500">
+                  <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p className="text-sm md:text-base">No notifications yet</p>
+                  <p className="text-xs md:text-sm text-gray-400 mt-1">
+                    You'll see live updates here when your QR codes are scanned
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {displayNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={`p-3 md:p-4 transition-colors cursor-pointer hover:bg-gray-50 active:bg-gray-100 ${
+                        !notification.read ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-start space-x-2 md:space-x-3">
+                        <div className="flex-shrink-0 mt-0.5">{getTypeIcon(notification.type)}</div>
+                        <div className="flex-1 min-w-0">
+                          {notification.title && (
+                            <p className={`text-xs md:text-sm font-medium ${getPriorityColor(notification.priority)} break-words`}>
+                              {notification.title}
+                            </p>
+                          )}
+                          <p className="text-xs md:text-sm text-gray-600 mt-1 break-words line-clamp-2">{notification.message}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notification.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
                         {!notification.read && (
-                          <button
-                            onClick={() => onMarkAsRead(notification.id)}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            Mark read
-                          </button>
+                          <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1" />
                         )}
                       </div>
                     </div>
-
-                    {!notification.read && (
-                      <div className="flex-shrink-0">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      </div>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              ))
+              )}
+            </div>
+
+            {notifications.length > 0 && (
+              <div className="p-3 border-t border-gray-200 text-center">
+                {notifications.length > 5 ? (
+                  <button
+                    onClick={() => setShowAll(!showAll)}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {showAll ? 'Show less' : `Show all ${notifications.length} notifications`}
+                  </button>
+                ) : null}
+              </div>
             )}
           </div>
-
-          {/* Footer */}
-          {notifications.length > 5 && (
-            <div className="p-4 border-t border-gray-200">
-              <button
-                onClick={() => setShowAll(!showAll)}
-                className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                {showAll ? 'Show less' : `Show all ${notifications.length} notifications`}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Click outside to close */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }

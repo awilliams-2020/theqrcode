@@ -139,12 +139,12 @@ export function useRealtimePolling(userId: string) {
     setIsConnected(false)
   }, [])
 
-  // Fetch general notifications (includes milestones)
-  const fetchGeneralNotifications = useCallback(async () => {
+  // Fetch analytics notifications only
+  const fetchAnalyticsNotifications = useCallback(async () => {
     if (!userId || !session?.user?.id) return
 
     try {
-      const response = await fetch('/api/notifications?category=general', {
+      const response = await fetch('/api/notifications?category=analytics', {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache'
@@ -231,17 +231,17 @@ export function useRealtimePolling(userId: string) {
 
     // Initial fetch
     fetchData()
-    fetchGeneralNotifications()
+    fetchAnalyticsNotifications()
 
     // Start polling interval
     const interval = setInterval(fetchData, 2000)
-    const notificationInterval = setInterval(fetchGeneralNotifications, 5000) // Poll notifications every 5 seconds
+    const notificationInterval = setInterval(fetchAnalyticsNotifications, 5000) // Poll analytics notifications every 5 seconds
 
     return () => {
       clearInterval(interval)
       clearInterval(notificationInterval)
     }
-  }, [userId, session?.user?.id, fetchGeneralNotifications])
+  }, [userId, session?.user?.id, fetchAnalyticsNotifications])
 
   // Mark notification as read
   const markNotificationAsRead = useCallback(async (notificationId: string) => {

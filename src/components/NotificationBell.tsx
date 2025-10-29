@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { X } from 'lucide-react'
+import { X, AlertCircle, BarChart3, TrendingUp, Lightbulb, Bell, Rocket, Globe, Smartphone, Trophy, Inbox } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -176,17 +176,17 @@ export default function NotificationBell() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'usage_alert': return '⚠️'
-      case 'plan_limit': return '📊'
-      case 'milestone': return '🎉'
-      case 'tip': return '💡'
-      case 'update': return '🔔'
-      case 'analytics_spike': return '🚀'
-      case 'analytics_location': return '🌍'
-      case 'analytics_trend': return '📱'
-      case 'analytics_summary': return '📊'
-      case 'analytics_record': return '🏆'
-      default: return '📬'
+      case 'usage_alert': return <AlertCircle className="h-5 w-5 text-red-600" />
+      case 'plan_limit': return <BarChart3 className="h-5 w-5 text-blue-600" />
+      case 'milestone': return <TrendingUp className="h-5 w-5 text-green-600" />
+      case 'tip': return <Lightbulb className="h-5 w-5 text-yellow-600" />
+      case 'update': return <Bell className="h-5 w-5 text-gray-600" />
+      case 'analytics_spike': return <Rocket className="h-5 w-5 text-yellow-600" />
+      case 'analytics_location': return <Globe className="h-5 w-5 text-green-600" />
+      case 'analytics_trend': return <Smartphone className="h-5 w-5 text-purple-600" />
+      case 'analytics_summary': return <BarChart3 className="h-5 w-5 text-blue-600" />
+      case 'analytics_record': return <Trophy className="h-5 w-5 text-orange-600" />
+      default: return <Inbox className="h-5 w-5 text-gray-600" />
     }
   }
 
@@ -259,7 +259,7 @@ export default function NotificationBell() {
                       }`}
                     >
                       <div className="flex items-start space-x-2 md:space-x-3">
-                        <span className="text-xl md:text-2xl flex-shrink-0">{getTypeIcon(notification.type)}</span>
+                        <div className="flex-shrink-0 mt-0.5">{getTypeIcon(notification.type)}</div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs md:text-sm font-medium ${getPriorityColor(notification.priority)} break-words`}>
                             {notification.title}
