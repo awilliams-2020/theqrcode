@@ -14,7 +14,7 @@ npx prisma migrate deploy || echo "⚠ Migration failed or no migrations to run"
 echo "Generating Prisma client..."
 npx prisma generate
 
-# Start the Next.js application
+# Start the Next.js application with logging
 echo "Starting Next.js application..."
-exec npm start
+exec npm start 2>&1 | tee /var/log/theqrcode.log
 
