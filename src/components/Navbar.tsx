@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import { useMatomo } from '@/hooks/useMatomo'
+import { trackSignup } from '@/lib/matomo-tracking'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -80,6 +81,10 @@ export default function Navbar() {
   }
 
   const handleSignUpClick = () => {
+    // Track comprehensive signup CTA click
+    trackSignup.clickSignupCTA('Sign Up', 'navbar', 'home')
+    
+    // Also track with existing method for backward compatibility
     matomo.trackEvent({
       category: 'CTA',
       action: 'click',

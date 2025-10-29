@@ -4,6 +4,7 @@ import { signIn, getSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { QrCode, CheckCircle, ArrowLeft, Lock } from 'lucide-react'
+import { useSignupTracking } from '@/hooks/useSignupTracking'
 
 
 type AuthMethod = 'oauth' | 'password'
@@ -20,6 +21,19 @@ function SignUpForm() {
   const [selectedPlan, setSelectedPlan] = useState('free')
   const router = useRouter()
   const searchParams = useSearchParams()
+  
+  // Initialize comprehensive signup tracking
+  const {
+    trackPlanSelection,
+    trackAuthMethodSelection,
+    trackSignupFormStart,
+    trackSignupFormSuccess,
+    trackSignupFormError,
+    trackSignupAbandonment,
+  } = useSignupTracking({
+    pageName: 'signup',
+    source: searchParams?.get('source') || 'direct'
+  })
 
   useEffect(() => {
     // Get plan from URL parameters
@@ -27,6 +41,7 @@ function SignUpForm() {
     // Business plan is temporarily hidden
     if (plan && ['free', 'starter', 'pro'].includes(plan)) {
       setSelectedPlan(plan)
+      trackPlanSelection(plan)
     }
 
     // Check if user is already signed in
@@ -35,12 +50,16 @@ function SignUpForm() {
         router.push('/dashboard')
       }
     })
-  }, [router, searchParams])
+  }, [router, searchParams, trackPlanSelection])
 
   const handleGoogleSignUp = async () => {
     try {
       setIsGoogleLoading(true)
       setError('')
+      
+      // Track auth method selection and form start
+      trackAuthMethodSelection('google')
+      trackSignupFormStart('google')
       
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
@@ -59,6 +78,7 @@ function SignUpForm() {
       })
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
+      trackSignupFormError('google', 'oauth_error')
     } finally {
       setIsGoogleLoading(false)
     }
@@ -68,6 +88,10 @@ function SignUpForm() {
     try {
       setIsGitHubLoading(true)
       setError('')
+      
+      // Track auth method selection and form start
+      trackAuthMethodSelection('github')
+      trackSignupFormStart('github')
       
       // Store the selected plan in a cookie for the auth callback
       if (selectedPlan !== 'free') {
@@ -86,6 +110,7 @@ function SignUpForm() {
       })
     } catch (error) {
       setError('An unexpected error occurred. Please try again.')
+      trackSignupFormError('github', 'oauth_error')
     } finally {
       setIsGitHubLoading(false)
     }
@@ -97,12 +122,17 @@ function SignUpForm() {
 
     if (!email || !password) {
       setError('Please enter your email and password')
+      trackSignupFormError('password', 'validation_error')
       return
     }
 
     try {
       setIsPasswordLoading(true)
       setError('')
+
+      // Track auth method selection and form start
+      trackAuthMethodSelection('password')
+      trackSignupFormStart('password')
 
       // Create account with password
       const response = await fetch('/api/auth/signup-password', {
@@ -115,6 +145,7 @@ function SignUpForm() {
 
       if (!response.ok) {
         setError(data.error || 'Failed to create account')
+        trackSignupFormError('password', 'api_error')
         return
       }
 
@@ -137,7 +168,11 @@ function SignUpForm() {
 
       if (result?.error) {
         setError(result.error)
+        trackSignupFormError('password', 'signin_error')
       } else if (result?.ok) {
+        // Track successful signup
+        trackSignupFormSuccess('password')
+        
         await getSession()
         if (selectedPlan !== 'free') {
           router.push(`/auth/setup?plan=${selectedPlan}`)
@@ -148,6 +183,7 @@ function SignUpForm() {
       }
     } catch (error) {
       setError('Failed to create account. Please try again.')
+      trackSignupFormError('password', 'network_error')
     } finally {
       setIsPasswordLoading(false)
     }
@@ -159,6 +195,11 @@ function SignUpForm() {
     setPassword('')
     setName('')
     setError('')
+    
+    // Track auth method switch
+    if (method === 'password') {
+      trackAuthMethodSelection('password')
+    }
   }
 
   const planFeatures = {

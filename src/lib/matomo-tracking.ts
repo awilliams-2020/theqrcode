@@ -889,6 +889,206 @@ export const trackEngagement = {
 };
 
 /**
+ * Comprehensive Signup tracking functions
+ */
+export const trackSignup = {
+  /**
+   * Track signup CTA click (client-side)
+   */
+  clickSignupCTA(
+    ctaText: string,
+    location: 'navbar' | 'hero' | 'pricing' | 'footer' | 'inline',
+    pageName: string,
+    planSelected?: string
+  ) {
+    const actionMap = {
+      navbar: MatomoEventAction.CLICK_CTA,
+      hero: MatomoEventAction.CLICK_CTA_HERO,
+      pricing: MatomoEventAction.CLICK_CTA_PRICING,
+      footer: MatomoEventAction.CLICK_CTA_FOOTER,
+      inline: MatomoEventAction.CLICK_CTA,
+    };
+
+    clientTrackEvent({
+      category: MatomoEventCategory.CTA,
+      action: actionMap[location],
+      name: `${ctaText} - ${pageName}`,
+      customDimensions: createCustomDimensions({
+        LANDING_PAGE: pageName,
+        CTA_LOCATION: location,
+        PAYMENT_PLAN: planSelected,
+        CONVERSION_TYPE: 'signup',
+      }),
+    });
+
+    // Track goal for signup CTA clicks
+    clientTrackGoal({
+      goalId: MatomoGoals.LANDING_PAGE_SIGNUP,
+      customDimensions: createCustomDimensions({
+        LANDING_PAGE: pageName,
+        PAYMENT_PLAN: planSelected,
+      }),
+    });
+  },
+
+  /**
+   * Track signup page view (client-side)
+   */
+  viewSignupPage(planSelected?: string, source?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.USER,
+      action: MatomoEventAction.SIGNUP,
+      name: 'signup_page_view',
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: planSelected,
+        CONVERSION_TYPE: 'signup',
+        CAMPAIGN_SOURCE: source,
+      }),
+    });
+  },
+
+  /**
+   * Track plan selection (client-side)
+   */
+  selectPlan(plan: string, source: 'pricing_page' | 'signup_page' | 'landing_page') {
+    clientTrackEvent({
+      category: MatomoEventCategory.SUBSCRIPTION,
+      action: MatomoEventAction.SUBSCRIBE,
+      name: `plan_selected_${plan}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'plan_selection',
+        LANDING_PAGE: source,
+      }),
+    });
+  },
+
+  /**
+   * Track auth method selection (client-side)
+   */
+  selectAuthMethod(method: 'google' | 'github' | 'password', plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.USER,
+      action: MatomoEventAction.SIGNUP,
+      name: `auth_method_${method}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'auth_method_selection',
+      }),
+    });
+  },
+
+  /**
+   * Track signup form submission start (client-side)
+   */
+  startSignupForm(method: 'google' | 'github' | 'password', plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.FORM,
+      action: MatomoEventAction.SUBMIT_FORM,
+      name: `signup_form_start_${method}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_form_start',
+      }),
+    });
+  },
+
+  /**
+   * Track signup form submission success (client-side)
+   */
+  completeSignupForm(method: 'google' | 'github' | 'password', plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.FORM,
+      action: MatomoEventAction.SUBMIT_FORM,
+      name: `signup_form_success_${method}`,
+      value: 1,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_form_success',
+      }),
+    });
+  },
+
+  /**
+   * Track signup form submission error (client-side)
+   */
+  errorSignupForm(method: 'google' | 'github' | 'password', errorType: string, plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.ERROR,
+      action: MatomoEventAction.ERROR_OCCURRED,
+      name: `signup_form_error_${method}`,
+      value: 0,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_form_error',
+        ERROR_TYPE: errorType,
+      }),
+    });
+  },
+
+  /**
+   * Track trial start (client-side)
+   */
+  startTrial(plan: string, source?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.SUBSCRIPTION,
+      action: MatomoEventAction.START_TRIAL,
+      name: `trial_started_${plan}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'trial_start',
+        CAMPAIGN_SOURCE: source,
+      }),
+    });
+
+    clientTrackGoal({
+      goalId: MatomoGoals.TRIAL_STARTED,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+      }),
+    });
+  },
+
+  /**
+   * Track signup completion (client-side)
+   */
+  completeSignup(plan: string, method: 'google' | 'github' | 'password', source?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.USER,
+      action: MatomoEventAction.SIGNUP,
+      name: `signup_completed_${plan}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_complete',
+        CAMPAIGN_SOURCE: source,
+      }),
+    });
+
+    clientTrackGoal({
+      goalId: MatomoGoals.USER_SIGNUP,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+      }),
+    });
+  },
+
+  /**
+   * Track signup abandonment (client-side)
+   */
+  abandonSignup(step: 'plan_selection' | 'auth_method' | 'form_filling', plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.USER,
+      action: MatomoEventAction.SIGNUP,
+      name: `signup_abandoned_${step}`,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_abandon',
+      }),
+    });
+  },
+};
+
+/**
  * Landing page tracking functions
  */
 export const trackLandingPage = {
@@ -990,5 +1190,6 @@ export default {
   trackError,
   trackEngagement,
   trackLandingPage,
+  trackSignup,
 };
 

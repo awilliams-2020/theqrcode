@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Check, Zap } from 'lucide-react'
 import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
+import { trackSignup } from '@/lib/matomo-tracking'
 
 interface PricingPageProps {
   session: any
@@ -142,6 +143,9 @@ export default function PricingPage({ session }: PricingPageProps) {
     // Track the CTA click
     const planName = plans.find(p => p.id === planId)?.name || planId;
     trackCTA(`Subscribe ${planName}`, 'pricing', planId);
+    
+    // Track plan selection for signup flow
+    trackSignup.selectPlan(planId, 'pricing_page');
     
     // If not logged in, redirect to sign up with selected plan
     if (!session) {

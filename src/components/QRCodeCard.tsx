@@ -144,14 +144,16 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">{qr.name}</h3>
-            {qr.isDynamic && (
-              <div className="flex items-center mt-1 sm:mt-0 sm:mr-2">
-                <BarChart3 className="h-4 w-4 text-green-600 mr-1" />
-                <span className="text-xs text-green-600 font-medium">Analytics Enabled</span>
-              </div>
-            )}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 min-w-0">{qr.name}</h3>
+              {qr.isDynamic && (
+                <div className="flex items-center flex-shrink-0">
+                  <BarChart3 className="h-4 w-4 text-green-600 mr-1" />
+                  <span className="text-xs text-green-600 font-medium whitespace-nowrap">Analytics Enabled</span>
+                </div>
+              )}
+            </div>
           </div>
           <p className="text-sm text-gray-600 capitalize">{qr.type} QR Code</p>
         </div>

@@ -4,6 +4,7 @@ import { QrCode, BarChart3, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
 import Script from 'next/script'
 import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
+import { trackSignup } from '@/lib/matomo-tracking'
 import PublicQRGenerator from './PublicQRGenerator'
 
 export default function LandingPage() {
@@ -189,7 +190,14 @@ export default function LandingPage() {
                   <button
                     onClick={() => {
                       const planId = plan.name.toLowerCase()
+                      
+                      // Track comprehensive signup flow
+                      trackSignup.clickSignupCTA(plan.cta, 'pricing', 'home', planId)
+                      trackSignup.selectPlan(planId, 'landing_page')
+                      
+                      // Also track with existing method for backward compatibility
                       trackCTA(plan.cta, 'pricing', planId)
+                      
                       // Small delay to ensure tracking completes before navigation
                       setTimeout(() => {
                         window.location.href = `/auth/signup?plan=${planId}`

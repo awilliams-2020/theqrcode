@@ -184,13 +184,15 @@ export default function SelectableQRCodeCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">{qr.name}</h3>
-            {qr.isDynamic && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1 sm:mt-0">
-                Dynamic
-              </span>
-            )}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 min-w-0">{qr.name}</h3>
+              {qr.isDynamic && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex-shrink-0 whitespace-nowrap">
+                  Dynamic
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-sm text-gray-600 mt-1 capitalize">{qr.type} QR Code</p>
         </div>
@@ -307,18 +309,12 @@ export default function SelectableQRCodeCard({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-1">
-            <BarChart3 className="h-4 w-4 text-gray-400" />
-            <span className="text-sm text-gray-600">Total Scans</span>
-          </div>
           <p className="text-lg font-semibold text-gray-900">{totalScans}</p>
+          <p className="text-sm text-gray-600">Total Scans</p>
         </div>
         <div className="text-center">
-          <div className="flex items-center justify-center space-x-1">
-            <BarChart3 className="h-4 w-4 text-green-400" />
-            <span className="text-sm text-gray-600">This Week</span>
-          </div>
           <p className="text-lg font-semibold text-gray-900">{recentScans}</p>
+          <p className="text-sm text-gray-600">This Week</p>
         </div>
       </div>
 
