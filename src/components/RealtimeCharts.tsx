@@ -15,7 +15,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js'
-const { Bar, Pie } = require('react-chartjs-2')
+import { Bar, Pie } from 'react-chartjs-2'
 
 // Register Chart.js components
 ChartJS.register(

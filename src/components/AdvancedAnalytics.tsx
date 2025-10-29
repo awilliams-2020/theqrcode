@@ -37,7 +37,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js'
-const { Line, Bar } = require('react-chartjs-2')
+import { Line, Bar } from 'react-chartjs-2'
 
 // Register Chart.js components
 ChartJS.register(
