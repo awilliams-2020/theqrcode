@@ -10,6 +10,7 @@ import BulkOperations from './BulkOperations'
 import TrialBanner from './TrialBanner'
 import { useToast } from '@/hooks/useToast'
 import { useSubscriptionRefresh } from '@/hooks/useSubscriptionRefresh'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 import { QRCode, QRCodeFormData, Subscription, DashboardProps } from '@/types'
 import { createQRCode, updateQRCode, deleteQRCode } from '@/utils/api'
 import { captureException } from '@/lib/sentry'
@@ -17,6 +18,7 @@ import { captureException } from '@/lib/sentry'
 export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName }: DashboardProps) {
   const router = useRouter()
   const { refreshSubscription } = useSubscriptionRefresh()
+  const { t } = useSimpleTranslation()
   const [showGenerator, setShowGenerator] = useState(false)
   const [selectedQR, setSelectedQR] = useState<QRCode | null>(null)
   const [selectedQRIds, setSelectedQRIds] = useState<string[]>([])
@@ -40,8 +42,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
 
     if (success === 'true' && sessionId) {
       showSuccess(
-        'Subscription Activated!',
-        'Your subscription has been successfully activated. Refreshing your data...'
+        t('success'),
+        t('subscriptionActivatedMessage')
       )
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -49,8 +51,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       refreshSubscription()
     } else if (canceled === 'true') {
       showWarning(
-        'Checkout Canceled',
-        'Your checkout was canceled. You can try again anytime from the pricing page.'
+        t('checkoutCanceled'),
+        t('checkoutCanceledMessage')
       )
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -131,7 +133,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
         if (!isEdit && response.error?.includes('limit reached')) {
           showWarning(
             'QR Code Limit Reached',
-            `You've reached the maximum number of QR codes for your ${currentPlan} plan. Upgrade to create more QR codes.`
+            t('qrCodeLimitReached', { plan: currentPlan })
           )
           return
         }
@@ -140,8 +142,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       }
 
       showSuccess(
-        isEdit ? 'QR Code Updated' : 'QR Code Created',
-        `${qrData.name} has been ${isEdit ? 'updated' : 'saved'} successfully!`
+        isEdit ? t('qrCodeUpdated') : t('qrCodeCreated'),
+        t('qrCodeSaveSuccess', { name: qrData.name, action: isEdit ? t('updated') : t('saved') })
       )
       
       // Refresh the page to show the updated QR code
@@ -149,8 +151,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
     } catch (error) {
       captureException(error, { component: 'Dashboard', action: 'save-qr-code', isEdit })
       showError(
-        'Failed to Save QR Code',
-        'An unexpected error occurred. Please try again.'
+        t('failedToSaveQRCode'),
+        t('unexpectedErrorOccurred')
       )
     }
   }
@@ -164,8 +166,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       }
 
       showSuccess(
-        'QR Code Deleted',
-        'The QR code has been deleted successfully.'
+        t('qrCodeDeleted'),
+        t('qrCodeDeleteSuccess')
       )
 
       // Refresh the page to update the QR codes list
@@ -173,8 +175,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
     } catch (error) {
       captureException(error, { component: 'Dashboard', action: 'delete-qr-code', qrId })
       showError(
-        'Failed to Delete QR Code',
-        'An unexpected error occurred. Please try again.'
+        t('failedToDeleteQRCode'),
+        t('unexpectedErrorOccurred')
       )
     }
   }
@@ -211,7 +213,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
             } catch (error) {
               console.error('Error creating checkout:', error)
               captureException(error, { component: 'Dashboard', action: 'create-checkout', plan: 'pro' })
-              showError('Checkout Failed', 'Unable to start checkout. Please try again.')
+              showError(t('checkoutFailed'), t('unableToStartCheckout'))
             }
           }}
           onViewPlans={() => window.location.href = '/pricing'}
@@ -223,15 +225,15 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{t('currentPlan')}</h3>
                   <p className="text-sm text-gray-600">
-                    {planDisplayName} • {limits.qrCodes === -1 ? 'Unlimited' : `${limits.qrCodes.toLocaleString()}`} QR codes • {limits.scans === -1 ? 'Unlimited' : `${limits.scans.toLocaleString()}`} scans/month
+                    {planDisplayName} • {limits.qrCodes === -1 ? t('unlimited') : `${limits.qrCodes.toLocaleString()}`} {t('qrCodes')} • {limits.scans === -1 ? t('unlimited') : `${limits.scans.toLocaleString()}`} {t('scansPerMonth')}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   {isTrialActive && (
                     <div className="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full text-sm font-medium border border-blue-200">
-                      Trial Active
+                      {t('trialActive')}
                     </div>
                   )}
                   {currentPlan === 'free' && (
@@ -240,7 +242,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                       className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
                       <BarChart3 className="h-4 w-4" />
-                      <span>View Plans</span>
+                      <span>{t('viewPlans')}</span>
                     </button>
                   )}
                 </div>
@@ -254,11 +256,11 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-800">Total QR Codes</p>
+                <p className="text-sm text-gray-800">{t('totalQRCodes')}</p>
                 <p className="text-2xl font-bold text-gray-900">{qrCodes.length}</p>
                 {limits.qrCodes !== -1 && (
                   <p className="text-xs text-gray-700">
-                    {limits.qrCodes - qrCodes.length} remaining
+                    {limits.qrCodes - qrCodes.length} {t('remaining')}
                   </p>
                 )}
               </div>
@@ -279,11 +281,11 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-800">Total Scans</p>
+                <p className="text-sm text-gray-800">{t('qrTotalScans')}</p>
                 <p className="text-2xl font-bold text-gray-900">{totalScans.toLocaleString()}</p>
                 {limits.scans !== -1 && (
                   <p className="text-xs text-gray-700">
-                    {limits.scans - totalScans} remaining
+                    {limits.scans - totalScans} {t('remaining')}
                   </p>
                 )}
               </div>
@@ -304,11 +306,11 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-800">Dynamic QR Codes</p>
+                <p className="text-sm text-gray-800">{t('dynamicQRCodes')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {qrCodes.filter(qr => qr.isDynamic).length}
                 </p>
-                <p className="text-xs text-gray-700">With analytics</p>
+                <p className="text-xs text-gray-700">{t('withAnalytics')}</p>
               </div>
               <Settings className="h-8 w-8 text-purple-600" />
             </div>
@@ -317,11 +319,11 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-800">Avg. Scans per QR</p>
+                <p className="text-sm text-gray-800">{t('avgScansPerQR')}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {qrCodes.length > 0 ? Math.round(totalScans / qrCodes.length) : 0}
                 </p>
-                <p className="text-xs text-gray-700">This month</p>
+                <p className="text-xs text-gray-700">{t('thisMonth')}</p>
               </div>
               <Download className="h-8 w-8 text-orange-600" />
             </div>
@@ -334,9 +336,9 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Your QR Codes</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('yourQRCodes')}</h2>
                 <p className="text-sm text-gray-800 mt-1">
-                  Manage and track your QR codes
+                  {t('manageAndTrackQRCodes')}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -346,7 +348,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                     className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium self-start sm:self-center"
                   >
                     <BarChart3 className="h-4 w-4" />
-                    <span>View Analytics</span>
+                    <span>{t('viewAnalytics')}</span>
                   </button>
                 )}
                 
@@ -359,7 +361,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium self-start sm:self-center"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Create QR Code</span>
+                  <span>{t('qrGenerate')}</span>
                 </button>
               </div>
             </div>
@@ -368,9 +370,9 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           {qrCodes.length === 0 ? (
             <div className="p-12 text-center">
               <QrCode className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noQRCodesYet')}</h3>
               <p className="text-gray-800">
-                Create your first QR code to get started with analytics
+                {t('createFirstQRCodeMessage')}
               </p>
             </div>
           ) : (

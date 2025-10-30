@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Trash2, Download, Check, X, AlertTriangle, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { QRCode } from '@/types'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 
 interface BulkOperationsProps {
   qrCodes: QRCode[]
@@ -27,6 +28,7 @@ export default function BulkOperations({
   const [isProcessing, setIsProcessing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { showSuccess, showError, showWarning } = useToast()
+  const { t } = useSimpleTranslation()
 
   // Check if user has Pro plan access
   const hasProAccess = currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'business'))
@@ -57,14 +59,14 @@ export default function BulkOperations({
     try {
       await onBulkDelete(selectedIds)
       showSuccess(
-        'QR Codes Deleted',
-        `Successfully deleted ${selectedIds.length} QR code${selectedIds.length > 1 ? 's' : ''}`
+        t('qrCodesDeleted'),
+        t('bulkDeleteSuccess', { count: selectedIds.length.toString() })
       )
       onSelectionChange([])
       setShowDeleteConfirm(false)
     } catch (error) {
       console.error('Bulk delete error:', error)
-      showError('Delete Failed', 'Failed to delete QR codes. Please try again.')
+      showError(t('deleteFailed'), t('bulkDeleteFailed'))
     } finally {
       setIsProcessing(false)
     }
@@ -78,12 +80,12 @@ export default function BulkOperations({
     try {
       await onBulkDownload(selectedIds)
       showSuccess(
-        'Download Started',
-        `Downloading ${selectedIds.length} QR code${selectedIds.length > 1 ? 's' : ''}`
+        t('downloadStarted'),
+        t('bulkDownloadMessage', { count: selectedIds.length.toString() })
       )
     } catch (error) {
       console.error('Bulk download error:', error)
-      showError('Download Failed', 'Failed to download QR codes. Please try again.')
+      showError(t('downloadFailed'), t('bulkDownloadFailed'))
     } finally {
       setIsProcessing(false)
     }
@@ -104,14 +106,14 @@ export default function BulkOperations({
               <div className="flex items-center space-x-2">
                 <Check className="h-5 w-5 text-blue-600" />
                 <span className="text-sm font-medium text-blue-900">
-                  {selectedIds.length} QR code{selectedIds.length > 1 ? 's' : ''} selected
+                  {t('qrCodesSelected', { count: selectedIds.length.toString() })}
                 </span>
               </div>
               <button
                 onClick={() => onSelectionChange([])}
                 className="text-sm text-blue-600 hover:text-blue-800 underline"
               >
-                Clear selection
+{t('clearSelection')}
               </button>
             </div>
             
@@ -126,7 +128,7 @@ export default function BulkOperations({
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                <span>Download</span>
+                <span>{t('download')}</span>
               </button>
               
               <button
@@ -135,7 +137,7 @@ export default function BulkOperations({
                 className="flex items-center space-x-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
                 <Trash2 className="h-4 w-4" />
-                <span>Delete</span>
+                <span>{t('delete')}</span>
               </button>
             </div>
           </div>
@@ -153,7 +155,7 @@ export default function BulkOperations({
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <span className="text-sm font-medium text-gray-700">
-                Select all ({qrCodes.length})
+                {t('selectAll')} ({qrCodes.length})
               </span>
             </label>
           </div>
@@ -169,17 +171,17 @@ export default function BulkOperations({
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
-                  Delete QR Codes
+                  {t('deleteQRCodes')}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  This action cannot be undone.
+                  {t('actionCannotBeUndone')}
                 </p>
               </div>
             </div>
             
             <p className="text-gray-700 mb-6">
-              Are you sure you want to delete <strong>{selectedIds.length}</strong> QR code{selectedIds.length > 1 ? 's' : ''}? 
-              This will permanently remove them and all associated analytics data.
+              {t('bulkDeleteConfirm', { count: selectedIds.length.toString() })} 
+              {t('bulkDeleteConfirmMessage')}
             </p>
             
             <div className="flex space-x-3">
@@ -188,7 +190,7 @@ export default function BulkOperations({
                 disabled={isProcessing}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Cancel
+{t('cancel')}
               </button>
               <button
                 onClick={handleBulkDelete}
@@ -198,12 +200,12 @@ export default function BulkOperations({
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Deleting...</span>
+                    <span>{t('deleting')}</span>
                   </>
                 ) : (
                   <>
                     <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
+                    <span>{t('delete')}</span>
                   </>
                 )}
               </button>

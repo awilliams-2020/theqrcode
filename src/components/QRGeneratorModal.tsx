@@ -6,12 +6,14 @@ import { QRGenerator as QRGen } from '@/lib/qr-generator'
 import { QRCodeOptions, MenuData } from '@/types'
 import { QRCode, QRGeneratorModalProps, QRCodeFormData, QRStylingOptions } from '@/types'
 import { getPlanFeatures } from '@/utils/plan-utils'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 import { QR_CODE_SIZES, FRAME_SIZES, LOGO_CONSTRAINTS, QR_DOT_TYPES, QR_CORNER_SQUARE_TYPES, QR_CORNER_DOT_TYPES, QR_BACKGROUND_TYPES } from '@/constants'
 import MenuBuilder from './MenuBuilder'
 import WiFiInput from './WiFiInput'
 import VCardInput from './VCardInput'
 
 export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan = 'free', isTrialActive = false }: QRGeneratorModalProps) {
+  const { t } = useSimpleTranslation()
   const [formData, setFormData] = useState({
     name: qrCode?.name || '',
     type: qrCode?.type || 'url',
@@ -533,23 +535,23 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 >
-                  <option value="url">Website URL</option>
-                  <option value="text">Plain Text</option>
-                  <option value="wifi">WiFi Network</option>
-                  <option value="contact">Contact Card</option>
-                  {planFeatures.hasAllQRTypes && <option value="email">Email Address</option>}
-                  {(currentPlan === 'pro' || currentPlan === 'business') && <option value="menu">Restaurant Menu</option>}
+                  <option value="url">{t('websiteURL')}</option>
+                  <option value="text">{t('plainText')}</option>
+                  <option value="wifi">{t('wifiNetwork')}</option>
+                  <option value="contact">{t('contactCard')}</option>
+                  {planFeatures.hasAllQRTypes && <option value="email">{t('emailAddress')}</option>}
+                  {(currentPlan === 'pro' || currentPlan === 'business') && <option value="menu">{t('restaurantMenu')}</option>}
                 </select>
                 {currentPlan !== 'pro' && currentPlan !== 'business' && (
                   <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                     <p className="text-sm text-purple-800">
-                      <strong>Upgrade to Pro</strong> to access the Menu Builder and create beautiful digital restaurant menus
+                      <strong>{t('upgradeToPro')}</strong> {t('upgradeToProMessage')}
                     </p>
                     <button
                       onClick={() => window.location.href = '/pricing'}
                       className="mt-2 text-sm text-purple-600 hover:text-purple-800 font-medium"
                     >
-                      View Plans →
+                      {t('viewPlans')} →
                     </button>
                   </div>
                 )}
@@ -558,7 +560,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
               {/* Quick Examples */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quick Examples
+                  {t('quickExamples')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {demoExamples.map((example, index) => (
@@ -584,10 +586,10 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                 <div className="grid grid-cols-1 gap-4">
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Size: {formData.size}px
+                      {t('size')}: {formData.size}px
                       {!planFeatures.hasSizeCustomization && (
                         <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          Starter+
+                          {t('starterPlus')}
                         </span>
                       )}
                     </label>
@@ -607,13 +609,13 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     {!planFeatures.hasSizeCustomization && (
                       <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>Upgrade to Starter</strong> to customize QR code size ({QR_CODE_SIZES.MIN}px - {QR_CODE_SIZES.MAX}px)
+                          <strong>{t('upgradeToStarter')}</strong> {t('upgradeToStarterMessage', { min: QR_CODE_SIZES.MIN.toString(), max: QR_CODE_SIZES.MAX.toString() })}
                         </p>
                         <button
                           onClick={() => window.location.href = '/pricing'}
                           className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
-                          View Plans →
+                          {t('viewPlans')} →
                         </button>
                       </div>
                     )}
@@ -658,22 +660,22 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Color Customization</h4>
-                        <p className="text-sm text-gray-600">Customize QR code and background colors</p>
+                        <h4 className="text-sm font-medium text-gray-900">{t('colorCustomization')}</h4>
+                        <p className="text-sm text-gray-600">{t('colorCustomizationDescription')}</p>
                       </div>
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        Starter+
+                        {t('starterPlus')}
                       </span>
                     </div>
                     <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-800">
-                        <strong>Upgrade to Starter</strong> to customize QR code colors and create branded QR codes
+                        <strong>{t('upgradeToStarter')}</strong> {t('upgradeToStarterColorMessage')}
                       </p>
                       <button
                         onClick={() => window.location.href = '/pricing'}
                         className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        View Plans →
+                        {t('viewPlans')} →
                       </button>
                     </div>
                   </div>
@@ -684,7 +686,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                   <div className="space-y-4">
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-900">QR Code Styling</h4>
+                        <h4 className="text-sm font-medium text-gray-900">{t('qrCodeStyling')}</h4>
                         {!planFeatures.hasProFeatures && (
                           <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
                             Pro
@@ -827,7 +829,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                               </label>
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                  <label className="block text-xs text-gray-600 mb-1">Start Color</label>
+                                  <label className="block text-xs text-gray-600 mb-1">{t('startColor')}</label>
                                   <input
                                     type="color"
                                     value={formData.styling.gradientColorStops?.[0]?.color || formData.color.light}
@@ -849,7 +851,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-gray-600 mb-1">End Color</label>
+                                  <label className="block text-xs text-gray-600 mb-1">{t('endColor')}</label>
                                   <input
                                     type="color"
                                     value={formData.styling.gradientColorStops?.[1]?.color || '#F3F4F6'}
@@ -879,7 +881,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
 
                     <div className="border-t pt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-900">Logo Embedding</h4>
+                        <h4 className="text-sm font-medium text-gray-900">{t('logoEmbedding')}</h4>
                         {!planFeatures.hasProFeatures && (
                           <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
                             Pro
@@ -903,8 +905,8 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                             <svg className="h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-sm text-gray-600">Upload Logo</span>
-                            <span className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</span>
+                            <span className="text-sm text-gray-600">{t('uploadLogo')}</span>
+                            <span className="text-xs text-gray-500 mt-1">{t('logoFileFormat')}</span>
                           </label>
                         </div>
                       ) : (
@@ -945,19 +947,19 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                     {/* Preview of styling options */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Dot Styles</div>
+                        <div className="text-xs font-medium text-gray-700 mb-1">{t('dotStyles')}</div>
                         <div className="text-xs text-gray-500">Square, Rounded, Classy, etc.</div>
                       </div>
                       <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Corner Styles</div>
+                        <div className="text-xs font-medium text-gray-700 mb-1">{t('cornerStyles')}</div>
                         <div className="text-xs text-gray-500">Custom corner square & dots</div>
                       </div>
                       <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Gradient Backgrounds</div>
+                        <div className="text-xs font-medium text-gray-700 mb-1">{t('gradientBackgrounds')}</div>
                         <div className="text-xs text-gray-500">Linear & radial gradients</div>
                       </div>
                       <div className="p-2 bg-white border border-gray-200 rounded-lg opacity-60">
-                        <div className="text-xs font-medium text-gray-700 mb-1">Logo Embedding</div>
+                        <div className="text-xs font-medium text-gray-700 mb-1">{t('logoEmbedding')}</div>
                         <div className="text-xs text-gray-500">Professional logo integration</div>
                       </div>
                     </div>
@@ -1012,9 +1014,9 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
 
                 {formData.isDynamic && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-medium text-blue-900 mb-2">Analytics Enabled</h4>
+                    <h4 className="font-medium text-blue-900 mb-2">{t('analyticsEnabled')}</h4>
                     <p className="text-sm text-blue-700">
-                      This QR code will track scans and provide detailed analytics including location, device type, and timing data.
+                      {t('analyticsDescription')}
                     </p>
                   </div>
                 )}
@@ -1022,7 +1024,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                 <div className="space-y-4 mb-6">
                   {planFeatures.hasProFeatures ? (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-3 text-center">Download Formats</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 text-center">{t('downloadFormats')}</h4>
                       <div className="flex space-x-3 justify-center">
                         <button
                           onClick={() => handleDownload('png')}

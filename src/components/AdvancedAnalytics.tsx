@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 import { formatTimeAgoInTimezone, formatDateInTimezone } from '@/lib/date-utils'
 import {
   Chart as ChartJS,
@@ -112,6 +113,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
   const [error, setError] = useState<string | null>(null)
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d')
   const [selectedQRCode, setSelectedQRCode] = useState<string | null>(null)
+  const { t } = useSimpleTranslation()
   const [showExportModal, setShowExportModal] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const userTimezone = useUserTimezone()
@@ -186,7 +188,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
     return (
       <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
         <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Advanced Analytics</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('advancedAnalytics')}</h3>
         <p className="text-gray-600 mb-6">
           Upgrade to Starter plan or higher to access detailed analytics, charts, and export features.
         </p>
@@ -214,7 +216,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         <div className="text-red-600 mb-4">
           <BarChart3 className="h-16 w-16 mx-auto" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Analytics</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('errorLoadingAnalytics')}</h3>
         <p className="text-gray-600 mb-6">{error}</p>
         <button 
           onClick={fetchAnalytics}
@@ -232,7 +234,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
         {/* Empty State Placeholder */}
         <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
           <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Analytics Data Yet</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('noAnalyticsDataYet')}</h3>
           <p className="text-gray-600 mb-6">
             Create some QR codes and start getting scans to see your analytics data here.
           </p>
@@ -274,7 +276,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
           {/* Charts Placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Scan Trends</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('scanTrends')}</h3>
               <div className="h-64 flex items-end justify-between space-x-1">
                 {Array.from({ length: 14 }).map((_, index) => (
                   <div key={index} className="flex flex-col items-center flex-1">
@@ -286,7 +288,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             </div>
 
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Device Types</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('deviceTypes')}</h3>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center justify-between">
@@ -307,7 +309,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
           {/* Additional Charts Placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('peakHours')}</h3>
               <div className="h-64 flex items-end justify-between space-x-1">
                 {Array.from({ length: 12 }).map((_, index) => (
                   <div key={index} className="flex flex-col items-center flex-1">
@@ -319,7 +321,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             </div>
 
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('weeklyActivity')}</h3>
               <div className="space-y-3">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
                   <div key={day} className="flex items-center justify-between">
@@ -337,7 +339,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
           {/* Geographic and Browser Data Placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Countries</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('topCountries')}</h3>
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-center justify-between">
@@ -355,7 +357,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
             </div>
 
             <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Browser Usage</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('browserUsage')}</h3>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center justify-between">

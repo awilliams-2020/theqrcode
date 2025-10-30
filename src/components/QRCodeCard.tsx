@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { QrCode, BarChart3, Edit, Trash2, Copy, Download, Eye, Check, X, Share2 } from 'lucide-react'
 import { QRGenerator } from '@/lib/qr-generator'
 import { useToast } from '@/hooks/useToast'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 import { QRCode, QRCodeCardProps } from '@/types'
 import { useUserTimezone } from '@/hooks/useUserTimezone'
 import { formatTimeAgoInTimezone } from '@/lib/date-utils'
@@ -18,6 +19,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const { showSuccess, showError } = useToast()
+  const { t } = useSimpleTranslation()
   const userTimezone = useUserTimezone()
 
   // Close actions popup when clicking outside
@@ -150,7 +152,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
               {qr.isDynamic && (
                 <div className="flex items-center flex-shrink-0">
                   <BarChart3 className="h-4 w-4 text-green-600 mr-1" />
-                  <span className="text-xs text-green-600 font-medium whitespace-nowrap">Analytics Enabled</span>
+                  <span className="text-xs text-green-600 font-medium whitespace-nowrap">{t('analyticsEnabled')}</span>
                 </div>
               )}
             </div>
@@ -177,7 +179,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                {t('edit')}
               </button>
               <button
                 onClick={handlePreview}
@@ -191,21 +193,21 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
               >
                 <Share2 className="h-4 w-4 mr-2" />
-                Share
+                {t('share')}
               </button>
               <button
                 onClick={handleCopyLink}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
               >
                 {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                {copied ? 'Copied!' : 'Copy Link'}
+                {copied ? t('copied') : t('copyLink')}
               </button>
               <button
                 onClick={handleDownload}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download
+                {t('download')}
               </button>
               <hr className="my-1" />
               <button
@@ -213,7 +215,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                 className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 flex items-center"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                {t('delete')}
               </button>
             </div>
           )}
@@ -237,11 +239,11 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-900">{totalScans}</p>
-          <p className="text-xs text-gray-600">Total Scans</p>
+          <p className="text-xs text-gray-600">{t('qrTotalScans')}</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-blue-600">{recentScans}</p>
-          <p className="text-xs text-gray-600">This Week</p>
+          <p className="text-xs text-gray-600">{t('qrThisWeek')}</p>
         </div>
       </div>
 
@@ -300,7 +302,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                   {qr.isDynamic && (
                     <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                       <BarChart3 className="h-3 w-3 mr-1" />
-                      Analytics Enabled
+                      {t('analyticsEnabled')}
                     </div>
                   )}
                 </div>
@@ -309,7 +311,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
               {/* Content Preview based on type */}
               {qr.type === 'contact' && (
                 <div className="bg-white border border-gray-200 rounded-lg p-3 mb-3">
-                  <h5 className="font-medium text-gray-900 mb-2">Contact Information</h5>
+                  <h5 className="font-medium text-gray-900 mb-2">{t('contactInformation')}</h5>
                   {(() => {
                     try {
                       const contact = JSON.parse(qr.content)
@@ -407,7 +409,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                               </div>
                               <div>
                                 <p className="text-sm text-gray-500">Type</p>
-                                <p className="text-gray-900 font-medium">Hidden Network</p>
+                                <p className="text-gray-900 font-medium">{t('hiddenNetwork')}</p>
                               </div>
                             </div>
                           )}
@@ -435,7 +437,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <h5 className="font-medium text-gray-900">Plain Text</h5>
+                    <h5 className="font-medium text-gray-900">{t('plainText')}</h5>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex items-start">
@@ -461,7 +463,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <h5 className="font-medium text-gray-900">Email Address</h5>
+                    <h5 className="font-medium text-gray-900">{t('emailAddress')}</h5>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex items-center">
@@ -486,7 +488,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                   className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   <Download className="h-4 w-4" />
-                  <span>Download</span>
+                  <span>{t('download')}</span>
                 </button>
                 <button
                   onClick={() => setShowPreview(false)}
@@ -511,7 +513,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
             </div>
             
             <div className="text-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete QR Code</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('deleteQRCode')}</h3>
               <p className="text-sm text-gray-600">
                 Are you sure you want to delete <strong>"{qr.name}"</strong>? This action cannot be undone.
               </p>
@@ -528,7 +530,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
                 onClick={confirmDelete}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Delete
+                {t('delete')}
               </button>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { QRGenerator } from '@/lib/qr-generator'
 import { useToast } from '@/hooks/useToast'
 import { QRCode, SelectableQRCodeCardProps } from '@/types'
 import { useUserTimezone } from '@/hooks/useUserTimezone'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 import { formatTimeAgoInTimezone } from '@/lib/date-utils'
 import QRShareModal from './QRShareModal'
 
@@ -28,6 +29,7 @@ export default function SelectableQRCodeCard({
   const [isGenerating, setIsGenerating] = useState(false)
   const { showSuccess, showError } = useToast()
   const userTimezone = useUserTimezone()
+  const { t } = useSimpleTranslation()
 
   // Close actions popup when clicking outside
   useEffect(() => {
@@ -222,7 +224,7 @@ export default function SelectableQRCodeCard({
                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Eye className="h-4 w-4" />
-                  <span>Preview</span>
+                  <span>{t('preview')}</span>
                 </button>
                 
                 <button
@@ -244,7 +246,7 @@ export default function SelectableQRCodeCard({
                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Download className="h-4 w-4" />
-                  <span>Download</span>
+                  <span>{t('download')}</span>
                 </button>
                 
                 <button
@@ -255,7 +257,7 @@ export default function SelectableQRCodeCard({
                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Share2 className="h-4 w-4" />
-                  <span>Share</span>
+                  <span>{t('share')}</span>
                 </button>
                 
                 <button
@@ -266,7 +268,7 @@ export default function SelectableQRCodeCard({
                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Edit className="h-4 w-4" />
-                  <span>Edit</span>
+                  <span>{t('edit')}</span>
                 </button>
                 
                 <button
@@ -277,7 +279,7 @@ export default function SelectableQRCodeCard({
                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>Delete</span>
+                  <span>{t('delete')}</span>
                 </button>
               </div>
             </div>

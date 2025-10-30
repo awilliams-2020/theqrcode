@@ -16,8 +16,10 @@ import {
   TrendingUp
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
+import SimpleLanguageSwitcher from './SimpleLanguageSwitcher'
 import { useMatomo } from '@/hooks/useMatomo'
 import { trackSignup } from '@/lib/matomo-tracking'
+import { useSimpleTranslation } from '@/hooks/useSimpleTranslation'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -27,6 +29,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const matomo = useMatomo()
+  const { t } = useSimpleTranslation()
 
   // Handle scroll effect
   useEffect(() => {
@@ -94,9 +97,9 @@ export default function Navbar() {
   }
 
   const navigationItems = (session ? [
-    { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-    { name: 'Analytics', href: '/analytics', icon: TrendingUp },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: t('dashboard'), href: '/dashboard', icon: BarChart3 },
+    { name: t('analytics'), href: '/analytics', icon: TrendingUp },
+    { name: t('settings'), href: '/dashboard/settings', icon: Settings },
   ] : []).filter(item => item.href !== pathname)
 
   // Loading skeleton component
@@ -213,6 +216,9 @@ export default function Navbar() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Language Switcher */}
+            <SimpleLanguageSwitcher />
+            
             {session ? (
               <div className="flex items-center space-x-3">
                 {/* Notification Bell */}
@@ -235,7 +241,7 @@ export default function Navbar() {
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
+                  <span>{t('logout')}</span>
                 </button>
               </div>
             ) : (
@@ -245,14 +251,14 @@ export default function Navbar() {
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                 >
                   <LogIn className="h-4 w-4" />
-                  <span>Sign In</span>
+                  <span>{t('signin')}</span>
                 </button>
                 <button
                   onClick={handleSignUpClick}
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   <UserPlus className="h-4 w-4" />
-                  <span>Sign Up</span>
+                  <span>{t('signup')}</span>
                 </button>
               </div>
             )}
@@ -298,6 +304,11 @@ export default function Navbar() {
 
             {/* Mobile Auth Section */}
             <div className="border-t border-gray-200 pt-3 mt-3">
+              {/* Language Switcher for Mobile */}
+              <div className="px-3 py-2">
+                <SimpleLanguageSwitcher />
+              </div>
+              
               {session ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-3 py-2">
@@ -321,7 +332,7 @@ export default function Navbar() {
                     className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <LogOut className="h-5 w-5" />
-                    <span>Sign Out</span>
+                    <span>{t('logout')}</span>
                   </button>
                 </div>
               ) : (
@@ -331,14 +342,14 @@ export default function Navbar() {
                     className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
                     <LogIn className="h-5 w-5" />
-                    <span>Sign In</span>
+                    <span>{t('signin')}</span>
                   </button>
                   <button
                     onClick={handleSignUpClick}
                     className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
                   >
                     <UserPlus className="h-5 w-5" />
-                    <span>Sign Up</span>
+                    <span>{t('signup')}</span>
                   </button>
                 </div>
               )}
