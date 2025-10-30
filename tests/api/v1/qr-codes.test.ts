@@ -22,6 +22,7 @@ jest.mock('@/lib/prisma', () => ({
     qrCode: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -180,6 +181,7 @@ describe('QR Codes API', () => {
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
       prisma.qrCode.count.mockResolvedValue(0)
       prisma.qrCode.create.mockResolvedValue(mockQRCode)
+      prisma.qrCode.findUnique.mockResolvedValue(mockQRCode)
 
       const request = createMockRequest('POST', '/api/v1/qr-codes', {
         name: 'New QR Code',
@@ -194,6 +196,113 @@ describe('QR Codes API', () => {
       expect(response.status).toBe(201)
       expect(data.name).toBe('New QR Code')
       expect(data.type).toBe('url')
+    })
+
+    it('should create a dynamic QR code with tracking URL', async () => {
+      const mockQRCode = {
+        id: 'qr1',
+        name: 'Dynamic QR Code',
+        type: 'url',
+        content: 'https://example.com',
+        settings: {},
+        isDynamic: true,
+        shortUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      const updatedQRCode = {
+        ...mockQRCode,
+        shortUrl: 'https://short.ly/abc123'
+      }
+
+      const { prisma } = require('@/lib/prisma')
+      const { URLShortener } = require('@/lib/url-shortener')
+      const { QRGeneratorServer } = require('@/lib/qr-generator-server')
+
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
+      prisma.qrCode.count.mockResolvedValue(0)
+      prisma.qrCode.create.mockResolvedValue(mockQRCode)
+      prisma.qrCode.findUnique.mockResolvedValue(updatedQRCode)
+      URLShortener.generateShortUrl.mockResolvedValue('https://short.ly/abc123')
+      QRGeneratorServer.generateQRCode.mockResolvedValue('data:image/png;base64,mock-qr-image')
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes', {
+        name: 'Dynamic QR Code',
+        type: 'url',
+        content: 'https://example.com',
+        isDynamic: true,
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(data.shortUrl).toBe('https://short.ly/abc123')
+      // Verify that QR image was generated with the shortUrl, not the original content
+      expect(QRGeneratorServer.generateQRCode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: 'https://short.ly/abc123'
+        })
+      )
+    })
+
+    it('should create a dynamic contact QR code with tracking URL', async () => {
+      const contactContent = JSON.stringify({
+        firstName: 'John',
+        lastName: 'Doe',
+        phone: '+1-555-0123',
+        email: 'john@example.com'
+      })
+
+      const mockQRCode = {
+        id: 'qr1',
+        name: 'Contact QR',
+        type: 'contact',
+        content: contactContent,
+        settings: {},
+        isDynamic: true,
+        shortUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      const updatedQRCode = {
+        ...mockQRCode,
+        shortUrl: 'https://short.ly/abc123'
+      }
+
+      const { prisma } = require('@/lib/prisma')
+      const { URLShortener } = require('@/lib/url-shortener')
+      const { QRGeneratorServer } = require('@/lib/qr-generator-server')
+
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
+      prisma.qrCode.count.mockResolvedValue(0)
+      prisma.qrCode.create.mockResolvedValue(mockQRCode)
+      prisma.qrCode.findUnique.mockResolvedValue(updatedQRCode)
+      URLShortener.generateShortUrl.mockResolvedValue('https://short.ly/abc123')
+      QRGeneratorServer.generateQRCode.mockResolvedValue('data:image/png;base64,mock-qr-image')
+
+      const request = createMockRequest('POST', '/api/v1/qr-codes', {
+        name: 'Contact QR',
+        type: 'contact',
+        content: contactContent,
+        isDynamic: true,
+      })
+      const requestWithAuth = addApiKeyToRequest(request, testApiKey.key)
+
+      const response = await POST(requestWithAuth)
+      const data = await response.json()
+
+      expect(response.status).toBe(201)
+      expect(data.shortUrl).toBe('https://short.ly/abc123')
+      // Verify that contact QR code also uses the shortUrl for tracking
+      expect(QRGeneratorServer.generateQRCode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: 'https://short.ly/abc123'
+        })
+      )
     })
 
     it('should return 400 for missing required fields', async () => {

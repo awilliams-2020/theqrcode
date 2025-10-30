@@ -10,6 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:coverage:api": "jest --testPathPatterns=api --testEnvironment=node --coverage",
+    "test:coverage:components": "jest --testPathPatterns=components --testEnvironment=jsdom --coverage",
     "test:api": "jest --testPathPatterns=api --testEnvironment=node",
     "test:components": "jest --testPathPatterns=components --testEnvironment=jsdom",
     "test:bulk": "jest --testPathPatterns=api.*bulk --testEnvironment=node"

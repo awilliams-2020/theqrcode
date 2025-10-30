@@ -31,3 +31,24 @@ if (typeof global.fetch === 'undefined') {
 if (typeof global.Headers === 'undefined') {
   global.Headers = require('node-fetch').Headers
 }
+
+// Suppress console output during tests for cleaner output
+// Only show console output if VERBOSE env var is set
+const originalError = console.error
+const originalLog = console.log
+const originalWarn = console.warn
+
+if (!process.env.VERBOSE) {
+  // Use no-op functions to suppress output
+  console.error = () => {}
+  console.log = () => {}
+  // Keep console.warn for actual warnings (uncomment if you want to suppress those too)
+  // console.warn = () => {}
+}
+
+// Restore console methods if needed for debugging
+global.restoreConsole = () => {
+  console.error = originalError
+  console.log = originalLog
+  console.warn = originalWarn
+}

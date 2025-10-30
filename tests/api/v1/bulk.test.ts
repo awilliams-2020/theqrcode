@@ -20,6 +20,7 @@ jest.mock('@/lib/prisma', () => ({
     qrCode: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
@@ -144,6 +145,7 @@ describe('Bulk Operations API (Pro Plan and above)', () => {
       prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
       prisma.qrCode.count.mockResolvedValue(0)
       prisma.qrCode.create.mockResolvedValueOnce(mockQRCodes[0])
+      prisma.qrCode.findUnique.mockResolvedValueOnce(mockQRCodes[0])
 
       const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
         qrCodes: [
@@ -397,6 +399,9 @@ describe('Bulk Operations API (Pro Plan and above)', () => {
       prisma.qrCode.create
         .mockResolvedValueOnce(mockQRCodes[0])
         .mockResolvedValueOnce(mockQRCodes[1])
+      prisma.qrCode.findUnique
+        .mockResolvedValueOnce(mockQRCodes[0])
+        .mockResolvedValueOnce(mockQRCodes[1])
 
       const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
         qrCodes: [
@@ -503,6 +508,7 @@ describe('Bulk Operations API (Pro Plan and above)', () => {
       prisma.qrCode.create
         .mockResolvedValueOnce({ id: 'qr1', name: 'Success QR', type: 'url', content: 'https://success.com', settings: {}, isDynamic: false, createdAt: new Date(), updatedAt: new Date() })
         .mockRejectedValueOnce(new Error('Database error'))
+      prisma.qrCode.findUnique.mockResolvedValueOnce({ id: 'qr1', name: 'Success QR', type: 'url', content: 'https://success.com', settings: {}, isDynamic: false, createdAt: new Date(), updatedAt: new Date() })
 
       const request = createMockRequest('POST', '/api/v1/qr-codes/bulk', {
         qrCodes: [
