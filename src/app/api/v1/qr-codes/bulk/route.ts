@@ -97,7 +97,8 @@ async function createBulkQRCodes(req: NextRequest, auth: any): Promise<NextRespo
         }
 
         // Generate QR code image
-        const qrContent = (isDynamic && shortUrl && type !== 'contact') ? shortUrl : content
+        // For dynamic QR codes, use the short URL for tracking; for static, use the original content
+        const qrContent = (isDynamic && shortUrl) ? shortUrl : content
         const frameSettings = settings?.frame || { style: 'square', color: '#000000', size: 20 }
         if (!frameSettings.size) {
           frameSettings.size = 20
@@ -111,17 +112,22 @@ async function createBulkQRCodes(req: NextRequest, auth: any): Promise<NextRespo
           frame: frameSettings
         })
 
+        // Get the updated QR code with the shortUrl
+        const finalQrCode = await prisma.qrCode.findUnique({
+          where: { id: qrCode.id }
+        })
+
         createdQRCodes.push({
-          id: qrCode.id,
-          name: qrCode.name,
-          type: qrCode.type,
-          content: qrCode.content,
-          shortUrl: qrCode.shortUrl,
-          settings: qrCode.settings,
-          isDynamic: qrCode.isDynamic,
+          id: finalQrCode!.id,
+          name: finalQrCode!.name,
+          type: finalQrCode!.type,
+          content: finalQrCode!.content,
+          shortUrl: finalQrCode!.shortUrl,
+          settings: finalQrCode!.settings,
+          isDynamic: finalQrCode!.isDynamic,
           qrImage,
-          createdAt: qrCode.createdAt,
-          updatedAt: qrCode.updatedAt
+          createdAt: finalQrCode!.createdAt,
+          updatedAt: finalQrCode!.updatedAt
         })
       } catch (error) {
         console.error(`Error creating QR code ${i + 1}:`, error)

@@ -165,7 +165,8 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
     }
 
     // Generate QR code image
-    const qrContent = (isDynamic && shortUrl && type !== 'contact') ? shortUrl : content
+    // For dynamic QR codes, use the short URL for tracking; for static, use the original content
+    const qrContent = (isDynamic && shortUrl) ? shortUrl : content
     const frameSettings = settings?.frame || { style: 'square', color: '#000000', size: 20 }
     if (!frameSettings.size) {
       frameSettings.size = 20
@@ -179,18 +180,23 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
       frame: frameSettings
     })
 
+    // Get the updated QR code with the shortUrl
+    const finalQrCode = await prisma.qrCode.findUnique({
+      where: { id: qrCode.id }
+    })
+
     const response = {
-      id: qrCode.id,
-      name: qrCode.name,
-      type: qrCode.type,
-      content: qrCode.content,
-      shortUrl: qrCode.shortUrl,
-      settings: qrCode.settings,
-      isDynamic: qrCode.isDynamic,
-      isSandbox: qrCode.isSandbox,
+      id: finalQrCode!.id,
+      name: finalQrCode!.name,
+      type: finalQrCode!.type,
+      content: finalQrCode!.content,
+      shortUrl: finalQrCode!.shortUrl,
+      settings: finalQrCode!.settings,
+      isDynamic: finalQrCode!.isDynamic,
+      isSandbox: finalQrCode!.isSandbox,
       qrImage,
-      createdAt: qrCode.createdAt,
-      updatedAt: qrCode.updatedAt
+      createdAt: finalQrCode!.createdAt,
+      updatedAt: finalQrCode!.updatedAt
     }
 
     const responseTime = Date.now() - startTime

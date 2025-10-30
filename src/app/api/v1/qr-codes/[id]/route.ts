@@ -120,7 +120,8 @@ async function updateQRCode(req: NextRequest, auth: any, params: { id: string })
     // Regenerate QR code image if content or settings changed
     let qrImage = null
     if (content !== undefined || settings !== undefined) {
-      const qrContent = (qrCode.isDynamic && qrCode.shortUrl && qrCode.type !== 'contact') 
+      // For dynamic QR codes, use the short URL for tracking; for static, use the original content
+      const qrContent = (qrCode.isDynamic && qrCode.shortUrl) 
         ? qrCode.shortUrl 
         : qrCode.content
       

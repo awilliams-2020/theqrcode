@@ -60,14 +60,19 @@ export default function SelectableQRCodeCard({
       if (qr.content) {
         setIsGenerating(true)
         try {
-              const qrImage = await QRGenerator.generateQRCode({
-                type: qr.type as any,
-                content: qr.content,
-                size: (qr.settings?.size as number) || 256,
-                color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
-                frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,
-                styling: (qr.settings?.styling as any) || undefined
-              })
+          // For dynamic QR codes, use the shortUrl if available for tracking
+          const qrContent = (qr.isDynamic && qr.shortUrl) 
+            ? qr.shortUrl 
+            : qr.content
+          
+          const qrImage = await QRGenerator.generateQRCode({
+            type: qr.type as any,
+            content: qrContent,
+            size: (qr.settings?.size as number) || 256,
+            color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
+            frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,
+            styling: (qr.settings?.styling as any) || undefined
+          })
           setQrCodeImage(qrImage)
         } catch (error) {
           console.error('Error generating QR code:', error)

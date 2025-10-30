@@ -1,13 +1,12 @@
 /**
  * Centralized logging utility for the application
- * Provides consistent log formatting with domain and category support
+ * Provides consistent log formatting with category support
  */
 
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
 export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR'
 
 interface LogContext {
-  domain?: string
   userId?: string
   requestId?: string
   component?: string
@@ -16,17 +15,6 @@ interface LogContext {
 }
 
 class Logger {
-  private getDomainFromRequest(request?: Request): string | undefined {
-    if (!request) return undefined
-    
-    try {
-      const url = new URL(request.url)
-      return url.hostname
-    } catch {
-      return undefined
-    }
-  }
-
   private formatLogMessage(
     level: LogLevel,
     category: LogCategory,
@@ -34,11 +22,10 @@ class Logger {
     context?: LogContext
   ): string {
     const timestamp = new Date().toISOString()
-    const domainTag = context?.domain ? `[${context.domain}]` : '[UNKNOWN-DOMAIN]'
     const categoryTag = `[${category}]`
     const levelTag = `[${level}]`
     
-    let logMessage = `[${timestamp}] ${levelTag} ${categoryTag} ${domainTag} ${message}`
+    let logMessage = `[${timestamp}] ${levelTag} ${categoryTag} ${message}`
     
     // Add additional context if provided
     if (context) {
@@ -51,7 +38,7 @@ class Logger {
       
       // Add any other custom context
       Object.entries(context).forEach(([key, value]) => {
-        if (!['domain', 'userId', 'requestId', 'component', 'action'].includes(key)) {
+        if (!['userId', 'requestId', 'component', 'action'].includes(key)) {
           contextParts.push(`${key}:${value}`)
         }
       })
@@ -135,16 +122,15 @@ class Logger {
     })
   }
 
-  // Request-based logging (extracts domain from request)
+  // Request-based logging
   logRequest(
     level: LogLevel,
     category: LogCategory,
     message: string,
     request: Request,
-    additionalContext?: Omit<LogContext, 'domain'>
+    additionalContext?: LogContext
   ): void {
-    const domain = this.getDomainFromRequest(request)
-    this.log(level, category, message, { ...additionalContext, domain })
+    this.log(level, category, message, additionalContext)
   }
 }
 
@@ -152,4 +138,4 @@ class Logger {
 export const logger = new Logger()
 
 // Export types for use in other files
-export type { LogContext, LogCategory, LogLevel }
+export type { LogContext }

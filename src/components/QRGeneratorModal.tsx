@@ -156,9 +156,16 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     
     setIsGenerating(true)
     try {
+        // For dynamic QR codes, use the shortUrl if available (editing existing dynamic QR)
+        // Otherwise use the content as-is for static QR codes
+        // Note: When creating new dynamic QR codes, shortUrl won't be available yet until after save
+        const qrContent = (formData.isDynamic && qrCode?.shortUrl) 
+          ? qrCode.shortUrl 
+          : formData.content
+        
         const options: QRCodeOptions = {
           type: formData.type as any,
-          content: formData.content,
+          content: qrContent,
           size: formData.size,
           color: formData.color,
           frame: formData.frame,
@@ -176,7 +183,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     } finally {
       setIsGenerating(false)
     }
-    }, [formData, logoFile])
+    }, [formData, logoFile, qrCode?.shortUrl])
 
   useEffect(() => {
     generateQRCode()
@@ -207,12 +214,18 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     if (!qrImage) return
 
     try {
+      // For dynamic QR codes, use the shortUrl if available (editing existing dynamic QR)
+      // Otherwise use the content as-is for static QR codes
+      const qrContent = (formData.isDynamic && qrCode?.shortUrl) 
+        ? qrCode.shortUrl 
+        : formData.content
+      
       let downloadData = qrImage
       
       if (format === 'svg') {
         const options = {
           type: formData.type as any,
-          content: formData.content,
+          content: qrContent,
           size: formData.size,
           color: formData.color,
           frame: formData.frame,

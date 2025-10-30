@@ -90,11 +90,16 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
       for (const qrId of qrIds) {
         const qr = qrCodes.find(q => q.id === qrId)
         if (qr) {
+          // For dynamic QR codes, use the shortUrl if available for tracking
+          const qrContent = (qr.isDynamic && qr.shortUrl) 
+            ? qr.shortUrl 
+            : qr.content
+          
           // Generate QR code image and download
           const { QRGenerator } = await import('@/lib/qr-generator')
           const qrImage = await QRGenerator.generateQRCode({
             type: qr.type as any,
-            content: qr.content,
+            content: qrContent,
             size: (qr.settings?.size as number) || 256,
             color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
             frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,

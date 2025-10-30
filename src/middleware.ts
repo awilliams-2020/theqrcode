@@ -9,28 +9,28 @@ export function middleware(request: NextRequest) {
   
   // Check if this is an OAuth signin or callback request
   if (pathname.startsWith('/api/auth/signin/') || pathname.startsWith('/api/auth/callback/')) {
-    logger.botDetection(`OAuth request detected: ${pathname}`, { domain })
+    logger.botDetection(`OAuth request detected: ${pathname}`)
     
     // Bot detection logic for OAuth
     const isBot = detectBot(request, domain)
     
     if (isBot) {
-      logger.botDetection(`Bot detected and blocked: ${pathname}`, { domain, level: 'WARN' })
+      logger.botDetection(`Bot detected and blocked: ${pathname}`)
       return new NextResponse('Unauthorized', { status: 401 })
     }
     
-    logger.botDetection(`Legitimate OAuth request allowed: ${pathname}`, { domain })
+    logger.botDetection(`Legitimate OAuth request allowed: ${pathname}`)
   }
   
   // Check for other protected routes that bots might try to access
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
-    logger.api(`API request detected: ${pathname}`, { domain })
+    logger.api(`API request detected: ${pathname}`)
     
     // Basic bot detection for API routes
     const isBot = detectBotForApi(request, domain)
     
     if (isBot) {
-      logger.botDetection(`Bot detected and blocked on API: ${pathname}`, { domain, level: 'WARN' })
+      logger.botDetection(`Bot detected and blocked on API: ${pathname}`)
       return new NextResponse('Unauthorized', { status: 401 })
     }
   }
@@ -47,13 +47,13 @@ function detectBot(request: NextRequest, domain: string): boolean {
     
     // For OAuth flows, we're more lenient about Matomo cookies but still check for any cookies
     if (!hasAnyCookies) {
-      logger.botDetection('Bot detected: No cookies at all (completely fresh session)', { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', 'Bot detected: No cookies at all (completely fresh session)')
       return true
     }
     
     // Log if no Matomo cookies but don't block (OAuth flows naturally don't have these)
     if (!hasMatomoCookies) {
-      logger.botDetection('Warning: No Matomo cookies found (OAuth flow or incognito mode)', { domain })
+      logger.botDetection('Warning: No Matomo cookies found (OAuth flow or incognito mode)')
     }
     
     // 2. Check for suspicious user agents
@@ -64,7 +64,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     ]
     
     if (botPatterns.some(pattern => userAgent.toLowerCase().includes(pattern))) {
-      logger.botDetection(`Bot detected: Suspicious user agent - ${userAgent}`, { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', `Bot detected: Suspicious user agent - ${userAgent}`)
       return true
     }
     
@@ -75,7 +75,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     ]
     
     if (suspiciousUserAgentPatterns.some(pattern => pattern.test(userAgent))) {
-      logger.botDetection(`Bot detected: Suspicious user agent pattern - ${userAgent}`, { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', `Bot detected: Suspicious user agent pattern - ${userAgent}`)
       return true
     }
     
@@ -85,7 +85,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     const acceptEncoding = request.headers.get('accept-encoding')
     
     if (!acceptLanguage || !accept || !acceptEncoding) {
-      logger.botDetection('Bot detected: Missing standard browser headers', { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', 'Bot detected: Missing standard browser headers')
       return true
     }
     
@@ -100,13 +100,13 @@ function detectBot(request: NextRequest, domain: string): boolean {
     if (request.nextUrl.pathname.startsWith('/api/auth/signin/')) {
       // OAuth signin should have some security headers (but not all are required)
       if (!secFetchDest && !secFetchMode && !secFetchSite) {
-        logger.botDetection('Bot detected: Missing all OAuth flow security headers (sec-fetch-*)', { domain, level: 'WARN' })
+        logger.warn('BOT-DETECTION', 'Bot detected: Missing all OAuth flow security headers (sec-fetch-*)')
         return true
       }
       
       // OAuth signin should come from your domain (but allow empty referer for some cases)
       if (referer && !referer.includes(domain) && !referer.includes('theqrcode.io')) {
-        logger.botDetection(`Bot detected: Suspicious referer for OAuth signin - ${referer}`, { domain, level: 'WARN' })
+        logger.warn('BOT-DETECTION', `Bot detected: Suspicious referer for OAuth signin - ${referer}`)
         return true
       }
     }
@@ -114,13 +114,13 @@ function detectBot(request: NextRequest, domain: string): boolean {
     if (request.nextUrl.pathname.startsWith('/api/auth/callback/')) {
       // OAuth callback should have some security headers (but not all are required)
       if (!secFetchDest && !secFetchMode && !secFetchSite) {
-        logger.botDetection('Bot detected: Missing all OAuth callback security headers', { domain, level: 'WARN' })
+        logger.warn('BOT-DETECTION', 'Bot detected: Missing all OAuth callback security headers')
         return true
       }
       
       // OAuth callback should come from OAuth provider or be empty (some browsers don't send referer)
       if (referer && !referer.includes('google.com') && !referer.includes('github.com') && !referer.includes(domain)) {
-        logger.botDetection(`Bot detected: Suspicious referer for OAuth callback - ${referer}`, { domain, level: 'WARN' })
+        logger.warn('BOT-DETECTION', `Bot detected: Suspicious referer for OAuth callback - ${referer}`)
         return true
       }
     }
@@ -128,7 +128,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     // 4. Check for OAuth state parameter (only check on callback, not initial signin)
     const url = new URL(request.url)
     if (request.nextUrl.pathname.startsWith('/api/auth/callback/') && !url.searchParams.has('state')) {
-      logger.botDetection('Bot detected: Missing OAuth state parameter on callback', { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', 'Bot detected: Missing OAuth state parameter on callback')
       return true
     }
     
@@ -138,13 +138,13 @@ function detectBot(request: NextRequest, domain: string): boolean {
     
     // Only flag as bot if they're missing ALL security headers (very suspicious)
     if (!secFetchDest && !secFetchMode && !secFetchSite) {
-      logger.botDetection('Bot detected: Missing all security headers (sec-fetch-*)', { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', 'Bot detected: Missing all security headers (sec-fetch-*)')
       return true
     }
     
     // Log if some security headers are missing but don't block
     if (!secFetchDest || !secFetchMode || !secFetchSite) {
-      logger.botDetection('Warning: Some security headers missing (browser might be older)', { domain })
+      logger.botDetection('Warning: Some security headers missing (browser might be older)')
     }
     
     // 5.5. Check for suspicious timing patterns (rapid requests)
@@ -153,7 +153,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     
     // This would need to be implemented with a rate limiting mechanism
     // For now, just log the timing for analysis
-    logger.botDetection(`Request timing - Current: ${now}, Request: ${requestTime}`, { domain })
+    logger.botDetection(`Request timing - Current: ${now}, Request: ${requestTime}`)
     
     // 6. Check for suspicious IP patterns (if available)
     const forwarded = request.headers.get('x-forwarded-for')
@@ -163,14 +163,14 @@ function detectBot(request: NextRequest, domain: string): boolean {
     // If we have IP info, we could add IP-based blocking here
     // For now, just log for monitoring
     if (forwarded || realIp || cfConnectingIp) {
-      logger.botDetection(`Request IP info - Forwarded: ${forwarded}, Real: ${realIp}, CF: ${cfConnectingIp}`, { domain })
+      logger.botDetection(`Request IP info - Forwarded: ${forwarded}, Real: ${realIp}, CF: ${cfConnectingIp}`)
     }
     
     // If we get here, it's likely a legitimate user
     return false
     
   } catch (error) {
-    logger.logError(error, 'BOT-DETECTION', 'Bot detection error', { domain })
+    logger.logError(error, 'BOT-DETECTION', 'Bot detection error')
     // If bot detection fails, err on the side of caution and block
     return true
   }
@@ -186,7 +186,7 @@ function detectBotForApi(request: NextRequest, domain: string): boolean {
     ]
     
     if (botPatterns.some(pattern => userAgent.toLowerCase().includes(pattern))) {
-      logger.botDetection(`Bot detected on API: Suspicious user agent - ${userAgent}`, { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', `Bot detected on API: Suspicious user agent - ${userAgent}`)
       return true
     }
     
@@ -195,14 +195,14 @@ function detectBotForApi(request: NextRequest, domain: string): boolean {
     const accept = request.headers.get('accept')
     
     if (!acceptLanguage || !accept) {
-      logger.botDetection('Bot detected on API: Missing standard headers', { domain, level: 'WARN' })
+      logger.warn('BOT-DETECTION', 'Bot detected on API: Missing standard headers')
       return true
     }
     
     return false
     
   } catch (error) {
-    logger.logError(error, 'BOT-DETECTION', 'API bot detection error', { domain })
+    logger.logError(error, 'BOT-DETECTION', 'API bot detection error')
     return true
   }
 }

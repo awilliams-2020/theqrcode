@@ -169,9 +169,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate QR code image with the appropriate content
-    // For contact types, always use the original content (vCard) for proper mobile handling
-    // For other dynamic QR codes, use the short URL; for static, use the original content
-    const qrContent = (isDynamic && shortUrl && type !== 'contact') ? shortUrl : content
+    // For dynamic QR codes, use the short URL for tracking; for static, use the original content
+    const qrContent = (isDynamic && shortUrl) ? shortUrl : content
     
     // Ensure frame settings include size with proper fallback
     const frameSettings = settings?.frame || { style: 'square', color: '#000000', size: 20 }
@@ -204,8 +203,13 @@ export async function POST(request: NextRequest) {
     endRequestTiming(requestId, request.nextUrl.pathname, request.method, 200, 
       request.headers.get('user-agent') || undefined, extractIP(request))
     
+    // Get the updated QR code with the shortUrl
+    const finalQrCode = await prisma.qrCode.findUnique({
+      where: { id: qrCode.id }
+    })
+    
     return NextResponse.json({
-      ...qrCode,
+      ...finalQrCode,
       qrImage
     })
   } catch (error) {

@@ -20,6 +20,7 @@ import {
   MatomoEventAction,
   createCustomDimensions,
 } from './matomo-config';
+import { logger } from './logger';
 
 /**
  * User tracking functions
@@ -209,69 +210,68 @@ export const trackQRCode = {
     const matomoConfig = getMatomoConfig();
     
     if (!matomoConfig) {
-      console.log('Matomo: Server config not available, skipping QR code tracking');
+      logger.warn('MATOMO', 'Server config not available, skipping QR code tracking', {
+        component: 'trackQRCode.create',
+        qrCodeId,
+        userId,
+      });
       return;
     }
     
     const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'}/dashboard`;
     
-    const promises: Promise<any>[] = [
-      serverTrackEvent(
+    const eventResult = await serverTrackEvent(
+      url,
+      MatomoEventCategory.QR_CODE,
+      MatomoEventAction.CREATE,
+      {
+        name: qrCodeId,
+        userId,
+        ip: options?.ip,
+        userAgent: options?.userAgent,
+        customDimensions: createCustomDimensions({
+          USER_ID: userId,
+          SUBSCRIPTION_PLAN: subscriptionPlan,
+          QR_CODE_ID: qrCodeId,
+          QR_CODE_TYPE: type,
+          QR_CODE_DYNAMIC: isDynamic.toString(),
+        }),
+      }
+    );
+
+    // Track goal for first QR code or milestone
+    let goalResult: boolean | undefined;
+    if (qrCodeCount === 1) {
+      goalResult = await serverTrackGoal(
         url,
-        MatomoEventCategory.QR_CODE,
-        MatomoEventAction.CREATE,
+        MatomoGoals.FIRST_QR_CODE_CREATED,
         {
-          name: qrCodeId,
           userId,
           ip: options?.ip,
           userAgent: options?.userAgent,
-          customDimensions: createCustomDimensions({
-            USER_ID: userId,
-            SUBSCRIPTION_PLAN: subscriptionPlan,
-            QR_CODE_ID: qrCodeId,
-            QR_CODE_TYPE: type,
-            QR_CODE_DYNAMIC: isDynamic.toString(),
-          }),
         }
-      ),
-    ];
-
-    // Track goal for first QR code
-    if (qrCodeCount === 1) {
-      promises.push(
-        serverTrackGoal(
-          url,
-          MatomoGoals.FIRST_QR_CODE_CREATED,
-          {
-            userId,
-            ip: options?.ip,
-            userAgent: options?.userAgent,
-          }
-        )
+      );
+    } else if (qrCodeCount === 10) {
+      goalResult = await serverTrackGoal(
+        url,
+        MatomoGoals.TEN_QR_CODES,
+        {
+          userId,
+          ip: options?.ip,
+          userAgent: options?.userAgent,
+        }
       );
     }
 
-    // Track milestone goals
-    if (qrCodeCount === 10) {
-      promises.push(
-        serverTrackGoal(
-          url,
-          MatomoGoals.TEN_QR_CODES,
-          {
-            userId,
-            ip: options?.ip,
-            userAgent: options?.userAgent,
-          }
-        )
-      );
-    }
-
-    const results = await Promise.all(promises);
-    
     // Log only if tracking failed
-    const failedCount = results.filter(r => r === false).length;
-    if (failedCount > 0) {
-      console.log(`Matomo: ${failedCount}/${results.length} tracking requests failed`);
+    if (eventResult === false || goalResult === false) {
+      logger.warn('MATOMO', 'Tracking request(s) failed for QR code creation', {
+        component: 'trackQRCode.create',
+        qrCodeId,
+        userId,
+        eventFailed: eventResult === false,
+        goalFailed: goalResult === false,
+      });
     }
   },
 
@@ -295,66 +295,56 @@ export const trackQRCode = {
     
     const url = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://theqrcode.io'}/scan`;
     
-    const promises: Promise<any>[] = [
-      serverTrackEvent(
-        url,
-        MatomoEventCategory.QR_CODE,
-        MatomoEventAction.SCAN,
-        {
-          name: qrCodeId,
-          userId,
-          ip: options?.ip,
-          userAgent: options?.userAgent,
-          customDimensions: createCustomDimensions({
-            USER_ID: userId,
-            QR_CODE_ID: qrCodeId,
-            QR_CODE_TYPE: type,
-            QR_CODE_DYNAMIC: isDynamic.toString(),
-          }),
-        }
-      ),
-    ];
+    await serverTrackEvent(
+      url,
+      MatomoEventCategory.QR_CODE,
+      MatomoEventAction.SCAN,
+      {
+        name: qrCodeId,
+        userId,
+        ip: options?.ip,
+        userAgent: options?.userAgent,
+        customDimensions: createCustomDimensions({
+          USER_ID: userId,
+          QR_CODE_ID: qrCodeId,
+          QR_CODE_TYPE: type,
+          QR_CODE_DYNAMIC: isDynamic.toString(),
+        }),
+      }
+    );
 
     // Track milestone goals
     if (totalScans === 1) {
-      promises.push(
-        serverTrackGoal(
-          url,
-          MatomoGoals.FIRST_SCAN_RECEIVED,
-          {
-            userId,
-            ip: options?.ip,
-            userAgent: options?.userAgent,
-          }
-        )
+      await serverTrackGoal(
+        url,
+        MatomoGoals.FIRST_SCAN_RECEIVED,
+        {
+          userId,
+          ip: options?.ip,
+          userAgent: options?.userAgent,
+        }
       );
     } else if (totalScans === 100) {
-      promises.push(
-        serverTrackGoal(
-          url,
-          MatomoGoals.HUNDRED_SCANS,
-          {
-            userId,
-            ip: options?.ip,
-            userAgent: options?.userAgent,
-          }
-        )
+      await serverTrackGoal(
+        url,
+        MatomoGoals.HUNDRED_SCANS,
+        {
+          userId,
+          ip: options?.ip,
+          userAgent: options?.userAgent,
+        }
       );
     } else if (totalScans === 1000) {
-      promises.push(
-        serverTrackGoal(
-          url,
-          MatomoGoals.THOUSAND_SCANS,
-          {
-            userId,
-            ip: options?.ip,
-            userAgent: options?.userAgent,
-          }
-        )
+      await serverTrackGoal(
+        url,
+        MatomoGoals.THOUSAND_SCANS,
+        {
+          userId,
+          ip: options?.ip,
+          userAgent: options?.userAgent,
+        }
       );
     }
-
-    await Promise.all(promises);
   },
 
   /**
