@@ -31,7 +31,8 @@ export class LocationService {
         `${this.IPINFO_BASE_URL}/${ipAddress}/json${this.IPINFO_API_KEY ? `?token=${this.IPINFO_API_KEY}` : ''}`,
         {
           headers: {
-            'User-Agent': 'QR-Analytics/1.0'
+            'User-Agent': 'TheQRCode/1.0',
+            'Accept': 'application/json'
           },
           signal: controller.signal
         }

@@ -40,20 +40,20 @@ export function middleware(request: NextRequest) {
 
 function detectBot(request: NextRequest, domain: string): boolean {
   try {
-    // 1. Check for Matomo cookies (legitimate users will have these)
-    // This is the most reliable indicator since bots bypass the frontend
+    // 1. Check for cookies - OAuth flows may not have Matomo cookies but should have some cookies
     const cookies = request.headers.get('cookie') || ''
     const hasMatomoCookies = cookies.includes('_pk_id') || cookies.includes('_pk_ses')
+    const hasAnyCookies = cookies.trim() !== ''
     
-    // Only flag as bot if they have NO cookies at all (completely fresh session)
-    if (!cookies || cookies.trim() === '') {
+    // For OAuth flows, we're more lenient about Matomo cookies but still check for any cookies
+    if (!hasAnyCookies) {
       logger.botDetection('Bot detected: No cookies at all (completely fresh session)', { domain, level: 'WARN' })
       return true
     }
     
-    // Log if no Matomo cookies but don't block (user might be in incognito or have disabled tracking)
+    // Log if no Matomo cookies but don't block (OAuth flows naturally don't have these)
     if (!hasMatomoCookies) {
-      logger.botDetection('Warning: No Matomo cookies found (user might be in incognito mode)', { domain })
+      logger.botDetection('Warning: No Matomo cookies found (OAuth flow or incognito mode)', { domain })
     }
     
     // 2. Check for suspicious user agents
@@ -68,6 +68,17 @@ function detectBot(request: NextRequest, domain: string): boolean {
       return true
     }
     
+    // 2.5. Check for suspicious user agent patterns (more sophisticated)
+    const suspiciousUserAgentPatterns = [
+      /^Mozilla\/5\.0 \(X11; Linux x86_64\) AppleWebKit\/537\.36.*HeadlessChrome/, // Headless Chrome
+      /^Mozilla\/5\.0 \(compatible; .*\)$/, // Generic compatible browsers
+    ]
+    
+    if (suspiciousUserAgentPatterns.some(pattern => pattern.test(userAgent))) {
+      logger.botDetection(`Bot detected: Suspicious user agent pattern - ${userAgent}`, { domain, level: 'WARN' })
+      return true
+    }
+    
     // 3. Check for missing or suspicious headers that real browsers always send
     const acceptLanguage = request.headers.get('accept-language')
     const accept = request.headers.get('accept')
@@ -76,6 +87,42 @@ function detectBot(request: NextRequest, domain: string): boolean {
     if (!acceptLanguage || !accept || !acceptEncoding) {
       logger.botDetection('Bot detected: Missing standard browser headers', { domain, level: 'WARN' })
       return true
+    }
+    
+    // 3.5. Check for suspicious header combinations that indicate automation
+    const referer = request.headers.get('referer')
+    const origin = request.headers.get('origin')
+    const secFetchDest = request.headers.get('sec-fetch-dest')
+    const secFetchMode = request.headers.get('sec-fetch-mode')
+    const secFetchSite = request.headers.get('sec-fetch-site')
+    
+    // Real browsers send specific header combinations for OAuth flows
+    if (request.nextUrl.pathname.startsWith('/api/auth/signin/')) {
+      // OAuth signin should have some security headers (but not all are required)
+      if (!secFetchDest && !secFetchMode && !secFetchSite) {
+        logger.botDetection('Bot detected: Missing all OAuth flow security headers (sec-fetch-*)', { domain, level: 'WARN' })
+        return true
+      }
+      
+      // OAuth signin should come from your domain (but allow empty referer for some cases)
+      if (referer && !referer.includes(domain) && !referer.includes('theqrcode.io')) {
+        logger.botDetection(`Bot detected: Suspicious referer for OAuth signin - ${referer}`, { domain, level: 'WARN' })
+        return true
+      }
+    }
+    
+    if (request.nextUrl.pathname.startsWith('/api/auth/callback/')) {
+      // OAuth callback should have some security headers (but not all are required)
+      if (!secFetchDest && !secFetchMode && !secFetchSite) {
+        logger.botDetection('Bot detected: Missing all OAuth callback security headers', { domain, level: 'WARN' })
+        return true
+      }
+      
+      // OAuth callback should come from OAuth provider or be empty (some browsers don't send referer)
+      if (referer && !referer.includes('google.com') && !referer.includes('github.com') && !referer.includes(domain)) {
+        logger.botDetection(`Bot detected: Suspicious referer for OAuth callback - ${referer}`, { domain, level: 'WARN' })
+        return true
+      }
     }
     
     // 4. Check for OAuth state parameter (only check on callback, not initial signin)
@@ -87,9 +134,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
     
     // 5. Check for suspicious header combinations
     // Real browsers send specific header combinations
-    const secFetchDest = request.headers.get('sec-fetch-dest')
-    const secFetchMode = request.headers.get('sec-fetch-mode')
-    const secFetchSite = request.headers.get('sec-fetch-site')
+    // (secFetchDest, secFetchMode, secFetchSite already declared above)
     
     // Only flag as bot if they're missing ALL security headers (very suspicious)
     if (!secFetchDest && !secFetchMode && !secFetchSite) {
@@ -101,6 +146,14 @@ function detectBot(request: NextRequest, domain: string): boolean {
     if (!secFetchDest || !secFetchMode || !secFetchSite) {
       logger.botDetection('Warning: Some security headers missing (browser might be older)', { domain })
     }
+    
+    // 5.5. Check for suspicious timing patterns (rapid requests)
+    const now = Date.now()
+    const requestTime = request.headers.get('x-request-time') ? parseInt(request.headers.get('x-request-time')!) : now
+    
+    // This would need to be implemented with a rate limiting mechanism
+    // For now, just log the timing for analysis
+    logger.botDetection(`Request timing - Current: ${now}, Request: ${requestTime}`, { domain })
     
     // 6. Check for suspicious IP patterns (if available)
     const forwarded = request.headers.get('x-forwarded-for')

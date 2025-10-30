@@ -61,6 +61,13 @@ interface AnalyticsData {
     uniqueVisitors: number
     avgScansPerQR: number
     mostActiveDay: string
+    trending: {
+      totalScansChange: number
+      uniqueVisitorsChange: number
+      comparisonPeriod: string
+      previousPeriodScans: number
+      previousPeriodUniqueVisitors: number
+    }
   }
   breakdowns: {
     devices: Record<string, number>
@@ -514,9 +521,18 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
           </div>
           <div className="text-4xl font-bold text-blue-600 mb-2">{summary?.totalScans?.toLocaleString() || '0'}</div>
           <div className="text-sm text-gray-600">Total Scans</div>
-          <div className="text-xs text-green-600 mt-1 flex items-center justify-center gap-1">
-            <TrendingUp className="h-3 w-3" />
-            12% this week
+          <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${
+            (summary?.trending?.totalScansChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {(summary?.trending?.totalScansChange || 0) >= 0 ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : (
+              <TrendingUp className="h-3 w-3 rotate-180" />
+            )}
+            {summary?.trending?.totalScansChange !== undefined 
+              ? `${Math.abs(summary.trending.totalScansChange)}% vs ${summary.trending.comparisonPeriod}`
+              : 'No previous data'
+            }
           </div>
         </div>
 
@@ -526,9 +542,18 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
           </div>
           <div className="text-4xl font-bold text-green-600 mb-2">{summary?.uniqueVisitors?.toLocaleString() || '0'}</div>
           <div className="text-sm text-gray-600">Unique Scans</div>
-          <div className="text-xs text-green-600 mt-1 flex items-center justify-center gap-1">
-            <TrendingUp className="h-3 w-3" />
-            8% this week
+          <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${
+            (summary?.trending?.uniqueVisitorsChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {(summary?.trending?.uniqueVisitorsChange || 0) >= 0 ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : (
+              <TrendingUp className="h-3 w-3 rotate-180" />
+            )}
+            {summary?.trending?.uniqueVisitorsChange !== undefined 
+              ? `${Math.abs(summary.trending.uniqueVisitorsChange)}% vs ${summary.trending.comparisonPeriod}`
+              : 'No previous data'
+            }
           </div>
         </div>
 

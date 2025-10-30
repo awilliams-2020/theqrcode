@@ -113,6 +113,101 @@ export async function GET(request: NextRequest) {
     // Calculate analytics
     const totalScans = qrCodes.reduce((sum, qr) => sum + (qr.scans?.length || 0), 0)
     
+    // Unique visitors - based on unique IP addresses
+    const uniqueVisitors = new Set(qrCodes.flatMap(qr => 
+      qr.scans?.map(scan => scan.ipAddress).filter(Boolean) || []
+    )).size
+    
+    // Calculate trending percentages based on timeRange
+    const calculateTrendingData = () => {
+      const currentPeriodScans = totalScans
+      let previousPeriodScans = 0
+      let comparisonPeriod = ''
+      
+      // Calculate previous period based on timeRange
+      const previousStartDate = new Date()
+      const previousEndDate = new Date()
+      
+      switch (timeRange) {
+        case '1h':
+          // Compare with previous hour
+          previousStartDate.setHours(now.getHours() - 2)
+          previousEndDate.setHours(now.getHours() - 1)
+          comparisonPeriod = 'previous hour'
+          break
+        case '1d':
+          // Compare with yesterday
+          previousStartDate.setDate(now.getDate() - 2)
+          previousEndDate.setDate(now.getDate() - 1)
+          comparisonPeriod = 'yesterday'
+          break
+        case '7d':
+          // Compare with previous 7 days
+          previousStartDate.setDate(now.getDate() - 14)
+          previousEndDate.setDate(now.getDate() - 7)
+          comparisonPeriod = 'previous week'
+          break
+        case '30d':
+          // Compare with previous 30 days
+          previousStartDate.setDate(now.getDate() - 60)
+          previousEndDate.setDate(now.getDate() - 30)
+          comparisonPeriod = 'previous month'
+          break
+        case '90d':
+          // Compare with previous 90 days
+          previousStartDate.setDate(now.getDate() - 180)
+          previousEndDate.setDate(now.getDate() - 90)
+          comparisonPeriod = 'previous quarter'
+          break
+        case '1y':
+          // Compare with previous year
+          previousStartDate.setFullYear(now.getFullYear() - 2)
+          previousEndDate.setFullYear(now.getFullYear() - 1)
+          comparisonPeriod = 'previous year'
+          break
+        default:
+          // Default to previous 30 days for 30d
+          previousStartDate.setDate(now.getDate() - 60)
+          previousEndDate.setDate(now.getDate() - 30)
+          comparisonPeriod = 'previous month'
+      }
+      
+      // Get scans from previous period
+      const previousPeriodScansData = qrCodes.reduce((sum, qr) => {
+        const previousScans = qr.scans?.filter(scan => 
+          scan.scannedAt >= previousStartDate && scan.scannedAt < previousEndDate
+        ) || []
+        return sum + previousScans.length
+      }, 0)
+      
+      // Calculate unique visitors for previous period (IP-based)
+      const previousPeriodUniqueVisitors = new Set(qrCodes.flatMap(qr => {
+        const previousScans = qr.scans?.filter(scan => 
+          scan.scannedAt >= previousStartDate && scan.scannedAt < previousEndDate
+        ) || []
+        return previousScans.map(scan => scan.ipAddress).filter(Boolean)
+      })).size
+      
+      // Calculate percentage changes
+      const totalScansChange = previousPeriodScansData > 0 
+        ? Math.round(((currentPeriodScans - previousPeriodScansData) / previousPeriodScansData) * 100)
+        : currentPeriodScans > 0 ? 100 : 0
+      
+      const uniqueVisitorsChange = previousPeriodUniqueVisitors > 0
+        ? Math.round(((uniqueVisitors - previousPeriodUniqueVisitors) / previousPeriodUniqueVisitors) * 100)
+        : uniqueVisitors > 0 ? 100 : 0
+      
+      return {
+        totalScansChange,
+        uniqueVisitorsChange,
+        comparisonPeriod,
+        previousPeriodScans: previousPeriodScansData,
+        previousPeriodUniqueVisitors
+      }
+    }
+    
+    const trendingData = calculateTrendingData()
+    
     // Device breakdown
     const deviceBreakdown = qrCodes.reduce((acc, qr) => {
       qr.scans?.forEach(scan => {
@@ -149,27 +244,10 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    // City breakdown - using country-based city mapping for privacy
+    // City breakdown - using real city data from IP geolocation
     const cityBreakdown = qrCodes.reduce((acc, qr) => {
       qr.scans?.forEach(scan => {
-        // Use a privacy-safe city mapping based on country
-        const countryCityMap: Record<string, string[]> = {
-          'United States': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
-          'United Kingdom': ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'],
-          'Canada': ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Edmonton'],
-          'Germany': ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne'],
-          'Australia': ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'],
-          'France': ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'],
-          'Japan': ['Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya'],
-          'China': ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu'],
-          'India': ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata'],
-          'Brazil': ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Salvador', 'Fortaleza']
-        }
-        
-        const country = scan.country || 'Unknown'
-        const cities = countryCityMap[country] || ['Unknown']
-        // Randomly assign a city from the country's major cities for demo purposes
-        const city = cities[Math.floor(Math.random() * cities.length)]
+        const city = scan.city || 'Unknown'
         acc[city] = (acc[city] || 0) + 1
       })
       return acc
@@ -201,11 +279,6 @@ export async function GET(request: NextRequest) {
       })
       return acc
     }, {} as Record<string, number>)
-
-    // Unique visitors - privacy compliant estimation based on country/device combinations
-    const uniqueVisitors = new Set(qrCodes.flatMap(qr => qr.scans?.map(scan => 
-      `${scan.country || 'Unknown'}-${scan.device || 'Unknown'}-${scan.browser || 'Unknown'}`
-    ) || [])).size
 
     // Average scans per QR code
     const avgScansPerQR = qrCodes.length > 0 ? totalScans / qrCodes.length : 0
@@ -245,7 +318,14 @@ export async function GET(request: NextRequest) {
         endDate: now.toISOString(),
         uniqueVisitors,
         avgScansPerQR: Math.round(avgScansPerQR * 100) / 100,
-        mostActiveDay: mostActiveDay.date
+        mostActiveDay: mostActiveDay.date,
+        trending: {
+          totalScansChange: trendingData.totalScansChange,
+          uniqueVisitorsChange: trendingData.uniqueVisitorsChange,
+          comparisonPeriod: trendingData.comparisonPeriod,
+          previousPeriodScans: trendingData.previousPeriodScans,
+          previousPeriodUniqueVisitors: trendingData.previousPeriodUniqueVisitors
+        }
       },
       breakdowns: {
         devices: deviceBreakdown,
