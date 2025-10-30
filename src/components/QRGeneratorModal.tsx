@@ -25,9 +25,9 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
       size: (qrCode?.settings?.frame as any)?.size || FRAME_SIZES.DEFAULT
     },
     styling: (qrCode?.settings?.styling as QRStylingOptions) || { 
-      dotsType: 'rounded',
-      cornersSquareType: 'extra-rounded',
-      cornersDotType: 'dot',
+      dotsType: 'square',
+      cornersSquareType: 'square',
+      cornersDotType: 'square',
       backgroundType: 'solid'
     },
     logo: {
@@ -699,7 +699,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                             Dot Style
                           </label>
                           <select
-                            value={formData.styling.dotsType || 'rounded'}
+                            value={formData.styling.dotsType || 'square'}
                             onChange={(e) => setFormData({
                               ...formData,
                               styling: {
@@ -723,7 +723,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                             Corner Square Style
                           </label>
                           <select
-                            value={formData.styling.cornersSquareType || 'extra-rounded'}
+                            value={formData.styling.cornersSquareType || 'square'}
                             onChange={(e) => setFormData({
                               ...formData,
                               styling: {
@@ -747,7 +747,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
                             Corner Dot Style
                           </label>
                           <select
-                            value={formData.styling.cornersDotType || 'dot'}
+                            value={formData.styling.cornersDotType || 'square'}
                             onChange={(e) => setFormData({
                               ...formData,
                               styling: {

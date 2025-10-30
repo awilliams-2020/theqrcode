@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Check, Zap } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Check, Zap, X, TrendingUp, Users, Database, BarChart3, Image, Palette, Shield, Headphones, Code, Building2 } from 'lucide-react'
 import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 import { trackSignup } from '@/lib/matomo-tracking'
 
@@ -81,6 +81,72 @@ const plans = [
     ],
     buttonText: 'Subscribe',
     featured: false,
+  },
+]
+
+// Detailed feature comparison
+// Based on actual constants in the codebase
+const featureCategories = [
+  {
+    name: 'QR Code Creation',
+    icon: Image,
+    features: [
+      { name: 'QR codes per account', free: '10', starter: '100', pro: '500' },
+      { name: 'URL QR codes', free: true, starter: true, pro: true },
+      { name: 'Text QR codes', free: true, starter: true, pro: true },
+      { name: 'WiFi QR codes', free: true, starter: true, pro: true },
+      { name: 'Contact/VCard QR codes', free: true, starter: true, pro: true },
+      { name: 'Email QR codes', free: false, starter: true, pro: true },
+      { name: 'Menu QR codes', free: false, starter: true, pro: true },
+    ]
+  },
+  {
+    name: 'Dynamic QR Codes & Analytics',
+    icon: BarChart3,
+    features: [
+      { name: 'Basic analytics', free: true, starter: true, pro: true },
+      { name: 'Dynamic QR codes', free: true, starter: true, pro: true },
+      { name: 'Device analytics', free: false, starter: true, pro: true },
+      { name: 'Location tracking', free: false, starter: true, pro: true },
+      { name: 'Time-based analytics', free: false, starter: true, pro: true },
+      { name: 'Real-time dashboards', free: false, starter: false, pro: true },
+      { name: 'Data export (CSV)', free: false, starter: false, pro: true },
+    ]
+  },
+  {
+    name: 'Customization',
+    icon: Palette,
+    features: [
+      { name: 'Basic color customization', free: false, starter: true, pro: true },
+      { name: 'Custom colors', free: false, starter: true, pro: true },
+      { name: 'Size customization', free: false, starter: true, pro: true },
+      { name: 'Logo embedding', free: false, starter: true, pro: true },
+      { name: 'Advanced styling (dots, corners)', free: false, starter: false, pro: true },
+      { name: 'SVG & PDF downloads', free: false, starter: false, pro: true },
+    ]
+  },
+  {
+    name: 'Performance & Limits',
+    icon: TrendingUp,
+    features: [
+      { name: 'Scans per month', free: '1,000', starter: '10,000', pro: '500,000' },
+      { name: 'Bulk operations', free: false, starter: false, pro: true },
+    ]
+  },
+  {
+    name: 'Support',
+    icon: Shield,
+    features: [
+      { name: 'Email support', free: 'Community', starter: 'Business days', pro: 'Priority' },
+      { name: 'GDPR compliance', free: true, starter: true, pro: true },
+    ]
+  },
+  {
+    name: 'API & Integrations',
+    icon: Code,
+    features: [
+      { name: 'REST API access', free: false, starter: false, pro: true },
+    ]
   },
 ]
 
@@ -191,6 +257,16 @@ export default function PricingPage({ session }: PricingPageProps) {
     }
   }
 
+  // Helper function to render feature value
+  const renderFeatureValue = (value: any) => {
+    if (value === true) {
+      return <Check className="h-5 w-5 text-green-500 mx-auto" />
+    } else if (value === false) {
+      return <X className="h-5 w-5 text-gray-300 mx-auto" />
+    }
+    return <span className="text-sm text-gray-900 font-medium">{value}</span>
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
@@ -204,7 +280,7 @@ export default function PricingPage({ session }: PricingPageProps) {
       </div>
 
       {/* Pricing Cards */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.filter(p => p.id !== 'business').map((plan) => (
             <div
@@ -266,8 +342,80 @@ export default function PricingPage({ session }: PricingPageProps) {
         </div>
       </div>
 
+      {/* Detailed Feature Comparison Table */}
+      <div className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Compare Plans Side-by-Side
+            </h2>
+            <p className="text-xl text-gray-600">
+              Detailed breakdown of features across all plans
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-4 px-6 font-semibold text-gray-900 w-1/3">Features</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-900">Free</th>
+                  <th className="text-center py-4 px-6 font-semibold text-gray-900">Starter</th>
+                  <th className="text-center py-4 px-6 font-semibold text-blue-600 bg-blue-50">Pro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {featureCategories.map((category, categoryIndex) => (
+                  <React.Fragment key={categoryIndex}>
+                    {/* Category Header */}
+                    <tr className="bg-gray-50 border-y border-gray-200">
+                      <td colSpan={4} className="py-3 px-6">
+                        <div className="flex items-center gap-2">
+                          <category.icon className="h-5 w-5 text-blue-600" />
+                          <span className="font-semibold text-gray-900">{category.name}</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* Category Features */}
+                    {category.features.map((feature, featureIndex) => (
+                      <tr key={featureIndex} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-6 text-gray-700">{feature.name}</td>
+                        <td className="py-4 px-6 text-center">{renderFeatureValue(feature.free)}</td>
+                        <td className="py-4 px-6 text-center">{renderFeatureValue(feature.starter)}</td>
+                        <td className="py-4 px-6 text-center bg-blue-50/30">{renderFeatureValue(feature.pro)}</td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* CTA Section below table */}
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">Ready to get started?</p>
+            <div className="flex justify-center gap-4">
+              {plans.filter(p => p.id !== 'business').map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={loading === plan.id || isLoadingSubscription}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                    plan.featured
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {loading === plan.id ? 'Loading...' : `${plan.name} Plan`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* FAQ Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
           Frequently Asked Questions
         </h2>
