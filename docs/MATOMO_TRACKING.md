@@ -89,24 +89,32 @@ Go to **Matomo Dashboard > Goals** and create the following:
 
 | ID | Name | Description | Revenue Tracking |
 |----|------|-------------|------------------|
-| 10 | Subscription Started | Paid subscription started | Yes |
-| 11 | Subscription Upgraded | Upgraded to higher tier | Yes |
-| 12 | Subscription Renewed | Subscription renewed | Yes |
+| 7 | Subscription Started | Paid subscription started | Yes |
+| 8 | Subscription Upgraded | Upgraded to higher tier | Yes |
+| 9 | Subscription Renewed | Subscription renewed | Yes |
 
 #### API Goals
 
 | ID | Name | Description |
 |----|------|-------------|
-| 20 | API Key Created | API key generated |
-| 21 | First API Call | First API request made |
+| 10 | API Key Created | API key generated |
+| 11 | First API Call | First API request made |
 
 #### Milestone Goals
 
 | ID | Name | Description |
 |----|------|-------------|
-| 30 | 10 QR Codes | Created 10 QR codes |
-| 31 | 100 Scans | Received 100 total scans |
-| 32 | 1000 Scans | Received 1000 total scans |
+| 12 | 10 QR Codes | Created 10 QR codes |
+| 13 | 100 Scans | Received 100 total scans |
+| 14 | 1000 Scans | Received 1000 total scans |
+
+#### Landing Page Goals
+
+| ID | Name | Description |
+|----|------|-------------|
+| 15 | Landing Page Signup | Signup from landing page |
+| 16 | Landing Page Trial | Started trial from landing page |
+| 17 | Landing Page Demo | Viewed demo from landing page |
 
 ## Custom Dimensions
 

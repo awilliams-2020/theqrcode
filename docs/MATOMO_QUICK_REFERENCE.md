@@ -133,18 +133,23 @@ trackGoal({
 - `FIRST_SCAN_RECEIVED` (6) - First scan
 
 **Revenue:**
-- `SUBSCRIPTION_STARTED` (10) - New subscription
-- `SUBSCRIPTION_UPGRADED` (11) - Upgraded
-- `SUBSCRIPTION_RENEWED` (12) - Renewed
+- `SUBSCRIPTION_STARTED` (7) - New subscription
+- `SUBSCRIPTION_UPGRADED` (8) - Upgraded
+- `SUBSCRIPTION_RENEWED` (9) - Renewed
 
 **API:**
-- `API_KEY_CREATED` (20) - API key generated
-- `FIRST_API_CALL` (21) - First API call
+- `API_KEY_CREATED` (10) - API key generated
+- `FIRST_API_CALL` (11) - First API call
 
 **Milestones:**
-- `TEN_QR_CODES` (30) - 10 QR codes created
-- `HUNDRED_SCANS` (31) - 100 scans received
-- `THOUSAND_SCANS` (32) - 1000 scans received
+- `TEN_QR_CODES` (12) - 10 QR codes created
+- `HUNDRED_SCANS` (13) - 100 scans received
+- `THOUSAND_SCANS` (14) - 1000 scans received
+
+**Landing Pages:**
+- `LANDING_PAGE_SIGNUP` (15) - Signup from landing page
+- `LANDING_PAGE_TRIAL` (16) - Started trial from landing page
+- `LANDING_PAGE_DEMO` (17) - Viewed demo from landing page
 
 ## 📝 Event Categories & Actions
 

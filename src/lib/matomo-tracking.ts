@@ -433,6 +433,16 @@ export const trackQRCode = {
         QR_CODE_DYNAMIC: isDynamic.toString(),
       }),
     });
+
+    // Track goal for QR code shared/downloaded
+    clientTrackGoal({
+      goalId: MatomoGoals.QR_CODE_SHARED,
+      customDimensions: createCustomDimensions({
+        QR_CODE_ID: qrCodeId,
+        QR_CODE_TYPE: type,
+        QR_CODE_DYNAMIC: isDynamic.toString(),
+      }),
+    });
   },
 };
 
@@ -705,6 +715,7 @@ export const trackAPI = {
       userAgent?: string;
       statusCode?: number;
       responseTime?: number;
+      isFirstApiCall?: boolean;
     }
   ) {
     if (!isMatomoConfigured()) return;
@@ -729,6 +740,24 @@ export const trackAPI = {
         }) : undefined,
       }
     );
+
+    // Track goal for first API call
+    if (options?.isFirstApiCall && userId) {
+      await serverTrackGoal(
+        url,
+        MatomoGoals.FIRST_API_CALL,
+        {
+          userId,
+          ip: options?.ip,
+          userAgent: options?.userAgent,
+          customDimensions: createCustomDimensions({
+            USER_ID: userId,
+            API_ENDPOINT: endpoint,
+            API_VERSION: endpoint.startsWith('/api/v') ? endpoint.split('/')[2] : 'internal',
+          }),
+        }
+      );
+    }
   },
 
   /**
