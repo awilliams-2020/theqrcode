@@ -2,14 +2,30 @@
 
 # Application Log Monitor
 # This script helps monitor application logs with domain-specific filtering
+# Uses log file if available, otherwise falls back to Docker logs
 
+CONTAINER_NAME="theqrcode"
 LOG_FILE="/home/awilliams/logs/theqrcode.log"
 
 echo "🔍 Application Log Monitor"
 echo "=========================="
-echo "Monitoring: $LOG_FILE"
+if [ -f "$LOG_FILE" ]; then
+    echo "Monitoring: $LOG_FILE"
+else
+    echo "Monitoring: Docker logs from container '$CONTAINER_NAME'"
+    echo "(Log file not found, using Docker logs)"
+fi
 echo "Press Ctrl+C to stop"
 echo ""
+
+# Function to get logs from Docker container or file
+get_logs() {
+    if [ -f "$LOG_FILE" ]; then
+        cat "$LOG_FILE"
+    else
+        docker logs "$CONTAINER_NAME" 2>&1
+    fi
+}
 
 # Function to show recent logs by category
 show_recent_logs() {
@@ -17,11 +33,11 @@ show_recent_logs() {
     if [ "$category" = "ALL" ]; then
         echo "📋 Recent Logs (last 20 lines):"
         echo "==============================="
-        grep -E "\[.*\] \[.*\] \[.*\]" "$LOG_FILE" | tail -20
+        get_logs | grep -E "\[.*\] \[.*\] \[.*\]" | tail -20
     else
         echo "📋 Recent $category Logs (last 20 lines):"
         echo "========================================"
-        grep -E "\[.*\] \[.*\] \[$category\]" "$LOG_FILE" | tail -20
+        get_logs | grep -E "\[.*\] \[.*\] \[$category\]" | tail -20
     fi
 }
 
@@ -29,7 +45,7 @@ show_recent_logs() {
 show_recent_bots() {
     echo "🚨 Bot Detection Logs (last 20 lines):"
     echo "======================================"
-    grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" | tail -20
+    get_logs | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | tail -20
 }
 
 # Function to show application summary
@@ -37,12 +53,15 @@ show_summary() {
     echo "📊 Log Summary"
     echo "=============="
     
+    # Get logs once and reuse
+    local logs=$(get_logs)
+    
     # Bot detection stats (only count structured logs)
-    local bot_attempts=$(grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" 2>/dev/null | grep -c "Bot detected:" | tr -d '\n' || echo "0")
-    local oauth_attempts=$(grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" 2>/dev/null | grep -c "OAuth request detected" | tr -d '\n' || echo "0")
-    local api_attempts=$(grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" 2>/dev/null | grep -c "API.*Bot detected" | tr -d '\n' || echo "0")
-    local bot_blocks=$(grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" 2>/dev/null | grep -c "Bot detected and blocked" | tr -d '\n' || echo "0")
-    local legitimate_oauth=$(grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" "$LOG_FILE" 2>/dev/null | grep -c "Legitimate OAuth request allowed" | tr -d '\n' || echo "0")
+    local bot_attempts=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | grep -c "Bot detected:" | tr -d '\n' || echo "0")
+    local oauth_attempts=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | grep -c "OAuth request detected" | tr -d '\n' || echo "0")
+    local api_attempts=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | grep -c "API.*Bot detected" | tr -d '\n' || echo "0")
+    local bot_blocks=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | grep -c "Bot detected and blocked" | tr -d '\n' || echo "0")
+    local legitimate_oauth=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[BOT-DETECTION\]" | grep -c "Legitimate OAuth request allowed" | tr -d '\n' || echo "0")
     
     echo "🤖 Bot Detection: $bot_attempts attempts, $bot_blocks blocked, $legitimate_oauth allowed"
     echo ""
@@ -52,7 +71,7 @@ show_summary() {
     local categories=("API" "AUTH" "QR-CODE" "ANALYTICS" "NOTIFICATION" "PAYMENT" "SYSTEM" "MATOMO" "ERROR")
     local has_categories=false
     for category in "${categories[@]}"; do
-        local count=$(grep -E "\[.*\] \[.*\] \[$category\]" "$LOG_FILE" 2>/dev/null | wc -l | tr -d '\n' || echo "0")
+        local count=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[$category\]" | wc -l | tr -d '\n' || echo "0")
         if [ "$count" -gt 0 ]; then
             echo "  $category: $count"
             has_categories=true
@@ -65,13 +84,13 @@ show_summary() {
     
     # Domain-specific stats (only show actual domains, not timestamps)
     echo "🌐 Domains:"
-    local domains=$(grep -E "\[.*\] \[.*\] \[.*\] \[.*\]" "$LOG_FILE" 2>/dev/null | grep -o '\[[a-zA-Z0-9.-]*\]$' | sed 's/\[//g' | sed 's/\]//g' | sort -u)
+    local domains=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[.*\] \[.*\]" | grep -o '\[[a-zA-Z0-9.-]*\]$' | sed 's/\[//g' | sed 's/\]//g' | sort -u)
     if [ -n "$domains" ]; then
         for domain in $domains; do
             # Skip if it looks like a timestamp
             if [[ ! "$domain" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T ]]; then
-                local domain_logs=$(grep -E "\[.*\] \[.*\] \[.*\] \[$domain\]" "$LOG_FILE" 2>/dev/null | wc -l | tr -d '\n' || echo "0")
-                local domain_errors=$(grep -E "\[.*\] \[ERROR\] \[.*\] \[$domain\]" "$LOG_FILE" 2>/dev/null | wc -l | tr -d '\n' || echo "0")
+                local domain_logs=$(echo "$logs" | grep -E "\[.*\] \[.*\] \[.*\] \[$domain\]" | wc -l | tr -d '\n' || echo "0")
+                local domain_errors=$(echo "$logs" | grep -E "\[.*\] \[ERROR\] \[.*\] \[$domain\]" | wc -l | tr -d '\n' || echo "0")
                 if [ "$domain_logs" -gt 0 ]; then
                     echo "  $domain: $domain_logs total, $domain_errors errors"
                 fi
@@ -86,7 +105,11 @@ show_summary() {
 monitor_realtime() {
     echo "👀 Live Monitoring:"
     echo "=================="
-    tail -f "$LOG_FILE" | grep --line-buffered -E "\[.*\] \[.*\] \[.*\]"
+    if [ -f "$LOG_FILE" ]; then
+        tail -f "$LOG_FILE" | grep --line-buffered -E "\[.*\] \[.*\] \[.*\]"
+    else
+        docker logs -f "$CONTAINER_NAME" 2>&1 | grep --line-buffered -E "\[.*\] \[.*\] \[.*\]"
+    fi
 }
 
 # Main menu

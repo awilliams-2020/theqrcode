@@ -16,8 +16,7 @@ import {
   TrendingUp
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
-import { useMatomo } from '@/hooks/useMatomo'
-import { trackSignup } from '@/lib/matomo-tracking'
+import { trackSignup, trackEngagement } from '@/lib/matomo-tracking'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -26,7 +25,6 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
-  const matomo = useMatomo()
 
   // Handle scroll effect
   useEffect(() => {
@@ -72,24 +70,12 @@ export default function Navbar() {
   }
 
   const handleSignInClick = () => {
-    matomo.trackEvent({
-      category: 'CTA',
-      action: 'click',
-      name: 'signin-navbar'
-    })
+    trackEngagement.clickButton('Sign In', 'navbar')
     router.push('/auth/signin')
   }
 
   const handleSignUpClick = () => {
-    // Track comprehensive signup CTA click
     trackSignup.clickSignupCTA('Sign Up', 'navbar', 'home')
-    
-    // Also track with existing method for backward compatibility
-    matomo.trackEvent({
-      category: 'CTA',
-      action: 'click',
-      name: 'signup-navbar'
-    })
     router.push('/auth/signup')
   }
 

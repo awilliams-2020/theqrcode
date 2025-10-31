@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Check, Zap, X, TrendingUp, Users, Database, BarChart3, Image, Palette, Shield, Headphones, Code, Building2 } from 'lucide-react'
-import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
-import { trackSignup } from '@/lib/matomo-tracking'
+import { trackSignup, trackLandingPage } from '@/lib/matomo-tracking'
 
 interface PricingPageProps {
   session: any
@@ -151,15 +150,14 @@ const featureCategories = [
 ]
 
 export default function PricingPage({ session }: PricingPageProps) {
-  const { trackCTA, trackPricingView } = useLandingPageTracking('pricing');
   const [loading, setLoading] = useState<string | null>(null)
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null)
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
   
   // Track pricing page view
   useEffect(() => {
-    trackPricingView();
-  }, [trackPricingView]);
+    trackLandingPage.viewPricing('pricing');
+  }, []);
 
   // Fetch user's current subscription
   useEffect(() => {
@@ -206,12 +204,15 @@ export default function PricingPage({ session }: PricingPageProps) {
   }
 
   const handleSubscribe = async (planId: string) => {
-    // Track the CTA click
     const planName = plans.find(p => p.id === planId)?.name || planId;
-    trackCTA(`Subscribe ${planName}`, 'pricing', planId);
     
-    // Track plan selection for signup flow
-    trackSignup.selectPlan(planId, 'pricing_page');
+    // Track signup flow
+    if (!session) {
+      trackSignup.clickSignupCTA(`Subscribe ${planName}`, 'pricing', 'pricing', planId);
+      trackSignup.selectPlan(planId, 'pricing_page');
+    } else {
+      trackSignup.selectPlan(planId, 'pricing_page');
+    }
     
     // If not logged in, redirect to sign up with selected plan
     if (!session) {

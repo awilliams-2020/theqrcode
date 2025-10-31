@@ -14,7 +14,13 @@ npx prisma migrate deploy || echo "⚠ Migration failed or no migrations to run"
 echo "Generating Prisma client..."
 npx prisma generate
 
-# Start the Next.js application with logging
+# Start the Next.js application
+# Logging: Docker native logging (persistent) + file for convenience
+# Docker logs: docker logs theqrcode (persistent, rotated by Docker)
+# File logs: /var/log/theqrcode.log (rotated by logrotate, NULLs cleaned by script)
 echo "Starting Next.js application..."
-exec npm start 2>&1 | tee /var/log/theqrcode.log
+
+# Use tee to write to both stdout (Docker logs) and file
+# Logrotate will clean NULL bytes that appear after rotation
+exec npm start 2>&1 | tee -a /var/log/theqrcode.log
 
