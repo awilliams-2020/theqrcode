@@ -4,7 +4,7 @@
  */
 
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
-export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR'
+export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR' | 'CRON-JOBS'
 
 interface LogContext {
   userId?: string

@@ -71,7 +71,11 @@ export default function SelectableQRCodeCard({
             size: (qr.settings?.size as number) || 256,
             color: (qr.settings?.color as { dark: string; light: string }) || { dark: '#000000', light: '#FFFFFF' },
             frame: (qr.settings?.frame as { style?: 'square' | 'rounded' | 'circle' | 'dashed'; color?: string; size?: number }) || undefined,
-            styling: (qr.settings?.styling as any) || undefined
+            styling: (qr.settings?.styling as any) || undefined,
+            logo: (qr.settings?.logo as any)?.enabled ? {
+              dataUrl: (qr.settings.logo as any).dataUrl,
+              size: (qr.settings.logo as any).size
+            } : undefined
           })
           setQrCodeImage(qrImage)
         } catch (error) {

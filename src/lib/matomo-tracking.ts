@@ -241,10 +241,12 @@ export const trackQRCode = {
 
     // Track goal for first QR code or milestone
     let goalResult: boolean | undefined;
+    let goalId: number | undefined;
     if (qrCodeCount === 1) {
+      goalId = MatomoGoals.FIRST_QR_CODE_CREATED;
       goalResult = await serverTrackGoal(
         url,
-        MatomoGoals.FIRST_QR_CODE_CREATED,
+        goalId,
         {
           userId,
           ip: options?.ip,
@@ -252,9 +254,10 @@ export const trackQRCode = {
         }
       );
     } else if (qrCodeCount === 10) {
+      goalId = MatomoGoals.TEN_QR_CODES;
       goalResult = await serverTrackGoal(
         url,
-        MatomoGoals.TEN_QR_CODES,
+        goalId,
         {
           userId,
           ip: options?.ip,
@@ -269,6 +272,8 @@ export const trackQRCode = {
         component: 'trackQRCode.create',
         qrCodeId,
         userId,
+        qrCodeCount,
+        goalId: goalId || null,
         eventFailed: eventResult === false,
         goalFailed: goalResult === false,
       });

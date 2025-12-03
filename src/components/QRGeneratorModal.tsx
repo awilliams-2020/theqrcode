@@ -54,6 +54,24 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     }
   }, [planFeatures.hasAllQRTypes, formData.type])
 
+  // Initialize logo preview from existing qrCode settings
+  useEffect(() => {
+    if (qrCode?.settings?.logo && (qrCode.settings.logo as any).enabled) {
+      const logoSettings = qrCode.settings.logo as any
+      // If logo data exists, set the preview
+      if (logoSettings.dataUrl) {
+        setLogoPreview(logoSettings.dataUrl)
+        setFormData(prev => ({
+          ...prev,
+          logo: {
+            enabled: true,
+            file: null // We can't reconstruct the File object, but we have the preview
+          }
+        }))
+      }
+    }
+  }, [qrCode])
+
   const allDemoExamples = [
     {
       title: 'Website URL',
@@ -163,6 +181,24 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
           ? qrCode.shortUrl 
           : formData.content
         
+        // Determine logo data - either from uploaded file or persisted dataUrl
+        let logoOption: QRCodeOptions['logo'] = undefined
+        if (formData.logo.enabled) {
+          if (logoFile) {
+            // New logo uploaded
+            logoOption = {
+              file: logoFile,
+              size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
+            }
+          } else if (logoPreview && (qrCode?.settings?.logo as any)?.dataUrl) {
+            // Using existing logo from saved data
+            logoOption = {
+              dataUrl: logoPreview,
+              size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
+            }
+          }
+        }
+
         const options: QRCodeOptions = {
           type: formData.type as any,
           content: qrContent,
@@ -170,10 +206,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
           color: formData.color,
           frame: formData.frame,
           styling: formData.styling,
-          logo: formData.logo.enabled && logoFile ? {
-            file: logoFile,
-            size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
-          } : undefined
+          logo: logoOption
         }
       
       const qrDataURL = await QRGen.generateQRCode(options)
@@ -183,7 +216,7 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
     } finally {
       setIsGenerating(false)
     }
-    }, [formData, logoFile, qrCode?.shortUrl])
+    }, [formData, logoFile, logoPreview, qrCode?.shortUrl])
 
   useEffect(() => {
     generateQRCode()
@@ -192,13 +225,40 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
   const handleSave = async () => {
     setIsSaving(true)
     try {
+      // Build logo settings
+      let logoSettings: any = null
+      if (formData.logo.enabled) {
+        if (logoFile) {
+          // New logo uploaded - convert to base64
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = (e) => resolve(e.target?.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(logoFile)
+          })
+          logoSettings = {
+            enabled: true,
+            dataUrl: base64,
+            size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
+          }
+        } else if (logoPreview && qrCode?.settings?.logo) {
+          // Using existing logo - keep the original data
+          logoSettings = {
+            enabled: true,
+            dataUrl: (qrCode.settings.logo as any).dataUrl,
+            size: Math.min(formData.size * LOGO_CONSTRAINTS.MAX_SIZE_PERCENT, LOGO_CONSTRAINTS.MAX_PIXELS)
+          }
+        }
+      }
+
       const qrData: QRCodeFormData = {
         ...formData,
         settings: {
           size: formData.size,
           color: formData.color,
           frame: formData.frame,
-          styling: formData.styling
+          styling: formData.styling,
+          logo: logoSettings
         },
         id: qrCode?.id
       }
@@ -223,16 +283,29 @@ export default function QRGeneratorModal({ qrCode, onSave, onCancel, currentPlan
       let downloadData = qrImage
       
       if (format === 'svg') {
+        // Determine logo data - either from uploaded file or persisted dataUrl
+        let logoOption: QRCodeOptions['logo'] = undefined
+        if (formData.logo.enabled) {
+          if (logoFile) {
+            logoOption = {
+              file: logoFile,
+              size: Math.min(formData.size * 0.25, 64)
+            }
+          } else if (logoPreview && (qrCode?.settings?.logo as any)?.dataUrl) {
+            logoOption = {
+              dataUrl: logoPreview,
+              size: Math.min(formData.size * 0.25, 64)
+            }
+          }
+        }
+        
         const options = {
           type: formData.type as any,
           content: qrContent,
           size: formData.size,
           color: formData.color,
           frame: formData.frame,
-          logo: formData.logo.enabled && logoFile ? {
-            file: logoFile,
-            size: Math.min(formData.size * 0.25, 64)
-          } : undefined
+          logo: logoOption
         }
         
         downloadData = await QRGen.generateSVG(options)

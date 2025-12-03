@@ -135,6 +135,11 @@ export const authOptions: NextAuthOptions = {
           
         if (dbUser) {
           token.sub = dbUser.id
+          // Update last login timestamp
+          prisma.user.update({
+            where: { id: dbUser.id },
+            data: { lastLoginAt: new Date() }
+          }).catch(() => {});
           // Track user login in Matomo (async, don't block)
           prisma.subscription.findUnique({
             where: { userId: dbUser.id }
@@ -192,6 +197,11 @@ export const authOptions: NextAuthOptions = {
         } else {
           // For credentials provider, use the user.id directly
           token.sub = user.id
+          // Update last login timestamp
+          prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          }).catch(() => {});
           // Track user login in Matomo (async, don't block)
           prisma.subscription.findUnique({
             where: { userId: user.id }

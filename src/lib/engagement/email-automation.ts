@@ -72,8 +72,8 @@ export async function sendEmailCampaign(campaignId: string) {
       })
     }
 
-    // Rate limiting: wait 100ms between emails
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Rate limiting: 2 requests per second = 500ms minimum, use 600ms for safety
+    await new Promise(resolve => setTimeout(resolve, 600))
   }
 
   // Update campaign status
@@ -246,8 +246,8 @@ export async function sendTrialEndingReminders() {
       },
     })
 
-    // Rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Rate limiting: 2 requests per second = 500ms minimum, use 600ms for safety
+    await new Promise(resolve => setTimeout(resolve, 600))
   }
 }
 
@@ -288,9 +288,18 @@ export async function sendMonthlyInsights() {
       },
     })
 
-    const scanGrowth = lastMonthScans > 0 
-      ? Math.round(((scanCount - lastMonthScans) / lastMonthScans) * 100)
-      : 100
+    // Calculate growth percentage
+    let scanGrowth: number
+    if (lastMonthScans > 0) {
+      // Normal case: calculate percentage change
+      scanGrowth = Math.round(((scanCount - lastMonthScans) / lastMonthScans) * 100)
+    } else if (scanCount > 0) {
+      // Last month had 0, this month has scans: infinite growth, cap at 999%
+      scanGrowth = 999
+    } else {
+      // Both months are 0: no change
+      scanGrowth = 0
+    }
 
     // Find top performing QR code
     const topQrCode = user.qrCodes[0]?.name || 'N/A'
@@ -326,8 +335,8 @@ export async function sendMonthlyInsights() {
       },
     })
 
-    // Rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Rate limiting: 2 requests per second = 500ms minimum, use 600ms for safety
+    await new Promise(resolve => setTimeout(resolve, 600))
   }
 }
 
@@ -399,16 +408,16 @@ export async function sendReEngagementEmails() {
   const users = await prisma.user.findMany({
     where: {
       isDeleted: false,
-      updatedAt: { lt: thirtyDaysAgo },
+      lastLoginAt: { lt: thirtyDaysAgo },
     },
   })
 
   const transporter = createTransporter()
 
   for (const user of users) {
-    if (!user.email) continue
+    if (!user.email || !user.lastLoginAt) continue
 
-    const daysSinceLastLogin = Math.ceil((Date.now() - user.updatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    const daysSinceLastLogin = Math.ceil((Date.now() - user.lastLoginAt.getTime()) / (1000 * 60 * 60 * 24))
 
     const reEngagementEmail = createEmailOptions({
       to: user.email,
@@ -427,8 +436,133 @@ export async function sendReEngagementEmails() {
       },
     })
 
-    // Rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Rate limiting: 2 requests per second = 500ms minimum, use 600ms for safety
+    await new Promise(resolve => setTimeout(resolve, 600))
+  }
+}
+
+// Send inactive user deletion warning emails
+export async function sendInactiveUserDeletionWarnings() {
+  const now = new Date()
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+  // Find users who are inactive (not deleted, and lastLoginAt is old)
+  // We check for users who haven't logged in for 30-90 days
+  const inactiveUsers = await prisma.user.findMany({
+    where: {
+      isDeleted: false,
+      lastLoginAt: {
+        lt: thirtyDaysAgo, // At least 30 days since last login
+        gte: ninetyDaysAgo, // But not yet 90 days (those will be deleted)
+      },
+    },
+    include: {
+      subscription: true,
+    },
+  })
+
+  if (inactiveUsers.length === 0) {
+    return
+  }
+
+  const transporter = createTransporter()
+
+  for (const user of inactiveUsers) {
+    if (!user.email || !user.lastLoginAt) continue
+
+    const daysInactive = Math.floor((now.getTime() - user.lastLoginAt.getTime()) / (1000 * 60 * 60 * 24))
+    const daysUntilDeletion = 90 - daysInactive
+    const lastActiveDate = user.lastLoginAt.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })
+
+    let emailTemplate: typeof emailTemplates.inactiveUserWarning60Days | typeof emailTemplates.inactiveUserWarning30Days | typeof emailTemplates.inactiveUserWarning15Days | null = null
+    let subject: string | null = null
+
+    // Determine which warning to send based on days until deletion
+    // Send warnings at 60, 30, and 15 days before deletion (30, 60, 75 days inactive)
+    // We use ranges to catch users within 2 days of the threshold
+    if (daysUntilDeletion <= 15 && daysUntilDeletion >= 14) {
+      // 15 days warning (75 days inactive) - send when 14-15 days remaining
+      emailTemplate = emailTemplates.inactiveUserWarning15Days
+      subject = emailTemplates.inactiveUserWarning15Days.subject
+    } else if (daysUntilDeletion <= 30 && daysUntilDeletion >= 29) {
+      // 30 days warning (60 days inactive) - send when 29-30 days remaining
+      emailTemplate = emailTemplates.inactiveUserWarning30Days
+      subject = emailTemplates.inactiveUserWarning30Days.subject
+    } else if (daysUntilDeletion <= 60 && daysUntilDeletion >= 59) {
+      // 60 days warning (30 days inactive) - send when 59-60 days remaining
+      emailTemplate = emailTemplates.inactiveUserWarning60Days
+      subject = emailTemplates.inactiveUserWarning60Days.subject
+    }
+
+    // Only send if we're at a threshold
+    if (!emailTemplate || !subject) {
+      continue
+    }
+
+    // Check if we've already sent this specific warning type
+    const specificWarningSent = await prisma.emailLog.findFirst({
+      where: {
+        userId: user.id,
+        emailType: 'notification',
+        subject: subject,
+        sentAt: {
+          gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // Within last 7 days
+        },
+      },
+    })
+
+    // Skip if we already sent this specific warning
+    if (specificWarningSent) {
+      continue
+    }
+
+    try {
+      const warningEmail = createEmailOptions({
+        to: user.email,
+        subject,
+        html: emailTemplate.html({
+          name: user.name || 'there',
+          daysUntilDeletion,
+          lastActiveDate,
+        }),
+        text: emailTemplate.text({
+          name: user.name || 'there',
+          daysUntilDeletion,
+          lastActiveDate,
+        }),
+      })
+      await transporter.sendMail(warningEmail)
+
+      await prisma.emailLog.create({
+        data: {
+          userId: user.id,
+          emailType: 'notification',
+          subject,
+          status: 'sent',
+        },
+      })
+
+      console.log(`✓ Inactive user warning sent to ${user.email} (${daysUntilDeletion} days until deletion)`)
+    } catch (error) {
+      console.error(`Failed to send inactive user warning to ${user.email}:`, error)
+      
+      await prisma.emailLog.create({
+        data: {
+          userId: user.id,
+          emailType: 'notification',
+          subject,
+          status: 'failed',
+        },
+      })
+    }
+
+    // Rate limiting: 2 requests per second = 500ms minimum, use 600ms for safety
+    await new Promise(resolve => setTimeout(resolve, 600))
   }
 }
 

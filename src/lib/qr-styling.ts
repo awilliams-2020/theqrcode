@@ -8,7 +8,7 @@ export class QRStyleRenderer {
     styling: QRStylingOptions | undefined,
     size: number,
     color: { dark: string; light: string },
-    logo?: { file: File; size?: number }
+    logo?: { file: File; size?: number; dataUrl?: string }
   ): Promise<string> {
     const config: any = {
       width: size,
@@ -59,7 +59,9 @@ export class QRStyleRenderer {
 
     // Add logo if provided
     if (logo) {
-      const logoDataURL = await this.fileToDataURL(logo.file)
+      // If we have a dataUrl (from persisted data), use it directly
+      // Otherwise, convert the file to a dataUrl
+      const logoDataURL = logo.dataUrl || await this.fileToDataURL(logo.file)
       config.image = logoDataURL
       config.imageOptions = {
         hideBackgroundDots: true,

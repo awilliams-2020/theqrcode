@@ -15,7 +15,8 @@ export interface QRCodeOptions {
     size?: number
   }
   logo?: {
-    file: File
+    file?: File
+    dataUrl?: string
     size?: number
   }
 }
@@ -94,6 +95,11 @@ export class QRGeneratorServer {
       // Apply frame if provided
       if (frame && frame.style !== 'square') {
         qrDataURL = await this.addFrameToQR(qrDataURL, frame, size)
+      }
+      
+      // Apply logo if provided
+      if (options.logo) {
+        qrDataURL = await this.addLogoToQR(qrDataURL, options.logo, size)
       }
       
       return qrDataURL
@@ -354,6 +360,84 @@ export class QRGeneratorServer {
     }])
     .png()
     .toBuffer()
+  }
+
+  private static async addLogoToQR(qrDataURL: string, logo: { file?: File; dataUrl?: string; size?: number }, size: number): Promise<string> {
+    try {
+      // Convert QR data URL to buffer
+      const base64Data = qrDataURL.split(',')[1]
+      const qrBuffer = Buffer.from(base64Data, 'base64')
+      
+      // Get logo data URL - either from direct dataUrl or from File (server-side File handling)
+      let logoDataUrl: string | undefined
+      if (logo.dataUrl) {
+        logoDataUrl = logo.dataUrl
+      } else if (logo.file) {
+        // Convert File to data URL (for server-side, we'd need to handle this differently)
+        // This is unlikely to be called server-side as Files are browser objects
+        throw new Error('File-based logo not supported in server-side generation. Use dataUrl instead.')
+      }
+      
+      if (!logoDataUrl) {
+        throw new Error('No logo data provided')
+      }
+      
+      // Convert logo data URL to buffer
+      const logoBase64Data = logoDataUrl.split(',')[1]
+      const logoBuffer = Buffer.from(logoBase64Data, 'base64')
+      
+      // Calculate logo size
+      const logoSize = logo.size || Math.min(size * 0.25, 64)
+      
+      // Load QR code image
+      const qrImage = await sharp(qrBuffer).png().toBuffer()
+      
+      // Load logo image and resize it
+      const logoImage = await sharp(logoBuffer)
+        .resize(Math.round(logoSize), Math.round(logoSize), {
+          fit: 'contain',
+          background: { r: 255, g: 255, b: 255, alpha: 1 }
+        })
+        .png()
+        .toBuffer()
+      
+      // Calculate position to center logo
+      const logoX = (size - Math.round(logoSize)) / 2
+      const logoY = (size - Math.round(logoSize)) / 2
+      
+      // Create white background for logo (4 pixels padding on each side)
+      const whiteBackgroundSize = Math.round(logoSize) + 8
+      const whiteBackgroundX = logoX - 4
+      const whiteBackgroundY = logoY - 4
+      
+      // Composite: QR code + white background + logo
+      const result = await sharp(qrImage)
+        .composite([
+          {
+            input: Buffer.from(`
+              <svg width="${size}" height="${size}">
+                <rect x="${whiteBackgroundX}" y="${whiteBackgroundY}" 
+                      width="${whiteBackgroundSize}" height="${whiteBackgroundSize}" 
+                      fill="white"/>
+              </svg>
+            `),
+            left: 0,
+            top: 0
+          },
+          {
+            input: logoImage,
+            left: Math.round(logoX),
+            top: Math.round(logoY)
+          }
+        ])
+        .png()
+        .toBuffer()
+      
+      return `data:image/png;base64,${result.toString('base64')}`
+    } catch (error) {
+      console.error('Error adding logo to QR code:', error)
+      return qrDataURL // Return original if logo fails
+    }
   }
 
   private static hexToRgba(hex: string): { r: number; g: number; b: number; alpha: number } {

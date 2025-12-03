@@ -35,8 +35,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Check trial abuse prevention table (same logic as createUser event)
+    // Normalize email to prevent duplicate hashes from case/whitespace differences
     const crypto = require('crypto')
-    const emailHash = crypto.createHash('sha256').update(user?.email || '').digest('hex')
+    const normalizedEmail = (user?.email || '').toLowerCase().trim()
+    const emailHash = crypto.createHash('sha256').update(normalizedEmail).digest('hex')
     const hasDeletedAccount = await prisma.trialAbusePrevention.findUnique({
       where: { emailHash: emailHash }
     })

@@ -9,29 +9,52 @@ import { captureException } from '@/lib/sentry'
 // Disable body parsing, need raw body for webhook signature verification
 export const runtime = 'nodejs'
 
+// GET endpoint for webhook health check
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    message: 'Stripe webhook endpoint is active',
+    endpoint: '/api/stripe/webhook',
+    timestamp: new Date().toISOString()
+  })
+}
+
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  console.log('[WEBHOOK] Received webhook request at', new Date().toISOString())
+  
   try {
-    // Get raw body as text
-    const body = await request.text()
+    // Get raw body as Buffer to preserve exact bytes for signature verification
+    // This is critical - Stripe signature verification requires the exact raw bytes
+    const arrayBuffer = await request.arrayBuffer()
+    const body = Buffer.from(arrayBuffer)
+    
+    console.log('[WEBHOOK] Body size:', body.length, 'bytes')
     
     // Get Stripe signature from headers
     const headersList = await headers()
     const signature = headersList.get('stripe-signature')
 
     if (!signature) {
-      console.error('No Stripe signature found')
+      console.error('[WEBHOOK] No Stripe signature found in headers')
+      console.log('[WEBHOOK] Available headers:', Object.fromEntries(headersList.entries()))
       return NextResponse.json(
         { error: 'No signature' },
         { status: 400 }
       )
     }
 
+    console.log('[WEBHOOK] Signature found, verifying...')
+
     // Verify webhook signature and construct event
+    // Pass body as Buffer directly to preserve exact bytes for signature verification
     let event: Stripe.Event
     try {
       event = constructWebhookEvent(body, signature)
+      const mode = event.livemode ? 'LIVE' : 'TEST'
+      console.log(`[WEBHOOK] Signature verified successfully. Mode: ${mode}, Event type: ${event.type}, Event ID: ${event.id}`)
     } catch (err) {
-      console.error('Webhook signature verification failed:', err)
+      console.error('[WEBHOOK] Signature verification failed:', err)
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -72,12 +95,16 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
     }
 
-    return NextResponse.json({ received: true })
+    const duration = Date.now() - startTime
+    console.log(`[WEBHOOK] Successfully processed event ${event.type} in ${duration}ms`)
+    
+    return NextResponse.json({ received: true, eventId: event.id, eventType: event.type })
   } catch (error) {
-    console.error('Webhook error:', error)
+    const duration = Date.now() - startTime
+    console.error('[WEBHOOK] Error processing webhook after', duration, 'ms:', error)
     captureException(error, { endpoint: '/api/stripe/webhook', method: 'POST' })
     return NextResponse.json(
       { error: 'Webhook handler failed' },

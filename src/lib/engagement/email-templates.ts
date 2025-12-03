@@ -256,7 +256,7 @@ export const usageInsightsEmail: EmailTemplate = {
                           <h3 style="color: #2563eb; font-size: 36px; margin: 0; font-weight: bold;">${data.scanCount}</h3>
                           <p style="color: #6b7280; margin: 5px 0;">Total Scans</p>
                           <p style="color: ${data.scanGrowth >= 0 ? '#059669' : '#dc2626'}; font-size: 14px; margin: 0; font-weight: bold;">
-                            ${data.scanGrowth >= 0 ? '↑' : '↓'} ${Math.abs(data.scanGrowth)}% from last month
+                            ${data.scanGrowth === 0 ? '→' : data.scanGrowth >= 0 ? '↑' : '↓'} ${data.scanGrowth === 0 ? 'No change' : data.scanGrowth === 999 ? 'New!' : Math.abs(data.scanGrowth) + '%'} from last month
                           </p>
                         </td>
                       </tr>
@@ -312,7 +312,7 @@ Hi ${data.name}!
 Here's how your QR codes performed in ${data.month}:
 
 Total Scans: ${data.scanCount}
-Growth: ${data.scanGrowth >= 0 ? '↑' : '↓'} ${Math.abs(data.scanGrowth)}% from last month
+Growth: ${data.scanGrowth === 0 ? '→ No change' : data.scanGrowth === 999 ? '↑ New!' : (data.scanGrowth >= 0 ? '↑' : '↓') + ' ' + Math.abs(data.scanGrowth) + '%'} from last month
 
 Active QR Codes: ${data.qrCodeCount}
 
@@ -554,7 +554,7 @@ The TheQRCode.io Team
 
 // Re-engagement email for inactive users
 export const reEngagementEmail: EmailTemplate = {
-  subject: 'We miss you! Come back and create amazing QR codes',
+  subject: 'We miss you! Your QR code journey continues',
   html: (data: { name: string; daysSinceLastLogin: number }) => `
 <!DOCTYPE html>
 <html lang="en">
@@ -568,11 +568,151 @@ export const reEngagementEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">We Miss You! 💙</h1>
+              <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">It's been ${data.daysSinceLastLogin} days</p>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
+              
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 30px 0; font-size: 16px;">
+                We noticed you haven't been around for a while. Your account is still here, and we'd love to see you create amazing QR codes again!
+              </p>
+              
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
+                <strong>Quick tips to get you started:</strong>
+              </p>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
+                <tr>
+                  <td style="padding: 15px; background-color: #f9fafb; border-left: 4px solid #2563eb; border-radius: 4px; margin-bottom: 12px;">
+                    <p style="color: #1e40af; margin: 0; font-weight: 600; font-size: 15px;">💡 Start with a simple URL QR code</p>
+                    <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 14px; line-height: 1.6;">Perfect for linking to your website, landing pages, or social media profiles. It's the easiest way to get started!</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px; background-color: #f9fafb; border-left: 4px solid #16a34a; border-radius: 4px; margin-bottom: 12px;">
+                    <p style="color: #15803d; margin: 0; font-weight: 600; font-size: 15px;">📱 Use WiFi QR codes for guests</p>
+                    <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 14px; line-height: 1.6;">Create a QR code that automatically connects visitors to your WiFi network - no password sharing needed!</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px; background-color: #f9fafb; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                    <p style="color: #d97706; margin: 0; font-weight: 600; font-size: 15px;">📊 Track your results</p>
+                    <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 14px; line-height: 1.6;">Check your analytics dashboard to see where and when your QR codes are being scanned - valuable insights await!</p>
+                  </td>
+                </tr>
+              </table>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0; background-color: #eff6ff; border-radius: 8px; border: 1px solid #dbeafe;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="color: #1e40af; margin: 0 0 10px 0; font-weight: 600; font-size: 16px;">📚 Want to learn more?</p>
+                    <p style="color: #4b5563; margin: 0 0 15px 0; font-size: 14px; line-height: 1.6;">
+                      Check out our blog for tips, best practices, and creative ways to use QR codes in your business.
+                    </p>
+                    <a href="https://theqrcode.io/blog" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 14px;">Read our blog →</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 35px 0; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); border-radius: 8px;">
+                <tr>
+                  <td align="center" style="padding: 25px;">
+                    <a href="https://theqrcode.io/dashboard" style="background-color: #ffffff; color: #2563eb; padding: 16px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px; border: none; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">Return to Dashboard</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #6b7280; line-height: 1.6; margin: 30px 0 0 0; font-size: 14px; text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                Questions or need help getting started? Just reply to this email - we're here to help! 💬
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
+                © 2025 TheQRCode.io. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `,
+  text: (data: { name: string; daysSinceLastLogin: number }) => `
+Hi ${data.name},
+
+We noticed you haven't been around for a while. Your account is still here, and we'd love to see you create amazing QR codes again!
+
+QUICK TIPS TO GET YOU STARTED:
+
+💡 START WITH A SIMPLE URL QR CODE
+Perfect for linking to your website, landing pages, or social media profiles. It's the easiest way to get started!
+
+📱 USE WIFI QR CODES FOR GUESTS
+Create a QR code that automatically connects visitors to your WiFi network - no password sharing needed!
+
+📊 TRACK YOUR RESULTS
+Check your analytics dashboard to see where and when your QR codes are being scanned - valuable insights await!
+
+📚 WANT TO LEARN MORE?
+Check out our blog for tips, best practices, and creative ways to use QR codes in your business.
+Read our blog: https://theqrcode.io/blog
+
+Return to your dashboard: https://theqrcode.io/dashboard
+
+Questions or need help getting started? Just reply to this email - we're here to help!
+
+Best regards,
+The TheQRCode.io Team
+
+---
+TheQRCode.io | https://theqrcode.io
+Pricing: https://theqrcode.io/pricing
+Help Center: https://theqrcode.io/help
+© 2025 TheQRCode.io. All rights reserved.
+  `
+}
+
+// Inactive user deletion warning (60 days before)
+export const inactiveUserWarning60Days: EmailTemplate = {
+  subject: 'Your account will be deleted in 60 days due to inactivity',
+  html: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Account Deletion Warning</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
+    <tr>
+      <td align="center" style="padding: 20px;">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #2563eb, #4f46e5); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">We Miss You! 💙</h1>
+            <td style="background: linear-gradient(to right, #dc2626, #ea580c); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">⚠️ Account Deletion Notice</h1>
             </td>
           </tr>
           
@@ -582,31 +722,28 @@ export const reEngagementEmail: EmailTemplate = {
               <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
               
               <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-                We noticed it's been ${data.daysSinceLastLogin} days since you last visited TheQRCode.io. 
-                We'd love to have you back!
+                We noticed you haven't logged into your TheQRCode.io account since <strong>${data.lastActiveDate}</strong>. 
+                To keep your account secure and our database clean, we'll automatically delete inactive accounts after 90 days.
               </p>
               
               <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-                Here's what's new since you've been away:
+                <strong>Your account will be deleted in ${data.daysUntilDeletion} days</strong> if you don't log in.
               </p>
               
-              <ul style="color: #4b5563; line-height: 1.8; margin: 0 0 30px 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">Enhanced analytics dashboard</li>
-                <li style="margin-bottom: 8px;">New QR code customization options</li>
-                <li style="margin-bottom: 8px;">Improved export features</li>
-                <li style="margin-bottom: 8px;">Faster generation speed</li>
-              </ul>
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                To keep your account active, simply log in to your dashboard. All your QR codes and data will be preserved.
+              </p>
               
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                 <tr>
                   <td align="center">
-                    <a href="https://theqrcode.io/dashboard" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; border: none;">Welcome Back</a>
+                    <a href="https://theqrcode.io/dashboard" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; border: none;">Log In Now</a>
                   </td>
                 </tr>
               </table>
               
               <p style="color: #4b5563; line-height: 1.6; margin: 0;">
-                Need help with something? Just reply to this email.
+                If you no longer need this account, you can ignore this email and it will be automatically deleted.
               </p>
             </td>
           </tr>
@@ -626,20 +763,216 @@ export const reEngagementEmail: EmailTemplate = {
 </body>
 </html>
   `,
-  text: (data: { name: string; daysSinceLastLogin: number }) => `
+  text: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
 Hi ${data.name},
 
-We noticed it's been ${data.daysSinceLastLogin} days since you last visited TheQRCode.io. We'd love to have you back!
+We noticed you haven't logged into your TheQRCode.io account since ${data.lastActiveDate}. 
+To keep your account secure and our database clean, we'll automatically delete inactive accounts after 90 days.
 
-Here's what's new since you've been away:
-- Enhanced analytics dashboard
-- New QR code customization options
-- Improved export features
-- Faster generation speed
+Your account will be deleted in ${data.daysUntilDeletion} days if you don't log in.
 
-Welcome back: https://theqrcode.io/dashboard
+To keep your account active, simply log in to your dashboard. All your QR codes and data will be preserved.
 
-Need help with something? Just reply to this email.
+Log in now: https://theqrcode.io/dashboard
+
+If you no longer need this account, you can ignore this email and it will be automatically deleted.
+
+Best regards,
+The TheQRCode.io Team
+  `
+}
+
+// Inactive user deletion warning (30 days before)
+export const inactiveUserWarning30Days: EmailTemplate = {
+  subject: '⚠️ Final Warning: Your account will be deleted in 30 days',
+  html: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Final Account Deletion Warning</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
+    <tr>
+      <td align="center" style="padding: 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(to right, #dc2626, #b91c1c); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">⚠️ Final Warning: Account Deletion</h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 30px; background-color: #ffffff;">
+              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                This is your final warning. Your TheQRCode.io account hasn't been accessed since <strong>${data.lastActiveDate}</strong>.
+              </p>
+              
+              <p style="color: #dc2626; line-height: 1.6; margin: 0 0 20px 0; font-weight: bold; font-size: 18px;">
+                ⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days.
+              </p>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                Once deleted, all your QR codes, analytics data, and account information will be permanently removed and cannot be recovered.
+              </p>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                To prevent deletion, log in to your account now:
+              </p>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://theqrcode.io/dashboard" style="background-color: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; border: none;">Log In to Save Account</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0;">
+                If you no longer need this account, no action is needed and it will be automatically deleted.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                © 2025 TheQRCode.io. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `,
+  text: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
+Hi ${data.name},
+
+This is your final warning. Your TheQRCode.io account hasn't been accessed since ${data.lastActiveDate}.
+
+⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days.
+
+Once deleted, all your QR codes, analytics data, and account information will be permanently removed and cannot be recovered.
+
+To prevent deletion, log in to your account now: https://theqrcode.io/dashboard
+
+If you no longer need this account, no action is needed and it will be automatically deleted.
+
+Best regards,
+The TheQRCode.io Team
+  `
+}
+
+// Inactive user deletion warning (15 days before)
+export const inactiveUserWarning15Days: EmailTemplate = {
+  subject: '🚨 URGENT: Your account will be deleted in 15 days',
+  html: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Urgent Account Deletion Warning</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
+    <tr>
+      <td align="center" style="padding: 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; border: 2px solid #dc2626;">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(to right, #dc2626, #991b1b); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">🚨 URGENT: Account Deletion Imminent</h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 30px; background-color: #ffffff;">
+              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+              
+              <p style="color: #dc2626; line-height: 1.6; margin: 0 0 20px 0; font-weight: bold; font-size: 18px;">
+                ⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days!
+              </p>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                Your TheQRCode.io account hasn't been accessed since <strong>${data.lastActiveDate}</strong>. 
+                We're required to delete inactive accounts after 90 days to maintain data security and compliance.
+              </p>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                <strong>This deletion is permanent and irreversible.</strong> All your data will be lost:
+              </p>
+              
+              <ul style="color: #4b5563; line-height: 1.8; margin: 0 0 30px 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">All QR codes you've created</li>
+                <li style="margin-bottom: 8px;">Analytics and scan history</li>
+                <li style="margin-bottom: 8px;">Account settings and preferences</li>
+                <li style="margin-bottom: 8px;">API keys and webhooks</li>
+              </ul>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                <strong>To save your account, log in immediately:</strong>
+              </p>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://theqrcode.io/dashboard" style="background-color: #dc2626; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; border: none; font-size: 16px;">Log In Now to Save Account</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #6b7280; line-height: 1.6; margin: 0; font-size: 14px;">
+                If you no longer need this account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                © 2025 TheQRCode.io. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `,
+  text: (data: { name: string; daysUntilDeletion: number; lastActiveDate: string }) => `
+Hi ${data.name},
+
+⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days!
+
+Your TheQRCode.io account hasn't been accessed since ${data.lastActiveDate}. 
+We're required to delete inactive accounts after 90 days to maintain data security and compliance.
+
+This deletion is permanent and irreversible. All your data will be lost:
+- All QR codes you've created
+- Analytics and scan history
+- Account settings and preferences
+- API keys and webhooks
+
+To save your account, log in immediately: https://theqrcode.io/dashboard
+
+If you no longer need this account, you can safely ignore this email.
 
 Best regards,
 The TheQRCode.io Team
@@ -653,5 +986,8 @@ export const emailTemplates = {
   usageInsights: usageInsightsEmail,
   featureAnnouncement: featureAnnouncementEmail,
   reEngagement: reEngagementEmail,
+  inactiveUserWarning60Days: inactiveUserWarning60Days,
+  inactiveUserWarning30Days: inactiveUserWarning30Days,
+  inactiveUserWarning15Days: inactiveUserWarning15Days,
 }
 

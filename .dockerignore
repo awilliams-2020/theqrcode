@@ -53,7 +53,7 @@ Dockerfile*
 docker-compose*.yml
 
 # Prisma
-prisma/migrations/
+# Note: prisma/migrations/ is needed for prisma migrate deploy to work
 !prisma/schema.prisma
 
 # TypeScript build info

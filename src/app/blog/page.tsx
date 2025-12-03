@@ -28,6 +28,17 @@ const blogPosts = [
     featured: true,
   },
   {
+    id: 'how-to-create-a-restaurant-qr-code',
+    title: 'How to Create a Restaurant QR Code [Complete Step-by-Step Guide]',
+    excerpt: 'Learn how to create a restaurant QR code in minutes. Step-by-step guide for digital menus, contactless ordering, WiFi sharing, and customer engagement. Free QR code generator included.',
+    date: '2025-01-28',
+    author: 'TheQRCode.io Team',
+    readTime: '10 min read',
+    category: 'Tutorial',
+    tags: ['Restaurant', 'Tutorial', 'How-To', 'Guide', 'Menu'],
+    featured: true,
+  },
+  {
     id: 'qr-code-size-guide',
     title: 'QR Code Size Guide: How Big Should a QR Code Be?',
     excerpt: 'Learn the optimal QR code size for print, billboards, business cards, and posters. Includes formula, distance calculator, and real-world examples.',

@@ -86,6 +86,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/how-to-create-restaurant-qr-code`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/qr-code-for-real-estate`,
       lastModified: weeklyUpdate,
       changeFrequency: 'weekly',
@@ -289,6 +295,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/blog/how-to-create-a-restaurant-qr-code`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     // High-impact SEO content
     {
       url: `${baseUrl}/blog/free-qr-code-generator-no-signup`,
@@ -307,56 +319,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
-    },
-    
-    // Additional high-value blog posts
-    {
-      url: `${baseUrl}/blog/qr-code-marketing-strategies-2025`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-vs-barcode-differences`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-design-best-practices`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-security-best-practices`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-tracking-analytics-guide`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-api-integration-tutorial`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-print-sizes-guide`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/qr-code-mobile-optimization`,
-      lastModified: monthlyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.6,
     },
     
     // High-value tool pages

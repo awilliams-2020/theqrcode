@@ -75,8 +75,10 @@ export async function DELETE(request: NextRequest) {
       // 7. Track for trial abuse prevention if user had a trial
       if (hadTrial) {
         // Create hash of email for trial abuse prevention (GDPR-compliant)
+        // Normalize email to prevent duplicate hashes from case/whitespace differences
         const crypto = require('crypto')
-        const emailHash = crypto.createHash('sha256').update(userWithSubscription?.email || '').digest('hex')
+        const normalizedEmail = (userWithSubscription?.email || '').toLowerCase().trim()
+        const emailHash = crypto.createHash('sha256').update(normalizedEmail).digest('hex')
         
         // Store email hash for trial abuse prevention (legitimate interest under GDPR)
         // Use upsert to handle cases where user has deleted account before

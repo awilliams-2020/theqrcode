@@ -106,7 +106,8 @@ export interface QRCodeOptions {
   }
   styling?: QRStylingOptions
   logo?: {
-    file: File
+    file?: File
+    dataUrl?: string
     size?: number
   }
 }

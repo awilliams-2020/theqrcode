@@ -183,7 +183,11 @@ export async function POST(request: NextRequest) {
       content: qrContent,
       size: settings?.size || 256,
       color: settings?.color || { dark: '#000000', light: '#FFFFFF' },
-      frame: frameSettings
+      frame: frameSettings,
+      logo: (settings?.logo as any)?.enabled ? {
+        dataUrl: (settings.logo as any).dataUrl,
+        size: (settings.logo as any).size
+      } : undefined
     })
 
     // Track QR code creation in Matomo (async, don't block response)

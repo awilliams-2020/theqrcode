@@ -55,7 +55,11 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
           size: settings?.size || 256,
           color: settings?.color || { dark: '#000000', light: '#FFFFFF' },
           frame: settings?.frame || undefined,
-          styling: settings?.styling || undefined
+          styling: settings?.styling || undefined,
+          logo: (settings?.logo as any)?.enabled ? {
+            dataUrl: (settings.logo as any).dataUrl,
+            size: (settings.logo as any).size
+          } : undefined
         })
         
         setQrCodeImage(qrImage)

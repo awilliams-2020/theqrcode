@@ -66,7 +66,7 @@ export default function RestaurantLanding() {
     {
       number: '1',
       title: 'Build Your Digital Menu',
-      description: 'Use our Pro plan menu builder to create a beautiful mobile-optimized menu, or link to your existing menu PDF or website'
+      description: 'Pro Plan: Use our built-in Menu Builder to create beautiful menus with categories, items, prices, and photos. Free Option: Link to your existing PDF or website menu.'
     },
     {
       number: '2',
@@ -100,7 +100,7 @@ export default function RestaurantLanding() {
                 <span className="block text-orange-600 mt-2">Update Prices Instantly</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Create dynamic QR codes for your restaurant menu, WiFi, and reviews. Update content anytime without reprinting. Pro plan includes our interactive menu builder for beautiful, mobile-friendly digital menus.
+                Create dynamic QR codes for your restaurant menu, WiFi, and reviews. Update content anytime without reprinting. <strong>Pro plan includes our built-in Menu Builder</strong> to create stunning, mobile-optimized menus with categories, items, prices, and photos - no coding required!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button
@@ -169,6 +169,61 @@ export default function RestaurantLanding() {
           <p className="text-2xl font-semibold text-orange-600 mt-12">
             One QR code solves all of this. Update anytime. Never reprint.
           </p>
+        </div>
+      </section>
+
+      {/* Pro Plan Menu Builder Highlight */}
+      <section className="px-4 py-20 bg-gradient-to-r from-orange-600 to-red-600">
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-12 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-6">
+              <Menu className="h-10 w-10 text-orange-600" />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Pro Plan: Built-in Menu Builder
+            </h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Create stunning, mobile-optimized menus with categories, items, prices, descriptions, and photos. No coding or design skills required!
+            </p>
+            <div className="grid md:grid-cols-2 gap-6 mb-8 text-left">
+              <div className="bg-orange-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">✓ Easy Menu Creation</h3>
+                <p className="text-gray-600 text-sm">Add categories, items, prices, descriptions, and photos with our intuitive builder.</p>
+              </div>
+              <div className="bg-orange-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">✓ Mobile-Optimized</h3>
+                <p className="text-gray-600 text-sm">Menus automatically look perfect on all devices - no extra work needed.</p>
+              </div>
+              <div className="bg-orange-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">✓ Instant Updates</h3>
+                <p className="text-gray-600 text-sm">Change prices, add specials, or update items in seconds. No reprinting required.</p>
+              </div>
+              <div className="bg-orange-50 p-6 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">✓ Professional Design</h3>
+                <p className="text-gray-600 text-sm">Beautiful, branded menus that match your restaurant's style and personality.</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => {
+                  trackCTA('Try Pro Plan Menu Builder', 'menu-builder-section', 'pro');
+                  window.location.href = '/auth/signup?plan=pro';
+                }}
+                className="px-8 py-4 bg-orange-600 text-white text-lg font-semibold rounded-lg hover:bg-orange-700 transition-colors shadow-lg"
+              >
+                Try Pro Plan Menu Builder →
+              </button>
+              <button
+                onClick={() => {
+                  trackCTA('View Free Option', 'menu-builder-section', 'free');
+                  window.location.href = '/qr-code-generator';
+                }}
+                className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:border-gray-400 transition-colors bg-white"
+              >
+                Or Link to Existing Menu
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -296,7 +351,7 @@ export default function RestaurantLanding() {
             <div className="p-8">
               <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">Free to Start</h3>
-              <p className="text-gray-600">Create your first QR code at no cost. Upgrade only when you need advanced features.</p>
+              <p className="text-gray-600">Create your first QR code at no cost. Link to existing menus for free, or upgrade to Pro for our Menu Builder.</p>
             </div>
             <div className="p-8">
               <RefreshCw className="h-16 w-16 text-blue-500 mx-auto mb-4" />

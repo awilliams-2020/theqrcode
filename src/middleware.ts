@@ -9,17 +9,13 @@ export function middleware(request: NextRequest) {
   
   // Check if this is an OAuth signin or callback request
   if (pathname.startsWith('/api/auth/signin/') || pathname.startsWith('/api/auth/callback/')) {
-    logger.botDetection(`OAuth request detected: ${pathname}`)
-    
     // Bot detection logic for OAuth
     const isBot = detectBot(request, domain)
     
     if (isBot) {
-      logger.botDetection(`Bot detected and blocked: ${pathname}`)
+      logger.warn('BOT-DETECTION', `Bot detected and blocked: ${pathname}`)
       return new NextResponse('Unauthorized', { status: 401 })
     }
-    
-    logger.botDetection(`Legitimate OAuth request allowed: ${pathname}`)
   }
   
   // Check for other protected routes that bots might try to access
@@ -30,7 +26,7 @@ export function middleware(request: NextRequest) {
     const isBot = detectBotForApi(request, domain)
     
     if (isBot) {
-      logger.botDetection(`Bot detected and blocked on API: ${pathname}`)
+      logger.warn('BOT-DETECTION', `Bot detected and blocked on API: ${pathname}`)
       return new NextResponse('Unauthorized', { status: 401 })
     }
   }
@@ -51,10 +47,7 @@ function detectBot(request: NextRequest, domain: string): boolean {
       return true
     }
     
-    // Log if no Matomo cookies but don't block (OAuth flows naturally don't have these)
-    if (!hasMatomoCookies) {
-      logger.botDetection('Warning: No Matomo cookies found (OAuth flow or incognito mode)')
-    }
+    // No Matomo cookies is normal for OAuth flows, don't log
     
     // 2. Check for suspicious user agents
     const userAgent = request.headers.get('user-agent') || ''
@@ -142,29 +135,13 @@ function detectBot(request: NextRequest, domain: string): boolean {
       return true
     }
     
-    // Log if some security headers are missing but don't block
-    if (!secFetchDest || !secFetchMode || !secFetchSite) {
-      logger.botDetection('Warning: Some security headers missing (browser might be older)')
-    }
+    // Some security headers missing is normal for older browsers, don't log
     
     // 5.5. Check for suspicious timing patterns (rapid requests)
-    const now = Date.now()
-    const requestTime = request.headers.get('x-request-time') ? parseInt(request.headers.get('x-request-time')!) : now
-    
-    // This would need to be implemented with a rate limiting mechanism
-    // For now, just log the timing for analysis
-    logger.botDetection(`Request timing - Current: ${now}, Request: ${requestTime}`)
+    // Timing analysis would need rate limiting mechanism - not logging for now
     
     // 6. Check for suspicious IP patterns (if available)
-    const forwarded = request.headers.get('x-forwarded-for')
-    const realIp = request.headers.get('x-real-ip')
-    const cfConnectingIp = request.headers.get('cf-connecting-ip')
-    
-    // If we have IP info, we could add IP-based blocking here
-    // For now, just log for monitoring
-    if (forwarded || realIp || cfConnectingIp) {
-      logger.botDetection(`Request IP info - Forwarded: ${forwarded}, Real: ${realIp}, CF: ${cfConnectingIp}`)
-    }
+    // IP-based blocking could be added here - not logging for now
     
     // If we get here, it's likely a legitimate user
     return false
