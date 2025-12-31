@@ -118,9 +118,16 @@ function detectBot(request: NextRequest, domain: string): boolean {
       }
     }
     
-    // 4. Check for OAuth state parameter (only check on callback, not initial signin)
+    // 4. Check for OAuth state parameter (only check on OAuth provider callbacks, not password/otp)
     const url = new URL(request.url)
-    if (request.nextUrl.pathname.startsWith('/api/auth/callback/') && !url.searchParams.has('state')) {
+    const callbackPath = request.nextUrl.pathname
+    // Only check for state parameter on OAuth provider callbacks (google, github, etc.)
+    // Password and OTP authentication don't use OAuth state parameters
+    const isOAuthCallback = callbackPath.startsWith('/api/auth/callback/') && 
+      !callbackPath.includes('/password') && 
+      !callbackPath.includes('/otp')
+    
+    if (isOAuthCallback && !url.searchParams.has('state')) {
       logger.warn('BOT-DETECTION', 'Bot detected: Missing OAuth state parameter on callback')
       return true
     }

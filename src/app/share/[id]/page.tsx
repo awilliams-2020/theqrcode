@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { QRGenerator } from '@/lib/qr-generator'
+import { QRGeneratorServer } from '@/lib/qr-generator-server'
 import QRShareDisplay from '@/components/QRShareDisplay'
 
 interface SharePageProps {
@@ -57,13 +57,12 @@ export default async function SharePage({ params, searchParams }: SharePageProps
   // Generate QR code image
   let qrCodeImage: string | null = null
   try {
-    qrCodeImage = await QRGenerator.generateQRCode({
+    qrCodeImage = await QRGeneratorServer.generateQRCode({
       type: qrCode.type as any,
       content: qrCode.content,
       size: 300,
       color: { dark: '#000000', light: '#FFFFFF' },
-      frame: (qrCode.settings as any)?.frame || undefined,
-      styling: (qrCode.settings as any)?.styling || undefined
+      frame: (qrCode.settings as any)?.frame || undefined
     })
   } catch (error) {
     console.error('Error generating QR code:', error)

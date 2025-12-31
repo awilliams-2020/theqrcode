@@ -4,7 +4,7 @@ import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
   title: 'Free QR Code Generator | Create Custom QR Codes Instantly - TheQRCode.io',
-  description: 'Generate free QR codes in seconds. Create custom QR codes for URLs, WiFi, contacts, and more. Track scans with advanced analytics. No credit card required to start.',
+  description: 'Generate free QR codes in seconds. Create custom QR codes for URLs, WiFi, contacts, and more. Track scans with advanced analytics. No credit card required. Start creating now!',
   keywords: [
     'qr code generator', 'create qr code', 'qr code maker', 'free qr code', 
     'custom qr code', 'qr code creator', 'qr code builder', 'qr code tool',
@@ -73,6 +73,37 @@ export default function QRGeneratorLandingPage() {
               name: "Generate & Download",
               text: "Create your QR code and download in high resolution",
               url: "https://theqrcode.io/qr-code-generator"
+            }
+          ]
+        }} 
+      />
+      <StructuredData 
+        type="FAQPage" 
+        data={{
+          faqs: [
+            {
+              question: "Is the QR code generator really free?",
+              answer: "Yes! Our QR code generator is completely free to use. You can create unlimited QR codes without signing up. For advanced features like analytics tracking and custom branding, we offer paid plans starting at $9/month."
+            },
+            {
+              question: "What types of QR codes can I create?",
+              answer: "You can create URL QR codes, WiFi QR codes, Contact (vCard) QR codes, Text QR codes, and Email QR codes. Each type serves different purposes and can be customized with colors and logos."
+            },
+            {
+              question: "Can I track QR code scans?",
+              answer: "Yes! With our paid plans, you get access to advanced analytics that track when, where, and how your QR codes are scanned. This includes location data, device types, and scan timestamps."
+            },
+            {
+              question: "What file formats can I download?",
+              answer: "You can download QR codes in PNG format on the free plan. Paid plans also support SVG and PDF formats for higher quality and scalability."
+            },
+            {
+              question: "Do QR codes expire?",
+              answer: "No, QR codes created with our generator don't expire. They will work indefinitely as long as the destination URL or content remains accessible. Dynamic QR codes can be updated anytime without reprinting."
+            },
+            {
+              question: "Can I customize QR code colors and add a logo?",
+              answer: "Yes! Our paid plans include customization options like custom colors, frame styles, and logo embedding. Free users can choose from preset color schemes."
             }
           ]
         }} 

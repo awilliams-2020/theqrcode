@@ -1,6 +1,6 @@
 'use client'
 
-import { QrCode, Palette, Download, BarChart3, Shield, Zap, CheckCircle2, Wifi, Mail, User, FileText, Clock, Users, Award } from 'lucide-react'
+import { QrCode, Palette, Download, BarChart3, Shield, Zap, CheckCircle2, Wifi, Mail, User, FileText, Clock, Users, Award, Utensils } from 'lucide-react'
 import Link from 'next/link'
 import PublicQRGenerator from '../PublicQRGenerator'
 
@@ -44,6 +44,7 @@ export default function QRGeneratorLanding() {
     { icon: Wifi, name: 'WiFi', description: 'Share network access instantly' },
     { icon: User, name: 'vCard', description: 'Share contact information' },
     { icon: Mail, name: 'Email', description: 'Pre-filled email messages' },
+    { icon: Utensils, name: 'Menu', description: 'Create digital restaurant menus with categories and items' },
   ]
 
   const benefits = [
@@ -104,7 +105,7 @@ export default function QRGeneratorLanding() {
               Support for all major QR code types and formats
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {qrTypes.map((type, index) => (
               <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
                 <type.icon className="h-12 w-12 text-blue-600 mb-4" />

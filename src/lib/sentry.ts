@@ -1,17 +1,12 @@
-import * as Sentry from '@sentry/nextjs'
+// Sentry has been removed - these functions are now no-ops to maintain compatibility
 
 export function captureException(error: any, context?: Record<string, any>) {
-  if (context) {
-    Sentry.setContext('error_context', context)
+  // No-op: Sentry has been removed
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error (Sentry disabled):', error, context)
   }
-  Sentry.captureException(error)
 }
 
 export function setUser(user: { id: string; email: string; plan?: string }) {
-  Sentry.setUser({
-    id: user.id,
-    email: user.email,
-    plan: user.plan
-  })
+  // No-op: Sentry has been removed
 }
-

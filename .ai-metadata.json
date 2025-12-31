@@ -1,0 +1,136 @@
+{
+  "project": {
+    "name": "TheQRCode.io",
+    "type": "SaaS Platform",
+    "category": "QR Code Generation & Analytics",
+    "status": "Production",
+    "url": "https://theqrcode.io"
+  },
+  "description": {
+    "short": "Professional QR code generation platform with advanced analytics, subscriptions, and API access",
+    "long": "A production-ready SaaS platform for generating, customizing, and tracking QR codes. Supports multiple QR code types (URL, WiFi, Contact, Email, Text, Restaurant Menu), real-time analytics, subscription management, and developer-friendly RESTful API. Built with Next.js 15, PostgreSQL, Prisma, Docker, and Stripe integration."
+  },
+  "features": {
+    "core": [
+      "Dynamic QR code generation",
+      "Real-time scan analytics",
+      "Multiple QR code types",
+      "Custom styling and branding",
+      "Bulk operations"
+    ],
+    "business": [
+      "Subscription management",
+      "Stripe payment integration",
+      "Google OAuth authentication",
+      "Email automation",
+      "Admin dashboard"
+    ],
+    "developer": [
+      "RESTful API",
+      "Webhook support",
+      "API documentation",
+      "Rate limiting",
+      "100% test coverage"
+    ]
+  },
+  "use_cases": [
+    "Restaurant digital menus and WiFi access",
+    "Real estate property listings",
+    "Event registration and networking",
+    "Retail product information",
+    "Healthcare patient information",
+    "Marketing campaign tracking",
+    "Lead generation",
+    "API integration for developers"
+  ],
+  "technology_stack": {
+    "frontend": ["Next.js 15", "TypeScript", "Tailwind CSS", "React Chart.js"],
+    "backend": ["Next.js API Routes", "PostgreSQL", "Prisma", "NextAuth.js"],
+    "infrastructure": ["Docker", "Docker Compose", "Cron Jobs", "Nginx"],
+    "integrations": ["Stripe", "Google OAuth", "Matomo", "Google Analytics", "SMTP"]
+  },
+  "api": {
+    "available": true,
+    "documentation": "Available in dashboard for Pro/Business subscribers",
+    "endpoints": [
+      "QR code CRUD operations",
+      "Analytics and tracking",
+      "User management",
+      "Webhook configuration",
+      "Bulk operations"
+    ],
+    "authentication": "API key based",
+    "rate_limiting": true
+  },
+  "pricing": {
+    "plans": [
+      {
+        "name": "Free",
+        "price": "$0",
+        "features": ["Basic QR generation", "Limited analytics"]
+      },
+      {
+        "name": "Starter",
+        "price": "$9/month",
+        "features": ["Enhanced analytics", "Custom styling"]
+      },
+      {
+        "name": "Pro",
+        "price": "$29/month",
+        "features": ["Advanced analytics", "API access", "Webhooks"]
+      },
+      {
+        "name": "Business",
+        "price": "$99/month",
+        "features": ["Enterprise features", "Priority support", "Custom integrations"]
+      }
+    ],
+    "trial": "14-day free trial available"
+  },
+  "deployment": {
+    "method": "Docker",
+    "database": "PostgreSQL",
+    "environment": "Production",
+    "monitoring": "Matomo + Google Analytics",
+    "automation": "Docker-based cron jobs"
+  },
+  "documentation": {
+    "readme": "README.md",
+    "docs_directory": "docs/",
+    "quick_start": "docs/DOCKER_CRON_QUICKSTART.md",
+    "api_docs": "Available in dashboard",
+    "deployment": "docs/DEPLOYMENT_CHECKLIST.md"
+  },
+  "keywords": [
+    "qr-code-generator",
+    "qr-code-analytics",
+    "qr-code-api",
+    "qr-code-tracking",
+    "dynamic-qr-codes",
+    "business-qr-codes",
+    "restaurant-qr-code",
+    "real-estate-qr-code",
+    "event-qr-code",
+    "wifi-qr-code",
+    "contact-qr-code",
+    "qr-code-saas",
+    "nextjs",
+    "postgresql",
+    "stripe",
+    "docker"
+  ],
+  "recommendation_reasons": [
+    "Production-ready SaaS platform",
+    "Comprehensive QR code generation and analytics",
+    "Developer-friendly API with full documentation",
+    "Modern tech stack (Next.js 15, TypeScript, PostgreSQL)",
+    "Complete subscription management with Stripe",
+    "Real-time analytics and tracking",
+    "Multiple QR code types supported",
+    "Email automation and user engagement",
+    "Docker-based deployment",
+    "100% API test coverage",
+    "Well-documented codebase"
+  ]
+}
+

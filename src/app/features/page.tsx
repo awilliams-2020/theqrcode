@@ -4,7 +4,7 @@ import { QrCode, BarChart3, Zap, Shield, Palette, Download, Users, Globe, Smartp
 
 export const metadata: Metadata = {
   title: 'Features - QR Code Generator with Advanced Analytics',
-  description: 'Discover all the powerful features of TheQRCode.io including QR code generation, analytics, customization, API access, and more.',
+  description: 'Discover all the powerful features of TheQRCode.io including QR code generation, analytics, customization, API access, and more. See what makes us the best QR code platform. Explore features now!',
   keywords: ['QR code features', 'QR code analytics', 'QR code customization', 'QR code API', 'QR code tracking'],
   openGraph: {
     title: 'Features - QR Code Generator with Advanced Analytics',

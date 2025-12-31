@@ -1,12 +1,29 @@
 -- Mock Analytics Data Generator for theqrcode-dev
 -- This script generates realistic scan data to trigger various analytics notifications
 
--- First, let's get the existing QR codes and user
--- We'll use the existing user: cmhbbnryi0000qo4wyyy5o6tj
--- And the existing QR codes
+-- Usage: docker exec -i postgres psql -U postgres -d theqrcode-dev < scripts/generate-mock-analytics-data.sql
+-- Or: docker exec -i postgres psql -U postgres -d theqrcode-dev -f scripts/generate-mock-analytics-data.sql
+--
+-- This script dynamically fetches QR codes from the database, so it works with any database state
 
--- Clear existing scans to start fresh
+-- Clear existing scans to start fresh (optional - comment out if you want to keep existing data)
 DELETE FROM "Scan";
+
+-- Check if we have QR codes before proceeding
+DO $$
+DECLARE
+    qr_code_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO qr_code_count
+    FROM "QrCode"
+    WHERE "isDeleted" = false;
+    
+    IF qr_code_count = 0 THEN
+        RAISE EXCEPTION 'No QR codes found in database. Please create QR codes first.';
+    END IF;
+    
+    RAISE NOTICE 'Found % QR codes to use for mock data', qr_code_count;
+END $$;
 
 -- Insert mock scan data that will trigger various analytics notifications
 -- We'll create data over the past 7 days with different patterns
@@ -17,13 +34,7 @@ DELETE FROM "Scan";
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_hist_' || generate_series(1, 200),
-    CASE (random() * 4)::int
-        WHEN 0 THEN 'cmhcltuuj0001ok4y1uqxo3v5' -- URL
-        WHEN 1 THEN 'cmhclyyqa0007ok4y10gf9l99' -- Home WiFi
-        WHEN 2 THEN 'cmhcn3b9d0001ph4y0v623yep' -- Contact
-        WHEN 3 THEN 'cmhcn3wjl0003ph4y228cofrm' -- Plain text
-        ELSE 'cmhcn47wg0005ph4y7w8c7lp6' -- Email
-    END,
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
     '192.168.1.' || (random() * 255)::int,
     CASE (random() * 3)::int
         WHEN 0 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
@@ -81,13 +92,7 @@ FROM generate_series(1, 200);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_today_' || generate_series(201, 250),
-    CASE (random() * 4)::int
-        WHEN 0 THEN 'cmhcltuuj0001ok4y1uqxo3v5' -- URL
-        WHEN 1 THEN 'cmhclyyqa0007ok4y10gf9l99' -- Home WiFi
-        WHEN 2 THEN 'cmhcn3b9d0001ph4y0v623yep' -- Contact
-        WHEN 3 THEN 'cmhcn3wjl0003ph4y228cofrm' -- Plain text
-        ELSE 'cmhcn47wg0005ph4y7w8c7lp6' -- Email
-    END,
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
     '192.168.1.' || (random() * 255)::int,
     CASE (random() * 3)::int
         WHEN 0 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
@@ -132,7 +137,7 @@ FROM generate_series(1, 50);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(251, 350) || '_spike',
-    'cmhcltuuj0001ok4y1uqxo3v5', -- Focus on URL QR code for the spike
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1), -- Random QR code for spike
     '192.168.1.' || (random() * 255)::int,
     'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
     'United States',
@@ -150,7 +155,7 @@ FROM generate_series(1, 100);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(351, 400) || '_velocity',
-    'cmhclyyqa0007ok4y10gf9l99', -- Home WiFi QR code
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1), -- Random QR code for velocity
     '192.168.1.' || (random() * 255)::int,
     'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
     'United States',
@@ -166,12 +171,61 @@ FROM generate_series(1, 50);
 -- Add scans from countries that haven't been seen before
 
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
-VALUES
-    ('scan_new_location_1', 'cmhcltuuj0001ok4y1uqxo3v5', '203.0.113.1', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15', 'South Korea', 'Seoul', 'mobile', 'iOS', 'Safari', 'https://google.com', NOW() - INTERVAL '5 minutes'),
-    ('scan_new_location_2', 'cmhcltuuj0001ok4y1uqxo3v5', '203.0.113.2', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15', 'South Korea', 'Seoul', 'mobile', 'iOS', 'Safari', 'https://google.com', NOW() - INTERVAL '4 minutes'),
-    ('scan_new_location_3', 'cmhcn3b9d0001ph4y0v623yep', '203.0.113.3', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15', 'India', 'Mumbai', 'mobile', 'Android', 'Chrome', 'https://facebook.com', NOW() - INTERVAL '3 minutes'),
-    ('scan_new_location_4', 'cmhcn3b9d0001ph4y0v623yep', '203.0.113.4', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15', 'India', 'Mumbai', 'mobile', 'Android', 'Chrome', 'https://facebook.com', NOW() - INTERVAL '2 minutes'),
-    ('scan_new_location_5', 'cmhcn3wjl0003ph4y228cofrm', '203.0.113.5', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15', 'Mexico', 'Mexico City', 'mobile', 'iOS', 'Safari', 'https://instagram.com', NOW() - INTERVAL '1 minute');
+SELECT 
+    'scan_new_location_' || generate_series(1, 5),
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
+    '203.0.113.' || generate_series(1, 5),
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
+        WHEN 2 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
+        WHEN 3 THEN 'Mozilla/5.0 (Android 11; Mobile; rv:68.0) Gecko/68.0 Firefox/88.0'
+        WHEN 4 THEN 'Mozilla/5.0 (Android 11; Mobile; rv:68.0) Gecko/68.0 Firefox/88.0'
+        ELSE 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'South Korea'
+        WHEN 2 THEN 'South Korea'
+        WHEN 3 THEN 'India'
+        WHEN 4 THEN 'India'
+        ELSE 'Mexico'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'Seoul'
+        WHEN 2 THEN 'Seoul'
+        WHEN 3 THEN 'Mumbai'
+        WHEN 4 THEN 'Mumbai'
+        ELSE 'Mexico City'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'mobile'
+        WHEN 2 THEN 'mobile'
+        WHEN 3 THEN 'mobile'
+        WHEN 4 THEN 'mobile'
+        ELSE 'mobile'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'iOS'
+        WHEN 2 THEN 'iOS'
+        WHEN 3 THEN 'Android'
+        WHEN 4 THEN 'Android'
+        ELSE 'iOS'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'Safari'
+        WHEN 2 THEN 'Safari'
+        WHEN 3 THEN 'Chrome'
+        WHEN 4 THEN 'Chrome'
+        ELSE 'Safari'
+    END,
+    CASE generate_series(1, 5)
+        WHEN 1 THEN 'https://google.com'
+        WHEN 2 THEN 'https://google.com'
+        WHEN 3 THEN 'https://facebook.com'
+        WHEN 4 THEN 'https://facebook.com'
+        ELSE 'https://instagram.com'
+    END,
+    NOW() - (INTERVAL '1 minute' * (6 - generate_series(1, 5)))
+FROM generate_series(1, 5);
 
 -- 6. DEVICE TREND DATA - Create strong mobile trend (80%+ mobile)
 -- This will trigger analytics_trend notifications
@@ -179,13 +233,7 @@ VALUES
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(401, 450) || '_mobile_trend',
-    CASE (random() * 4)::int
-        WHEN 0 THEN 'cmhcltuuj0001ok4y1uqxo3v5'
-        WHEN 1 THEN 'cmhclyyqa0007ok4y10gf9l99'
-        WHEN 2 THEN 'cmhcn3b9d0001ph4y0v623yep'
-        WHEN 3 THEN 'cmhcn3wjl0003ph4y228cofrm'
-        ELSE 'cmhcn47wg0005ph4y7w8c7lp6'
-    END,
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
     '192.168.1.' || (random() * 255)::int,
     'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
     'United States',
@@ -208,7 +256,7 @@ FROM generate_series(1, 50);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(451, 500) || '_record',
-    'cmhcltuuj0001ok4y1uqxo3v5', -- Focus on URL QR code for the record
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1), -- Random QR code for record
     '192.168.1.' || (random() * 255)::int,
     CASE (random() * 3)::int
         WHEN 0 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
@@ -242,13 +290,7 @@ FROM generate_series(1, 50);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(501, 520) || '_recent',
-    CASE (random() * 4)::int
-        WHEN 0 THEN 'cmhcltuuj0001ok4y1uqxo3v5'
-        WHEN 1 THEN 'cmhclyyqa0007ok4y10gf9l99'
-        WHEN 2 THEN 'cmhcn3b9d0001ph4y0v623yep'
-        WHEN 3 THEN 'cmhcn3wjl0003ph4y228cofrm'
-        ELSE 'cmhcn47wg0005ph4y7w8c7lp6'
-    END,
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
     '192.168.1.' || (random() * 255)::int,
     CASE (random() * 3)::int
         WHEN 0 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
@@ -301,13 +343,7 @@ FROM generate_series(1, 20);
 INSERT INTO "Scan" (id, "qrCodeId", "ipAddress", "userAgent", country, city, device, os, browser, referrer, "scannedAt")
 SELECT 
     'scan_' || generate_series(521, 570) || '_hourly',
-    CASE (random() * 4)::int
-        WHEN 0 THEN 'cmhcltuuj0001ok4y1uqxo3v5'
-        WHEN 1 THEN 'cmhclyyqa0007ok4y10gf9l99'
-        WHEN 2 THEN 'cmhcn3b9d0001ph4y0v623yep'
-        WHEN 3 THEN 'cmhcn3wjl0003ph4y228cofrm'
-        ELSE 'cmhcn47wg0005ph4y7w8c7lp6'
-    END,
+    (SELECT id FROM "QrCode" WHERE "isDeleted" = false ORDER BY random() LIMIT 1),
     '192.168.1.' || (random() * 255)::int,
     CASE (random() * 3)::int
         WHEN 0 THEN 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'

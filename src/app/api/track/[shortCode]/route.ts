@@ -8,14 +8,16 @@ import { notifyMilestone } from '@/lib/engagement/notifications'
 import { runAnalyticsChecks } from '@/lib/engagement/analytics-notifications'
 import { trackQRCode } from '@/lib/matomo-tracking'
 import { captureException } from '@/lib/sentry'
+import { escapeHtml, escapeJsString, safeUrl, safeMailtoUrl, escapeJsForAttribute } from '@/lib/escape-utils'
 
 // Helper function to generate scan tracking script
 function generateScanTrackingScript(shortCode: string): string {
+  const safeShortCode = escapeJsString(shortCode)
   return `
     <script>
       // Advanced refresh inflation prevention
       (function() {
-        const shortCode = '${shortCode}';
+        const shortCode = ${safeShortCode};
         const SESSION_KEY = 'qr_scans_' + shortCode;
         const REFRESH_DETECTION_KEY = 'qr_refresh_' + shortCode;
         const DEDUP_WINDOW = 120000; // 2 minutes - reasonable window for client-side
@@ -49,7 +51,7 @@ function generateScanTrackingScript(shortCode: string): string {
         sessionStorage.setItem('qr_fingerprint_' + shortCode, sessionFingerprint);
         
         // Make the actual scan tracking request
-        fetch('/api/track/${shortCode}', {
+        fetch('/api/track/' + shortCode, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -266,12 +268,9 @@ export async function GET(
     // Handle different QR code types
     if (qrCode.type === 'url') {
       // For URL types, return HTML page with tracking and auto-redirect
-      let redirectUrl = qrCode.content
-      
-      // Ensure the URL has a protocol for URL types
-      if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
-        redirectUrl = `https://${redirectUrl}`
-      }
+      const redirectUrl = safeUrl(qrCode.content)
+      const safeRedirectUrlJs = escapeJsString(redirectUrl)
+      const safeRedirectUrlDisplay = escapeHtml(qrCode.content) // Display original for user visibility
       
       const html = `
 <!DOCTYPE html>
@@ -351,14 +350,14 @@ export async function GET(
         <div class="loading-spinner"></div>
         <h1 class="redirect-title">Redirecting...</h1>
         <p class="redirect-message">Taking you to your destination</p>
-        <p class="redirect-url">${redirectUrl}</p>
+        <p class="redirect-url">${safeRedirectUrlDisplay}</p>
         <a href="${redirectUrl}" class="manual-link">Click here if not redirected automatically</a>
     </div>
     
     <script>
         // Redirect after a short delay to allow tracking
         setTimeout(() => {
-            window.location.href = '${redirectUrl}';
+            window.location.href = ${safeRedirectUrlJs};
         }, 1000);
     </script>
     ${generateScanTrackingScript(shortCode)}
@@ -478,10 +477,10 @@ export async function GET(
 <body>
     <div class="container">
         <div class="contact-header">
-            <div class="avatar">${contactData.firstName?.[0] || 'C'}${contactData.lastName?.[0] || ''}</div>
+            <div class="avatar">${escapeHtml((contactData.firstName?.[0] || 'C') + (contactData.lastName?.[0] || ''))}</div>
             <div class="contact-info">
-                <h1>${contactData.firstName} ${contactData.lastName}</h1>
-                ${contactData.organization ? `<p>${contactData.organization}</p>` : ''}
+                <h1>${escapeHtml(contactData.firstName || '')} ${escapeHtml(contactData.lastName || '')}</h1>
+                ${contactData.organization ? `<p>${escapeHtml(contactData.organization)}</p>` : ''}
             </div>
         </div>
         
@@ -491,7 +490,7 @@ export async function GET(
                 <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span class="detail-text">${contactData.email}</span>
+                <span class="detail-text">${escapeHtml(contactData.email)}</span>
             </div>
             ` : ''}
             
@@ -500,7 +499,7 @@ export async function GET(
                 <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <span class="detail-text">${contactData.phone}</span>
+                <span class="detail-text">${escapeHtml(contactData.phone)}</span>
             </div>
             ` : ''}
             
@@ -509,7 +508,7 @@ export async function GET(
                 <svg class="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
-                <span class="detail-text">${contactData.url}</span>
+                <span class="detail-text">${escapeHtml(contactData.url)}</span>
             </div>
             ` : ''}
             
@@ -519,7 +518,7 @@ export async function GET(
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span class="detail-text">${contactData.address}</span>
+                <span class="detail-text">${escapeHtml(contactData.address)}</span>
             </div>
             ` : ''}
         </div>
@@ -527,7 +526,7 @@ export async function GET(
         <a href="#" id="downloadBtn" class="download-btn">Add to Contacts</a>
     </div>
     <script>
-        // Create vCard data
+        // Create vCard data (using raw data for vCard format)
         const vCardData = \`${vCard.replace(/`/g, '\\`')}\`;
         
         // Set up download button
@@ -540,7 +539,7 @@ export async function GET(
             
             const link = document.createElement('a');
             link.href = url;
-            link.download = '${contactData.firstName || 'contact'}.vcf';
+            link.download = ${escapeJsString((contactData.firstName || 'contact') + '.vcf')};
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -694,14 +693,14 @@ export async function GET(
         </div>
         
         <div class="email-content">
-            <p class="email-address">${qrCode.content}</p>
+            <p class="email-address">${escapeHtml(qrCode.content)}</p>
         </div>
         
         <div class="email-actions">
-            <button class="copy-btn" onclick="copyToClipboard('${qrCode.content.replace(/'/g, "\\'")}')">
+            <button class="copy-btn" onclick='copyToClipboard("${escapeJsForAttribute(qrCode.content)}")'>
                 Copy Email
             </button>
-            <button class="mailto-btn" onclick="window.location.href='mailto:${qrCode.content}'">
+            <button class="mailto-btn" onclick='window.location.href="${escapeJsForAttribute(safeMailtoUrl(qrCode.content))}"'>
                 Send Email
             </button>
         </div>
@@ -905,7 +904,7 @@ export async function GET(
             </div>
             <div class="wifi-info">
                 <h1>WiFi Network</h1>
-                <p>${wifiData.ssid}</p>
+                <p>${escapeHtml(wifiData.ssid)}</p>
             </div>
         </div>
         
@@ -918,9 +917,9 @@ export async function GET(
                 </div>
                 <div class="detail-content">
                     <div class="detail-label">Network Name</div>
-                    <div class="detail-value">${wifiData.ssid}</div>
+                    <div class="detail-value">${escapeHtml(wifiData.ssid)}</div>
                 </div>
-                <button class="copy-btn" onclick="copyToClipboard('${wifiData.ssid}')" title="Copy network name">
+                <button class="copy-btn" onclick='copyToClipboard("${escapeJsForAttribute(wifiData.ssid)}")' title="Copy network name">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
@@ -936,9 +935,9 @@ export async function GET(
                 </div>
                 <div class="detail-content">
                     <div class="detail-label">Password</div>
-                    <div class="detail-value password">${wifiData.password}</div>
+                    <div class="detail-value password">${escapeHtml(wifiData.password)}</div>
                 </div>
-                <button class="copy-btn" onclick="copyToClipboard('${wifiData.password}')" title="Copy password">
+                <button class="copy-btn" onclick='copyToClipboard("${escapeJsForAttribute(wifiData.password)}")' title="Copy password">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
@@ -955,7 +954,7 @@ export async function GET(
                 </div>
                 <div class="detail-content">
                     <div class="detail-label">Security Type</div>
-                    <div class="detail-value">${wifiData.security}</div>
+                    <div class="detail-value">${escapeHtml(wifiData.security)}</div>
                 </div>
             </div>
             ` : ''}
@@ -978,7 +977,7 @@ export async function GET(
         <div class="instructions">
             <h3>Connection Instructions</h3>
             <p>1. Go to your device's WiFi settings</p>
-            <p>2. Look for "${wifiData.ssid}" in the network list</p>
+            <p>2. Look for "${escapeHtml(wifiData.ssid)}" in the network list</p>
             <p>3. Enter the password when prompted</p>
             ${wifiData.password && wifiData.security !== 'nopass' ? `<p class="tip">💡 Tip: You can copy the password above to paste it easily!</p>` : ''}
         </div>
@@ -1140,10 +1139,10 @@ export async function GET(
         </div>
         
         <div class="text-content">
-            <p>${qrCode.content}</p>
+            <p>${escapeHtml(qrCode.content)}</p>
         </div>
         
-        <button class="copy-btn" onclick="copyToClipboard('${qrCode.content.replace(/'/g, "\\'")}')">
+        <button class="copy-btn" onclick='copyToClipboard("${escapeJsForAttribute(qrCode.content)}")'>
             Copy Text
         </button>
         

@@ -1,5 +1,5 @@
-# Use the official Node.js 18 image as the base
-FROM node:18-alpine AS base
+# Use the official Node.js 20 image as the base (updated for better Next.js 15 support)
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -13,7 +13,7 @@ COPY package.json package-lock.json* ./
 
 # Use BuildKit cache mount for npm cache
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --frozen-lockfile
+    npm ci --frozen-lockfile --prefer-offline --no-audit
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -53,11 +53,13 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+# Disable telemetry during runtime
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install utilities (as root)
+# Install utilities (as root) - needed for health checks
 RUN apk add --no-cache curl
 
 COPY --from=builder /app/public ./public

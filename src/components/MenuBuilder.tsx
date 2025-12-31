@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Save } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Save, Upload, X } from 'lucide-react'
 import type { MenuData, MenuCategory, MenuItem } from '@/types'
 
 interface MenuBuilderProps {
@@ -17,11 +17,13 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
     categories: [],
     theme: {
       primaryColor: '#ea580c',
-      secondaryColor: '#fb923c'
+      secondaryColor: '#fb923c',
+      useGradient: true
     }
   })
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   const addCategory = () => {
     const newCategory: MenuCategory = {
@@ -114,6 +116,40 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
     })
   }
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image size must be less than 2MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64String = reader.result as string
+      setMenuData({ ...menuData, logo: base64String })
+    }
+    reader.onerror = () => {
+      alert('Failed to read image file')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveLogo = () => {
+    setMenuData({ ...menuData, logo: undefined })
+    if (logoInputRef.current) {
+      logoInputRef.current.value = ''
+    }
+  }
+
   const handleSave = () => {
     if (!menuData.restaurantName.trim()) {
       alert('Please enter a restaurant name')
@@ -167,6 +203,52 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Logo (optional)
+              </label>
+              <div className="flex items-center gap-4">
+                {menuData.logo ? (
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={menuData.logo}
+                        alt="Restaurant logo"
+                        className="h-16 w-16 object-contain rounded-lg border border-gray-300 bg-white p-1"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                      Remove Logo
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-900"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload Logo
+                    </button>
+                    <span className="text-xs text-gray-500">Max 2MB, PNG/JPG</span>
+                  </div>
+                )}
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -207,6 +289,28 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
                   </span>
                 </div>
               </div>
+
+              <div className="col-span-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={menuData.theme?.useGradient !== false}
+                    onChange={(e) => setMenuData({
+                      ...menuData,
+                      theme: { ...menuData.theme, useGradient: e.target.checked }
+                    })}
+                    className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Use gradient background
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-7">
+                  {menuData.theme?.useGradient !== false 
+                    ? 'Header will use a gradient from primary to secondary color'
+                    : 'Header will use solid primary color'}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -240,35 +344,35 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
                   <div key={category.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                     {/* Category Header */}
                     <div className="bg-gray-50 border-b border-gray-200">
-                      <div className="px-6 py-4 flex items-center gap-4">
+                      <div className="px-4 sm:px-6 py-4 flex items-center gap-2 sm:gap-4 min-w-0">
                         <GripVertical className="h-5 w-5 text-gray-400 cursor-move flex-shrink-0" />
                         
                         <input
                           type="text"
                           value={category.name}
                           onChange={(e) => updateCategory(category.id, { name: e.target.value })}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                          className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
                           placeholder="Category name"
                         />
 
                         <button
                           onClick={() => toggleCategory(category.id)}
-                          className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                          className="p-2 text-gray-600 hover:text-gray-900 transition-colors flex-shrink-0"
                           title={expandedCategories.has(category.id) ? 'Collapse' : 'Expand'}
                         >
                           {expandedCategories.has(category.id) ? (
-                            <ChevronUp className="h-5 w-5" />
+                            <ChevronUp className="h-5 w-5 flex-shrink-0" />
                           ) : (
-                            <ChevronDown className="h-5 w-5" />
+                            <ChevronDown className="h-5 w-5 flex-shrink-0" />
                           )}
                         </button>
 
                         <button
                           onClick={() => deleteCategory(category.id)}
-                          className="p-2 text-red-600 hover:text-red-700 transition-colors"
+                          className="p-2 text-red-600 hover:text-red-700 transition-colors flex-shrink-0"
                           title="Delete category"
                         >
-                          <Trash2 className="h-5 w-5" />
+                          <Trash2 className="h-5 w-5 flex-shrink-0" />
                         </button>
                       </div>
                     </div>

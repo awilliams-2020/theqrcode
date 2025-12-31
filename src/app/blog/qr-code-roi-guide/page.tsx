@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, TrendingUp, DollarSign, BarChart3, Target } from 'lucide-react'
+import { Calendar, User, Clock, Share2, TrendingUp, DollarSign, BarChart3, Target } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'Maximizing QR Code ROI: Complete Guide to Measuring and Improving Returns',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Learn how to calculate, track, and optimize ROI from your QR code campaigns. Proven strategies for maximizing returns and measuring success.',
     type: 'article',
     publishedTime: '2025-10-11T00:00:00.000Z',
+    modifiedTime: '2025-10-11T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'ROI', 'Analytics', 'Marketing', 'Business'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-roi-guide',
+  },
 }
+
+const publishDate = '2025-10-11T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-roi-guide'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="Maximizing QR Code ROI: Complete Guide to Measuring and Improving Returns"
+        description="Learn how to calculate, track, and optimize ROI from your QR code campaigns. Proven strategies for maximizing returns and measuring success."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={2500}
+        timeRequired="PT10M"
+        proficiencyLevel="Intermediate"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'QR Code ROI Guide', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -666,8 +682,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'QR Code Analytics Tutorial',
+              url: '/blog/qr-code-analytics-tutorial',
+              description: 'Learn how to interpret QR code analytics data to optimize your campaigns.'
+            },
+            {
+              title: 'QR Code Marketing Guide',
+              url: '/blog/qr-code-marketing-guide',
+              description: 'Learn how to use QR codes effectively in your marketing campaigns.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

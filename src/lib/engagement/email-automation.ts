@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { createTransporter, createEmailOptions } from '../email'
 import { emailTemplates } from './email-templates'
+import { PLAN_LIMITS } from '../constants'
 
 const prisma = new PrismaClient()
 
@@ -162,6 +163,11 @@ export async function sendWelcomeEmail(userId: string) {
     ? Math.ceil((user.subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : undefined
 
+  // Get plan limits for QR codes
+  const currentPlan = user.subscription?.plan || 'free'
+  const limits = PLAN_LIMITS[currentPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free
+  const qrCodeLimit = limits.qrCodes === -1 ? 'unlimited' : limits.qrCodes.toLocaleString()
+
   const transporter = createTransporter()
   
   const welcomeEmail = createEmailOptions({
@@ -170,12 +176,16 @@ export async function sendWelcomeEmail(userId: string) {
     html: emailTemplates.welcome.html({ 
       name: user.name || 'there', 
       trialDays, 
-      isOnTrial 
+      isOnTrial,
+      qrCodeLimit,
+      plan: currentPlan
     }),
     text: emailTemplates.welcome.text({ 
       name: user.name || 'there', 
       trialDays, 
-      isOnTrial 
+      isOnTrial,
+      qrCodeLimit,
+      plan: currentPlan
     }),
   })
   await transporter.sendMail(welcomeEmail)
@@ -229,11 +239,13 @@ export async function sendTrialEndingReminders() {
 
     const subject = emailTemplates.trialEnding.subject.replace('{days}', daysLeft.toString())
 
+    const currentPlan = user.subscription?.plan || 'starter'
+    
     const trialEndingEmail = createEmailOptions({
       to: user.email,
       subject,
-      html: emailTemplates.trialEnding.html({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount }),
-      text: emailTemplates.trialEnding.text({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount }),
+      html: emailTemplates.trialEnding.html({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount, plan: currentPlan }),
+      text: emailTemplates.trialEnding.text({ name: user.name || 'there', daysLeft, qrCodeCount, scanCount, plan: currentPlan }),
     })
     await transporter.sendMail(trialEndingEmail)
 

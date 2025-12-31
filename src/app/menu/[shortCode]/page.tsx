@@ -164,6 +164,12 @@ export default function MenuDisplayPage({ params }: PageProps) {
 
   const primaryColor = menuData.theme?.primaryColor || '#ea580c'
   const secondaryColor = menuData.theme?.secondaryColor || '#fb923c'
+  const useGradient = menuData.theme?.useGradient !== false // Default to true
+
+  // Determine header background style
+  const headerBackground = useGradient
+    ? `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+    : primaryColor
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex flex-col">
@@ -171,12 +177,20 @@ export default function MenuDisplayPage({ params }: PageProps) {
       <header 
         className="sticky top-0 z-10 shadow-md"
         style={{ 
-          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)` 
+          background: headerBackground
         }}
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-center mb-2">
-            <Utensils className="h-8 w-8 text-white mr-3" />
+            {menuData.logo ? (
+              <img
+                src={menuData.logo}
+                alt={`${menuData.restaurantName} logo`}
+                className="h-10 w-10 object-contain mr-3"
+              />
+            ) : (
+              <Utensils className="h-8 w-8 text-white mr-3" />
+            )}
             <h1 className="text-3xl font-bold text-white">{menuData.restaurantName}</h1>
           </div>
           {menuData.description && (

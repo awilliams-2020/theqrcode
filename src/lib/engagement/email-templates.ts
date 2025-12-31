@@ -9,7 +9,32 @@ interface EmailTemplate {
 // Welcome email for new users
 export const welcomeEmail: EmailTemplate = {
   subject: 'Welcome to TheQRCode.io! 🎉',
-  html: (data: { name: string; trialDays?: number; isOnTrial?: boolean }) => `
+  html: (data: { name: string; trialDays?: number; isOnTrial?: boolean; qrCodeLimit?: number | string; plan?: string }) => {
+    const plan = (data.plan || 'free').toLowerCase()
+    
+    // Build feature list based on plan - 3 key features per plan
+    const features: string[] = []
+    
+    if (plan === 'free') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 10 QR codes')
+      features.push('Track scans with basic analytics')
+      features.push('URL, Text, WiFi, and Contact QR code types')
+    } else if (plan === 'starter') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 100 QR codes')
+      features.push('Track scans with advanced analytics')
+      features.push('Customize colors and styles')
+    } else if (plan === 'pro') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 500 QR codes')
+      features.push('Track scans with detailed analytics')
+      features.push('Download in multiple formats (SVG, PDF)')
+    } else {
+      // Fallback for unknown plans
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create QR codes')
+      features.push('Track scans with analytics')
+      features.push('Customize your QR codes')
+    }
+    
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,38 +47,35 @@ export const welcomeEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #2563eb, #4f46e5); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">Welcome to TheQRCode.io!</h1>
+            <td style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">Welcome to TheQRCode.io!</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name}! 👋</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name}! 👋</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Thanks for joining TheQRCode.io! We're excited to help you create, manage, and track beautiful QR codes.
               </p>
               
               ${data.isOnTrial && data.trialDays ? `
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Your <strong>${data.trialDays}-day free trial</strong> is now active. Here's what you can do:
               </p>
               ` : `
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Here's what you can do with TheQRCode.io:
               </p>
               `}
               
               <ul style="color: #4b5563; line-height: 1.8; margin: 0 0 30px 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">Create unlimited QR codes</li>
-                <li style="margin-bottom: 8px;">Track scans with detailed analytics</li>
-                <li style="margin-bottom: 8px;">Customize colors and styles</li>
-                <li style="margin-bottom: 8px;">Download in multiple formats</li>
+                ${features.map(feature => `<li style="margin-bottom: 8px;">${feature}</li>`).join('')}
               </ul>
               
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -72,8 +94,13 @@ export const welcomeEmail: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -84,17 +111,40 @@ export const welcomeEmail: EmailTemplate = {
   </table>
 </body>
 </html>
-  `,
-  text: (data: { name: string; trialDays?: number; isOnTrial?: boolean }) => `
+    `
+  },
+  text: (data: { name: string; trialDays?: number; isOnTrial?: boolean; qrCodeLimit?: number | string; plan?: string }) => {
+    const plan = (data.plan || 'free').toLowerCase()
+    
+    // Build feature list based on plan - 3 key features per plan
+    const features: string[] = []
+    
+    if (plan === 'free') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 10 QR codes')
+      features.push('Track scans with basic analytics')
+      features.push('URL, Text, WiFi, and Contact QR code types')
+    } else if (plan === 'starter') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 100 QR codes')
+      features.push('Track scans with advanced analytics')
+      features.push('Customize colors and styles')
+    } else if (plan === 'pro') {
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 500 QR codes')
+      features.push('Track scans with detailed analytics')
+      features.push('Download in multiple formats (SVG, PDF)')
+    } else {
+      // Fallback for unknown plans
+      features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create QR codes')
+      features.push('Track scans with analytics')
+      features.push('Customize your QR codes')
+    }
+    
+    return `
 Hi ${data.name}!
 
 Thanks for joining TheQRCode.io! We're excited to help you create, manage, and track beautiful QR codes.
 
 ${data.isOnTrial && data.trialDays ? `Your ${data.trialDays}-day free trial is now active. ` : ''}Here's what you can do:
-- Create unlimited QR codes
-- Track scans with detailed analytics
-- Customize colors and styles
-- Download in multiple formats
+${features.map(f => `- ${f}`).join('\n')}
 
 Get started: https://theqrcode.io/dashboard
 
@@ -102,13 +152,35 @@ Need help? Reply to this email or check out our help center: https://theqrcode.i
 
 Best regards,
 The TheQRCode.io Team
-  `
+    `
+  }
 }
 
 // Trial ending soon reminder
 export const trialEndingEmail: EmailTemplate = {
   subject: 'Your trial ends in {days} days - Keep your QR codes active',
-  html: (data: { name: string; daysLeft: number; qrCodeCount: number; scanCount: number }) => `
+  html: (data: { name: string; daysLeft: number; qrCodeCount: number; scanCount: number; plan?: string }) => {
+    const plan = (data.plan || 'starter').toLowerCase()
+    
+    // Build feature list based on plan - 3 key features per plan
+    const features: string[] = []
+    
+    if (plan === 'starter') {
+      features.push('Create up to 100 QR codes')
+      features.push('Track scans with advanced analytics')
+      features.push('Customize colors and styles')
+    } else if (plan === 'pro') {
+      features.push('Create up to 500 QR codes')
+      features.push('Track scans with detailed analytics')
+      features.push('Download in multiple formats (SVG, PDF)')
+    } else {
+      // Fallback for unknown plans
+      features.push('More QR codes and scans')
+      features.push('Advanced analytics and exports')
+      features.push('Custom styling and branding')
+    }
+    
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,20 +193,20 @@ export const trialEndingEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #dc2626, #ea580c); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">🕐 Your Trial is Ending Soon</h1>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">🕐 Your Trial is Ending Soon</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Your free trial ends in <strong>${data.daysLeft} days</strong>. Here's what you've accomplished so far:
               </p>
               
@@ -157,15 +229,12 @@ export const trialEndingEmail: EmailTemplate = {
                 </tr>
               </table>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
-                Upgrade now to keep your QR codes active and unlock advanced features:
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
+                Upgrade now to keep these features:
               </p>
               
               <ul style="color: #4b5563; line-height: 1.8; margin: 0 0 30px 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">Custom domains and branding</li>
-                <li style="margin-bottom: 8px;">Advanced analytics and exports</li>
-                <li style="margin-bottom: 8px;">Priority support</li>
-                <li style="margin-bottom: 8px;">API access</li>
+                ${features.map(feature => `<li style="margin-bottom: 8px;">${feature}</li>`).join('')}
               </ul>
               
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -180,8 +249,13 @@ export const trialEndingEmail: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -192,8 +266,30 @@ export const trialEndingEmail: EmailTemplate = {
   </table>
 </body>
 </html>
-  `,
-  text: (data: { name: string; daysLeft: number; qrCodeCount: number; scanCount: number }) => `
+  `
+  },
+  text: (data: { name: string; daysLeft: number; qrCodeCount: number; scanCount: number; plan?: string }) => {
+    const plan = (data.plan || 'starter').toLowerCase()
+    
+    // Build feature list based on plan - 3 key features per plan
+    const features: string[] = []
+    
+    if (plan === 'starter') {
+      features.push('Create up to 100 QR codes')
+      features.push('Track scans with advanced analytics')
+      features.push('Customize colors and styles')
+    } else if (plan === 'pro') {
+      features.push('Create up to 500 QR codes')
+      features.push('Track scans with detailed analytics')
+      features.push('Download in multiple formats (SVG, PDF)')
+    } else {
+      // Fallback for unknown plans
+      features.push('More QR codes and scans')
+      features.push('Advanced analytics and exports')
+      features.push('Custom styling and branding')
+    }
+    
+    return `
 Hi ${data.name},
 
 Your free trial ends in ${data.daysLeft} days. Here's what you've accomplished so far:
@@ -201,17 +297,15 @@ Your free trial ends in ${data.daysLeft} days. Here's what you've accomplished s
 - QR Codes Created: ${data.qrCodeCount}
 - Total Scans: ${data.scanCount}
 
-Upgrade now to keep your QR codes active and unlock advanced features:
-- Custom domains and branding
-- Advanced analytics and exports
-- Priority support
-- API access
+Upgrade now to keep these features:
+${features.map(f => `- ${f}`).join('\n')}
 
 Upgrade now: https://theqrcode.io/pricing
 
 Best regards,
 The TheQRCode.io Team
-  `
+    `
+  }
 }
 
 // Monthly usage insights
@@ -230,31 +324,31 @@ export const usageInsightsEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #059669, #10b981); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">📊 Your ${data.month} Insights</h1>
+            <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">📊 Your ${data.month} Insights</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name}! 👋</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name}! 👋</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Here's how your QR codes performed in ${data.month}:
               </p>
               
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; margin: 20px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
                 <tr>
                   <td style="padding: 20px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="padding: 10px; text-align: center;">
-                          <h3 style="color: #2563eb; font-size: 36px; margin: 0; font-weight: bold;">${data.scanCount}</h3>
-                          <p style="color: #6b7280; margin: 5px 0;">Total Scans</p>
+                          <h3 style="color: #1e40af; font-size: 36px; margin: 0; font-weight: bold;">${data.scanCount}</h3>
+                          <p style="color: #1f2937; margin: 5px 0; font-weight: 600;">Total Scans</p>
                           <p style="color: ${data.scanGrowth >= 0 ? '#059669' : '#dc2626'}; font-size: 14px; margin: 0; font-weight: bold;">
                             ${data.scanGrowth === 0 ? '→' : data.scanGrowth >= 0 ? '↑' : '↓'} ${data.scanGrowth === 0 ? 'No change' : data.scanGrowth === 999 ? 'New!' : Math.abs(data.scanGrowth) + '%'} from last month
                           </p>
@@ -262,14 +356,14 @@ export const usageInsightsEmail: EmailTemplate = {
                       </tr>
                       <tr>
                         <td style="padding: 10px; text-align: center;">
-                          <h3 style="color: #2563eb; font-size: 36px; margin: 0; font-weight: bold;">${data.qrCodeCount}</h3>
-                          <p style="color: #6b7280; margin: 5px 0;">Active QR Codes</p>
+                          <h3 style="color: #1e40af; font-size: 36px; margin: 0; font-weight: bold;">${data.qrCodeCount}</h3>
+                          <p style="color: #1f2937; margin: 5px 0; font-weight: 600;">Active QR Codes</p>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 10px; text-align: center;">
-                          <p style="color: #6b7280; margin: 5px 0; font-weight: bold;">Top Performing QR Code:</p>
-                          <p style="color: #374151; margin: 5px 0;">${data.topQrCode}</p>
+                          <p style="color: #1f2937; margin: 5px 0; font-weight: bold;">Top Performing QR Code:</p>
+                          <p style="color: #111827; margin: 5px 0; font-weight: 600;">${data.topQrCode}</p>
                         </td>
                       </tr>
                     </table>
@@ -293,8 +387,13 @@ export const usageInsightsEmail: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -343,20 +442,20 @@ export const featureAnnouncementEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #7c3aed, #a855f7); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">🚀 New Feature Available!</h1>
+            <td style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">🚀 New Feature Available!</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name}! 👋</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name}! 👋</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 We're excited to announce a new feature: <strong>${data.featureName}</strong>
               </p>
               
@@ -384,8 +483,13 @@ export const featureAnnouncementEmail: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -429,24 +533,24 @@ export const trialExpiredEmail: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #2563eb, #4f46e5); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">Your Trial Has Ended</h1>
+            <td style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">Your Trial Has Ended</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Your 14-day ${data.previousPlan} trial has ended. Don't worry - your account is still active on our <strong>Free plan</strong>!
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Here's what you accomplished during your trial:
               </p>
               
@@ -469,7 +573,7 @@ export const trialExpiredEmail: EmailTemplate = {
                 </tr>
               </table>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 <strong>What's included in the Free plan:</strong>
               </p>
               
@@ -480,16 +584,33 @@ export const trialExpiredEmail: EmailTemplate = {
                 <li style="margin-bottom: 8px;">URL, Text, WiFi, and Contact QR codes</li>
               </ul>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 <strong>Want to keep your ${data.previousPlan} features?</strong> Upgrade anytime to unlock:
               </p>
               
               <ul style="color: #4b5563; line-height: 1.8; margin: 0 0 30px 0; padding-left: 20px;">
-                <li style="margin-bottom: 8px;">More QR codes and scans</li>
-                <li style="margin-bottom: 8px;">Advanced analytics and exports</li>
-                <li style="margin-bottom: 8px;">Custom styling and branding</li>
-                <li style="margin-bottom: 8px;">Priority support</li>
-                ${data.previousPlan === 'Pro' || data.previousPlan === 'Business' ? '<li style="margin-bottom: 8px;">API access and webhooks</li>' : ''}
+                ${(() => {
+                  const prevPlan = data.previousPlan.toLowerCase()
+                  if (prevPlan === 'starter') {
+                    return `
+                      <li style="margin-bottom: 8px;">Create up to 100 QR codes</li>
+                      <li style="margin-bottom: 8px;">Track scans with advanced analytics</li>
+                      <li style="margin-bottom: 8px;">Customize colors and styles</li>
+                    `
+                  } else if (prevPlan === 'pro') {
+                    return `
+                      <li style="margin-bottom: 8px;">Create up to 500 QR codes</li>
+                      <li style="margin-bottom: 8px;">Track scans with detailed analytics</li>
+                      <li style="margin-bottom: 8px;">Download in multiple formats (SVG, PDF)</li>
+                    `
+                  } else {
+                    return `
+                      <li style="margin-bottom: 8px;">More QR codes and scans</li>
+                      <li style="margin-bottom: 8px;">Advanced analytics and exports</li>
+                      <li style="margin-bottom: 8px;">Custom styling and branding</li>
+                    `
+                  }
+                })()}
               </ul>
               
               <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -508,8 +629,13 @@ export const trialExpiredEmail: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -537,11 +663,16 @@ What's included in the Free plan:
 - URL, Text, WiFi, and Contact QR codes
 
 Want to keep your ${data.previousPlan} features? Upgrade anytime to unlock:
-- More QR codes and scans
-- Advanced analytics and exports
-- Custom styling and branding
-- Priority support
-${data.previousPlan === 'Pro' || data.previousPlan === 'Business' ? '- API access and webhooks' : ''}
+${(() => {
+  const prevPlan = data.previousPlan.toLowerCase()
+  if (prevPlan === 'starter') {
+    return '- Create up to 100 QR codes\n- Track scans with advanced analytics\n- Customize colors and styles'
+  } else if (prevPlan === 'pro') {
+    return '- Create up to 500 QR codes\n- Track scans with detailed analytics\n- Download in multiple formats (SVG, PDF)'
+  } else {
+    return '- More QR codes and scans\n- Advanced analytics and exports\n- Custom styling and branding'
+  }
+})()}
 
 View plans and upgrade: https://theqrcode.io/pricing
 
@@ -630,16 +761,12 @@ export const reEngagementEmail: EmailTemplate = {
                   </td>
                 </tr>
               </table>
-              
-              <p style="color: #6b7280; line-height: 1.6; margin: 30px 0 0 0; font-size: 14px; text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                Questions or need help getting started? Just reply to this email - we're here to help! 💬
-              </p>
             </td>
           </tr>
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f9fafb; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
               <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
                 <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
                 <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
@@ -679,8 +806,6 @@ Read our blog: https://theqrcode.io/blog
 
 Return to your dashboard: https://theqrcode.io/dashboard
 
-Questions or need help getting started? Just reply to this email - we're here to help!
-
 Best regards,
 The TheQRCode.io Team
 
@@ -708,29 +833,29 @@ export const inactiveUserWarning60Days: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #dc2626, #ea580c); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">⚠️ Account Deletion Notice</h1>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">⚠️ Account Deletion Notice</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 We noticed you haven't logged into your TheQRCode.io account since <strong>${data.lastActiveDate}</strong>. 
                 To keep your account secure and our database clean, we'll automatically delete inactive accounts after 90 days.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 <strong>Your account will be deleted in ${data.daysUntilDeletion} days</strong> if you don't log in.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 To keep your account active, simply log in to your dashboard. All your QR codes and data will be preserved.
               </p>
               
@@ -750,8 +875,13 @@ export const inactiveUserWarning60Days: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -798,20 +928,20 @@ export const inactiveUserWarning30Days: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #dc2626, #b91c1c); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">⚠️ Final Warning: Account Deletion</h1>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">⚠️ Final Warning: Account Deletion</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 This is your final warning. Your TheQRCode.io account hasn't been accessed since <strong>${data.lastActiveDate}</strong>.
               </p>
               
@@ -819,11 +949,11 @@ export const inactiveUserWarning30Days: EmailTemplate = {
                 ⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Once deleted, all your QR codes, analytics data, and account information will be permanently removed and cannot be recovered.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 To prevent deletion, log in to your account now:
               </p>
               
@@ -843,8 +973,13 @@ export const inactiveUserWarning30Days: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -890,29 +1025,29 @@ export const inactiveUserWarning15Days: EmailTemplate = {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
     <tr>
       <td align="center" style="padding: 20px;">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; border: 2px solid #dc2626;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; border: 2px solid #dc2626; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(to right, #dc2626, #991b1b); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">🚨 URGENT: Account Deletion Imminent</h1>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">🚨 URGENT: Account Deletion Imminent</h1>
             </td>
           </tr>
           
           <!-- Content -->
           <tr>
-            <td style="padding: 30px; background-color: #ffffff;">
-              <h2 style="color: #374151; margin: 0 0 20px 0; font-size: 20px;">Hi ${data.name},</h2>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name},</h2>
               
               <p style="color: #dc2626; line-height: 1.6; margin: 0 0 20px 0; font-weight: bold; font-size: 18px;">
                 ⚠️ Your account will be permanently deleted in ${data.daysUntilDeletion} days!
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 Your TheQRCode.io account hasn't been accessed since <strong>${data.lastActiveDate}</strong>. 
                 We're required to delete inactive accounts after 90 days to maintain data security and compliance.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 <strong>This deletion is permanent and irreversible.</strong> All your data will be lost:
               </p>
               
@@ -923,7 +1058,7 @@ export const inactiveUserWarning15Days: EmailTemplate = {
                 <li style="margin-bottom: 8px;">API keys and webhooks</li>
               </ul>
               
-              <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
                 <strong>To save your account, log in immediately:</strong>
               </p>
               
@@ -943,8 +1078,13 @@ export const inactiveUserWarning15Days: EmailTemplate = {
           
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/pricing" style="color: #2563eb; text-decoration: none;">Pricing</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
                 © 2025 TheQRCode.io. All rights reserved.
               </p>
             </td>
@@ -979,11 +1119,115 @@ The TheQRCode.io Team
   `
 }
 
+// Daily analytics digest email template
+export const dailyAnalyticsDigestEmail: EmailTemplate = {
+  subject: '📊 Your Daily QR Code Analytics Summary',
+  html: (data: { name: string; todayScans: number; yesterdayScans: number; percentageChange: number; uniqueCountries: number; trend: string; changeText: string }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Daily Analytics Summary</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb;">
+    <tr>
+      <td align="center" style="padding: 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: -0.5px;">📊 Daily Analytics Summary</h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px; background-color: #ffffff;">
+              <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Hi ${data.name}! 👋</h2>
+              
+              <p style="color: #374151; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
+                Here's your QR code performance summary for today:
+              </p>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
+                <tr>
+                  <td style="padding: 20px; text-align: center;">
+                    <h3 style="color: #1e40af; font-size: 48px; margin: 0; font-weight: bold;">${data.todayScans}</h3>
+                    <p style="color: #1f2937; margin: 10px 0 5px 0; font-weight: 600; font-size: 18px;">Scans Today</p>
+                    <p style="color: ${data.percentageChange >= 0 ? '#059669' : data.percentageChange < 0 ? '#dc2626' : '#6b7280'}; font-size: 16px; margin: 0; font-weight: bold;">
+                      ${data.trend} ${data.changeText}
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #1f2937; margin: 0; font-weight: 600;">🌍 ${data.uniqueCountries} ${data.uniqueCountries === 1 ? 'Country' : 'Countries'}</p>
+                  </td>
+                </tr>
+              </table>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="https://theqrcode.io/analytics" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; border: none;">View Full Analytics</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #4b5563; line-height: 1.6; margin: 0;">
+                Keep tracking your QR code performance! 🎉
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 25px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0;">
+                <a href="https://theqrcode.io" style="color: #2563eb; text-decoration: none; font-weight: 600;">TheQRCode.io</a> | 
+                <a href="https://theqrcode.io/analytics" style="color: #2563eb; text-decoration: none;">Analytics</a> | 
+                <a href="https://theqrcode.io/help" style="color: #2563eb; text-decoration: none;">Help Center</a>
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
+                © 2025 TheQRCode.io. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `,
+  text: (data: { name: string; todayScans: number; yesterdayScans: number; percentageChange: number; uniqueCountries: number; trend: string; changeText: string }) => `
+Hi ${data.name}!
+
+Here's your QR code performance summary for today:
+
+Scans Today: ${data.todayScans}
+${data.changeText}
+
+Countries: ${data.uniqueCountries} ${data.uniqueCountries === 1 ? 'country' : 'countries'}
+
+View full analytics: https://theqrcode.io/analytics
+
+Keep tracking your QR code performance! 🎉
+
+Best regards,
+The TheQRCode.io Team
+  `
+}
+
 export const emailTemplates = {
   welcome: welcomeEmail,
   trialEnding: trialEndingEmail,
   trialExpired: trialExpiredEmail,
   usageInsights: usageInsightsEmail,
+  dailyAnalyticsDigest: dailyAnalyticsDigestEmail,
   featureAnnouncement: featureAnnouncementEmail,
   reEngagement: reEngagementEmail,
   inactiveUserWarning60Days: inactiveUserWarning60Days,

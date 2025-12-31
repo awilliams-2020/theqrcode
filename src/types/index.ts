@@ -141,9 +141,11 @@ export interface MenuData {
   restaurantName: string
   description?: string
   categories: MenuCategory[]
+  logo?: string // Base64 encoded logo image
   theme?: {
     primaryColor?: string
     secondaryColor?: string
+    useGradient?: boolean // Whether to use gradient or solid background
   }
 }
 

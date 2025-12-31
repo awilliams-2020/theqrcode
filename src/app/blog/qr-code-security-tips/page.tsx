@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Shield, AlertTriangle, Lock, Eye } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Shield, AlertTriangle, Lock, Eye } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'QR Code Security: Protecting Your Business and Customers',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Essential security considerations when implementing QR codes in business applications.',
     type: 'article',
     publishedTime: '2023-12-25T00:00:00.000Z',
+    modifiedTime: '2023-12-25T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Security', 'Cybersecurity', 'Protection'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-security-tips',
+  },
 }
+
+const publishDate = '2023-12-25T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-security-tips'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="QR Code Security: Protecting Your Business and Customers"
+        description="Essential security considerations when implementing QR codes in business applications. Learn about QR code vulnerabilities and protection strategies."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={1500}
+        timeRequired="PT6M"
+        proficiencyLevel="Intermediate"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'QR Code Security', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -337,7 +353,28 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'QR Code Best Practices',
+              url: '/blog/qr-code-best-practices',
+              description: 'Learn the essential design principles and best practices for creating QR codes.'
+            },
+            {
+              title: 'Do QR Codes Expire?',
+              url: '/blog/do-qr-codes-expire',
+              description: 'Learn if QR codes expire and how to create permanent QR codes that never expire.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }

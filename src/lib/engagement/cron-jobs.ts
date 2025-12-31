@@ -837,14 +837,39 @@ async function sendTrialEndingRemindersWrapper(): Promise<{ success: boolean; co
 async function sendPeriodicAnalyticsSummariesWrapper(): Promise<{ success: boolean; count?: number; message?: string; error?: string }> {
   try {
     const result = await sendPeriodicAnalyticsSummariesOriginal()
+    
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || 'Unknown error',
+      }
+    }
+
+    // Report actual emails sent, not just users processed
+    const emailsSent = result.emailsSent || 0
+    const emailsFailed = result.emailsFailed || 0
+    const userCount = result.userCount || 0
+    
+    let message = `Sent ${emailsSent} email(s) to ${userCount} user(s)`
+    if (emailsFailed > 0) {
+      message += ` (${emailsFailed} email(s) failed, notification only)`
+    }
+    
     return {
-      success: result.success,
-      count: result.userCount,
-      message: result.success ? `Sent to ${result.userCount} user(s)` : undefined,
-      error: result.error ? (typeof result.error === 'string' ? result.error : 'Unknown error') : undefined,
+      success: true,
+      count: emailsSent, // Count actual emails sent, not users processed
+      message,
+      error: undefined,
     }
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    const errorMessage = error instanceof Error 
+      ? `${error.message}${error.stack ? `\nStack: ${error.stack}` : ''}` 
+      : String(error)
+    logger.logError(error, 'CRON-JOBS', 'Failed to send periodic analytics summaries', {
+      component: 'sendPeriodicAnalyticsSummariesWrapper',
+      errorMessage,
+    })
+    return { success: false, error: errorMessage }
   }
 }
 

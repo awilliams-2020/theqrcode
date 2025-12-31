@@ -94,8 +94,8 @@ export default function WeddingLanding() {
                 💕 QR Codes for Weddings
               </div>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                Simplify Your Wedding
-                <span className="block text-pink-600 mt-2">with Smart QR Codes</span>
+                Wedding QR Code Generator
+                <span className="block text-pink-600 mt-2">RSVP, Registry & Photo Sharing Made Easy</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 Create beautiful QR codes for RSVPs, registries, photo sharing, and venue info. Track responses in real-time. Make your wedding planning effortless.

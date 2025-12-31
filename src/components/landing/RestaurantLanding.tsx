@@ -96,8 +96,8 @@ export default function RestaurantLanding() {
                 🍽️ QR Codes for Restaurants
               </div>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                Stop Printing New Menus
-                <span className="block text-orange-600 mt-2">Update Prices Instantly</span>
+                Restaurant Menu QR Code Generator
+                <span className="block text-orange-600 mt-2">Update Prices Instantly, No Reprinting</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 Create dynamic QR codes for your restaurant menu, WiFi, and reviews. Update content anytime without reprinting. <strong>Pro plan includes our built-in Menu Builder</strong> to create stunning, mobile-optimized menus with categories, items, prices, and photos - no coding required!

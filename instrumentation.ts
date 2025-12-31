@@ -8,9 +8,6 @@ export async function register() {
     // Import monitoring setup
     const { setupGlobalMonitoring } = await import('./src/lib/monitoring-setup')
     setupGlobalMonitoring()
-    
-    // Import Sentry server instrumentation
-    await import('./sentry.server.config')
   }
 }
 

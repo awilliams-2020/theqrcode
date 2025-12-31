@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Utensils, Smartphone, QrCode, CheckCircle, AlertCircle } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Utensils, Smartphone, QrCode, CheckCircle, AlertCircle } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'How to Create a Restaurant QR Code [Complete Step-by-Step Guide]',
@@ -20,29 +23,42 @@ export const metadata: Metadata = {
     description: 'Create restaurant QR codes for menus, WiFi, and contactless ordering. Free step-by-step guide.',
     type: 'article',
     publishedTime: '2025-01-28T00:00:00.000Z',
+    modifiedTime: '2025-01-28T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['Restaurant', 'Tutorial', 'QR Code', 'How-To', 'Menu'],
   },
+  alternates: {
+    canonical: '/blog/how-to-create-a-restaurant-qr-code',
+  },
 }
+
+const publishDate = '2025-01-28T00:00:00Z'
+const articleUrl = '/blog/how-to-create-a-restaurant-qr-code'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="How to Create a Restaurant QR Code [Complete Step-by-Step Guide]"
+        description="Learn how to create a restaurant QR code in minutes. Step-by-step guide for digital menus, contactless ordering, WiFi sharing, and customer engagement."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={3200}
+        timeRequired="PT10M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'How to Create a Restaurant QR Code', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -637,8 +653,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'Restaurant QR Code Menu Setup in 5 Minutes',
+              url: '/blog/restaurant-qr-code-menu-setup-5-minutes',
+              description: 'Quick guide to setting up QR code menus for restaurants in just 5 minutes.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            },
+            {
+              title: 'QR Code for Restaurants',
+              url: '/qr-code-for-restaurants',
+              description: 'Complete guide to using QR codes in restaurants for menus, WiFi, and more.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

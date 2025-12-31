@@ -30,6 +30,13 @@ This directory contains all documentation for the TheQRCode.io engagement and au
 - **[AUTOMATION_INTEGRATION.md](AUTOMATION_INTEGRATION.md)** - Automation integration guide
 - **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Technical implementation overview
 
+### Integrations
+- **[ZAPIER_INTEGRATION.md](ZAPIER_INTEGRATION.md)** - Zapier integration documentation
+- **[ZAPIER_STATUS_AND_NEXT_STEPS.md](ZAPIER_STATUS_AND_NEXT_STEPS.md)** - ⚡ Zapier approval status & quick start
+- **[ZAPIER_PROOF_OF_DEMAND_PLAN.md](ZAPIER_PROOF_OF_DEMAND_PLAN.md)** - How to demonstrate demand for Zapier approval
+- **[ZAPIER_APPROVAL_GUIDE.md](ZAPIER_APPROVAL_GUIDE.md)** - Complete Zapier approval process guide
+- **[Nocode_Platform_Integrations.md](Nocode_Platform_Integrations.md)** - No-code platform OAuth integrations guide
+
 ### Summaries
 - **[USER_ENGAGEMENT_COMPLETE.md](USER_ENGAGEMENT_COMPLETE.md)** - User engagement features summary
 - **[AUTOMATION_SUMMARY.md](AUTOMATION_SUMMARY.md)** - Automation system summary

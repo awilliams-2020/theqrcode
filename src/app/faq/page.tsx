@@ -41,11 +41,11 @@ const faqs = [
   },
   {
     question: "What file formats can I download my QR codes in?",
-    answer: "You can download your QR codes in PNG format on all plans. Pro and Business plans also support SVG and PDF formats, giving you more flexibility for different use cases and print requirements."
+    answer: "You can download your QR codes in PNG format on all plans. Pro plan also supports SVG and PDF formats, giving you more flexibility for different use cases and print requirements."
   },
   {
     question: "Do you offer API access?",
-    answer: "Yes! Pro and Business plans include API access. The Pro plan includes basic API access with rate limiting, while the Business plan provides full API access with higher rate limits and advanced features like webhook management."
+    answer: "Yes! Pro plan includes API access with rate limiting and webhook management, allowing you to integrate QR code generation into your own applications and workflows."
   },
   {
     question: "Can I use QR codes for marketing campaigns?",
@@ -60,20 +60,12 @@ const faqs = [
     answer: "Yes! All paid plans include the ability to export your analytics data in CSV format. This allows you to perform additional analysis in external tools or create custom reports for stakeholders."
   },
   {
-    question: "Do you offer white-label solutions?",
-    answer: "Yes! Our Business plan includes white-label options that allow you to customize the platform with your own branding. This is perfect for agencies and enterprises that want to offer QR code services under their own brand."
-  },
-  {
     question: "How do I get support?",
-    answer: "Free plan users can access our knowledge base and community support. Starter plan users get email support, while Pro and Business plan users receive priority support with faster response times. Business plan users also get 24/7 support."
+    answer: "Free plan users can access our knowledge base and community support. Starter plan users get email support, while Pro plan users receive priority support with faster response times."
   },
   {
     question: "Can I cancel my subscription anytime?",
     answer: "Yes, you can cancel your subscription at any time from your account settings. Your account will remain active until the end of your current billing period, and you'll retain access to all your QR codes and data."
-  },
-  {
-    question: "Do you offer team collaboration features?",
-    answer: "Yes! Business plan users get access to team collaboration features including user management, role-based permissions, and shared QR code libraries. This makes it easy for teams to work together on QR code campaigns."
   }
 ]
 

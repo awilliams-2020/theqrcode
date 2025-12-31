@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2 } from 'lucide-react'
+import { Calendar, User, Clock, Share2 } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'QR Code Best Practices: Design Tips for Maximum Engagement',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results.',
     type: 'article',
     publishedTime: '2024-01-15T00:00:00.000Z',
+    modifiedTime: '2024-01-15T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Design', 'Marketing', 'Best Practices'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-best-practices',
+  },
 }
+
+const publishDate = '2024-01-15T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-best-practices'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="QR Code Best Practices: Design Tips for Maximum Engagement"
+        description="Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results. Expert tips for QR code design."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={1200}
+        timeRequired="PT5M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'QR Code Best Practices', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -64,7 +80,7 @@ export default function BlogPost() {
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+          <p className="text-xl text-gray-800 mb-8 leading-relaxed">
             QR codes have become an essential tool for businesses looking to bridge the gap between 
             physical and digital experiences. However, not all QR codes are created equal. The design 
             and implementation of your QR codes can significantly impact their effectiveness and user engagement.
@@ -84,14 +100,14 @@ export default function BlogPost() {
           </ul>
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">2. Color and Contrast</h2>
-          <p className="text-gray-700 mb-6">
+          <p className="text-gray-800 mb-6 leading-relaxed">
             While QR codes traditionally use black and white, modern QR code generators allow for 
             color customization. However, maintaining proper contrast is essential for reliable scanning.
           </p>
           
           <div className="bg-blue-50 p-6 rounded-lg mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Best Practices for Color:</h3>
-            <ul className="list-disc pl-6 text-gray-700">
+            <ul className="list-disc pl-6 text-gray-800 space-y-2">
               <li>Use high contrast colors (dark on light background)</li>
               <li>Avoid red and green combinations (accessibility issues)</li>
               <li>Test your QR code on multiple devices and lighting conditions</li>
@@ -221,7 +237,28 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'QR Code Size Guide',
+              url: '/blog/qr-code-size-guide',
+              description: 'Learn the optimal QR code size for print, billboards, business cards, and posters.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            },
+            {
+              title: 'QR Code Marketing Guide',
+              url: '/blog/qr-code-marketing-guide',
+              description: 'Discover how to use QR codes effectively in your marketing campaigns.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }

@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Utensils, Smartphone, Users, TrendingUp } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Utensils, Smartphone, Users, TrendingUp } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'QR Code Marketing for Restaurants: Menu & Contactless Solutions',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Learn how restaurants can leverage QR codes for contactless menus, loyalty programs, and customer engagement.',
     type: 'article',
     publishedTime: '2024-01-01T00:00:00.000Z',
+    modifiedTime: '2024-01-01T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Restaurant', 'Marketing', 'Contactless'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-restaurant-marketing',
+  },
 }
+
+const publishDate = '2024-01-01T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-restaurant-marketing'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="QR Code Marketing for Restaurants: Menu & Contactless Solutions"
+        description="Learn how restaurants can leverage QR codes for contactless menus, loyalty programs, and customer engagement. Real-world examples and implementation strategies."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={1800}
+        timeRequired="PT7M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'QR Code Restaurant Marketing', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -334,7 +350,28 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'How to Create a Restaurant QR Code',
+              url: '/blog/how-to-create-a-restaurant-qr-code',
+              description: 'Step-by-step guide to creating QR codes for restaurant menus and ordering systems.'
+            },
+            {
+              title: 'Restaurant QR Code Menu Setup in 5 Minutes',
+              url: '/blog/restaurant-qr-code-menu-setup-5-minutes',
+              description: 'Quick guide to setting up QR code menus for restaurants in just 5 minutes.'
+            },
+            {
+              title: 'QR Code for Restaurants',
+              url: '/qr-code-for-restaurants',
+              description: 'Complete guide to using QR codes in restaurants for menus, WiFi, and more.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }

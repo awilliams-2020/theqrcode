@@ -104,6 +104,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/qr-code-for-events`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/qr-code-for-fitness`,
       lastModified: weeklyUpdate,
       changeFrequency: 'weekly',
@@ -290,6 +296,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/blog/qr-code-landing-page-best-practices`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/blog/how-to-create-wifi-qr-code`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -297,6 +309,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/how-to-create-a-restaurant-qr-code`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog/how-to-create-pro-plan-restaurant-menu-qr-code`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,

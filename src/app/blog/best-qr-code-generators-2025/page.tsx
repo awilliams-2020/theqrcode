@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Star, Check, X } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Star, Check, X } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'Best QR Code Generators 2025 (We Tested 15) | Complete Comparison',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Honest comparison of the top QR code generators. Find the perfect tool for your business.',
     type: 'article',
     publishedTime: '2025-01-15T00:00:00.000Z',
+    modifiedTime: '2025-01-15T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Tools', 'Comparison', 'Review'],
   },
+  alternates: {
+    canonical: '/blog/best-qr-code-generators-2025',
+  },
 }
+
+const publishDate = '2025-01-15T00:00:00Z'
+const articleUrl = '/blog/best-qr-code-generators-2025'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="Best QR Code Generators 2025 (We Tested 15)"
+        description="We tested 15 popular QR code generators to find the best options. Honest comparison covering features, pricing, analytics, and ease of use."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={2800}
+        timeRequired="PT12M"
+        proficiencyLevel="Intermediate"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'Best QR Code Generators 2025', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -469,8 +485,30 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        
+        <RelatedContent
+          items={[
+            {
+              title: 'Free QR Code Generator - No Sign Up Required',
+              url: '/blog/free-qr-code-generator-no-signup',
+              description: 'Generate QR codes instantly without creating an account. Free QR code generator with no registration required.'
+            },
+            {
+              title: 'How to Create a Restaurant QR Code',
+              url: '/blog/how-to-create-a-restaurant-qr-code',
+              description: 'Step-by-step guide to creating QR codes for restaurant menus and ordering systems.'
+            },
+            {
+              title: 'QR Code Size Calculator Guide',
+              url: '/blog/qr-code-size-calculator-guide',
+              description: 'Learn how to calculate the perfect QR code size for your print and digital needs.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

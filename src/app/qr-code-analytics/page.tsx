@@ -3,9 +3,9 @@ import { BarChart3, TrendingUp, Globe, Smartphone, Clock, Users, MapPin, Activit
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'QR Code Analytics - Track & Analyze QR Code Performance | TheQRCode.io',
-  description: 'Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
-  keywords: ['qr code analytics', 'qr code tracking', 'qr code insights', 'qr code metrics', 'qr code performance', 'qr code monitoring'],
+  title: 'QR-Code Analytics - Track & Analyze QR Code Performance | TheQRCode.io',
+  description: 'QR-code analytics platform - Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
+  keywords: ['qr-code analytics', 'qr code analytics', 'qr code tracking', 'qr code insights', 'qr code metrics', 'qr code performance', 'qr code monitoring'],
   openGraph: {
     title: 'QR Code Analytics - Track & Analyze QR Code Performance',
     description: 'Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
@@ -148,7 +148,7 @@ export default function QRCodeAnalyticsPage() {
               Advanced QR Code Analytics
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Powerful QR Code Analytics
+              QR-Code Analytics Platform
               <span className="block text-blue-600">That Drive Results</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">

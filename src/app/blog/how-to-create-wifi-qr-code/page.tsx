@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Wifi, Smartphone, Lock, AlertCircle } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Wifi, Smartphone, Lock, AlertCircle } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'How to Create a WiFi QR Code [Complete Step-by-Step Guide]',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Create a WiFi QR code in 5 minutes. Never type your password again.',
     type: 'article',
     publishedTime: '2025-01-18T00:00:00.000Z',
+    modifiedTime: '2025-01-18T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['WiFi', 'Tutorial', 'QR Code', 'How-To'],
   },
+  alternates: {
+    canonical: '/blog/how-to-create-wifi-qr-code',
+  },
 }
+
+const publishDate = '2025-01-18T00:00:00Z'
+const articleUrl = '/blog/how-to-create-wifi-qr-code'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="How to Create a WiFi QR Code [Complete Step-by-Step Guide]"
+        description="Learn how to create a WiFi QR code in 5 minutes. Share your WiFi password instantly without typing. Perfect for restaurants, offices, Airbnb, and home use."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={1800}
+        timeRequired="PT7M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'How to Create a WiFi QR Code', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -473,8 +489,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'WiFi QR Code Generator',
+              url: '/wifi-qr-code-generator',
+              description: 'Generate WiFi QR codes instantly. Share your WiFi password with a simple scan.'
+            },
+            {
+              title: 'How to Create a Restaurant QR Code',
+              url: '/blog/how-to-create-a-restaurant-qr-code',
+              description: 'Step-by-step guide to creating QR codes for restaurant menus and ordering systems.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

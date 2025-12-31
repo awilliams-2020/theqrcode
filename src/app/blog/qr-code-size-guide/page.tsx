@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Ruler, Eye, Maximize2 } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Ruler, Eye, Maximize2 } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'QR Code Size Guide: How Big Should a QR Code Be? [2025 Standards]',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Complete guide to QR code sizing for any use case. Includes formulas and calculators.',
     type: 'article',
     publishedTime: '2025-01-20T00:00:00.000Z',
+    modifiedTime: '2025-01-20T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Guide', 'Design', 'Print'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-size-guide',
+  },
 }
+
+const publishDate = '2025-01-20T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-size-guide'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="QR Code Size Guide: How Big Should a QR Code Be?"
+        description="Learn the optimal QR code size for print, billboards, business cards, and posters. Includes formula, distance calculator, and real-world examples."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={2200}
+        timeRequired="PT9M"
+        proficiencyLevel="Intermediate"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'QR Code Size Guide', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -502,8 +518,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'QR Code Size Calculator Guide',
+              url: '/blog/qr-code-size-calculator-guide',
+              description: 'Learn how to calculate the perfect QR code size for your print and digital needs.'
+            },
+            {
+              title: 'QR Code Best Practices',
+              url: '/blog/qr-code-best-practices',
+              description: 'Learn the essential design principles and best practices for creating QR codes.'
+            },
+            {
+              title: 'Do QR Codes Expire?',
+              url: '/blog/do-qr-codes-expire',
+              description: 'Learn if QR codes expire and how to create permanent QR codes that never expire.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

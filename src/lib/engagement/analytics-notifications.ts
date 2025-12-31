@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { createNotification } from './notifications'
+import { createTransporter, createEmailOptions } from '../email'
+import { emailTemplates } from './email-templates'
 
 const prisma = new PrismaClient()
 
@@ -261,10 +263,40 @@ export async function sendHourlyAnalyticsSummary(userId: string) {
 }
 
 /**
- * Send daily analytics digest
+ * Send daily analytics digest (both email and notification)
  */
 export async function sendDailyAnalyticsDigest(userId: string) {
   try {
+    // Get user info and check if they should receive emails
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isDeleted: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+          }
+        }
+      }
+    })
+
+    // Skip if user doesn't exist, is deleted, or has no email
+    if (!user || user.isDeleted || !user.email) {
+      return { sent: false, reason: 'User not found, deleted, or has no email' }
+    }
+
+    // Check if user has analytics access (paid plans only)
+    const plan = user.subscription?.plan || 'free'
+    const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+    
+    if (!hasAnalyticsAccess) {
+      return { sent: false, reason: 'User does not have analytics access (free plan)' }
+    }
+
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
     const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000)
     
@@ -304,21 +336,78 @@ export async function sendDailyAnalyticsDigest(userId: string) {
         }
       })
 
+      const uniqueCountriesCount = uniqueCountries.length
+
+      // Create in-app notification
       await createNotification({
         userId,
         type: 'analytics_summary',
         title: '📊 Daily Analytics Digest',
-        message: `${trend} ${todayScans} scans today from ${uniqueCountries.length} ${uniqueCountries.length === 1 ? 'country' : 'countries'}. ${changeText}.`,
+        message: `${trend} ${todayScans} scans today from ${uniqueCountriesCount} ${uniqueCountriesCount === 1 ? 'country' : 'countries'}. ${changeText}.`,
         priority: 'normal',
       })
 
-      return { sent: true, todayScans, percentageChange }
+      // Send email
+      try {
+        const transporter = createTransporter()
+        const emailOptions = createEmailOptions({
+          to: user.email,
+          subject: emailTemplates.dailyAnalyticsDigest.subject,
+          html: emailTemplates.dailyAnalyticsDigest.html({
+            name: user.name || 'there',
+            todayScans,
+            yesterdayScans,
+            percentageChange,
+            uniqueCountries: uniqueCountriesCount,
+            trend,
+            changeText,
+          }),
+          text: emailTemplates.dailyAnalyticsDigest.text({
+            name: user.name || 'there',
+            todayScans,
+            yesterdayScans,
+            percentageChange,
+            uniqueCountries: uniqueCountriesCount,
+            trend,
+            changeText,
+          }),
+        })
+
+        await transporter.sendMail(emailOptions)
+
+        // Log email sent
+        await prisma.emailLog.create({
+          data: {
+            userId: user.id,
+            emailType: 'notification',
+            subject: emailTemplates.dailyAnalyticsDigest.subject,
+            status: 'sent',
+          },
+        })
+
+        return { sent: true, todayScans, percentageChange, emailSent: true }
+      } catch (emailError) {
+        // Log email failure but don't fail the whole operation
+        console.error(`Failed to send daily analytics digest email to ${user.email}:`, emailError)
+        
+        await prisma.emailLog.create({
+          data: {
+            userId: user.id,
+            emailType: 'notification',
+            subject: emailTemplates.dailyAnalyticsDigest.subject,
+            status: 'failed',
+          },
+        })
+
+        // Still return success for notification, but note email failure
+        return { sent: true, todayScans, percentageChange, emailSent: false, emailError: emailError instanceof Error ? emailError.message : String(emailError) }
+      }
     }
 
     return { sent: false, reason: 'No scans today' }
   } catch (error) {
     console.error('Error sending daily digest:', error)
-    return { sent: false, error }
+    return { sent: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
 
@@ -483,6 +572,9 @@ export async function runAnalyticsChecks(userId: string, qrCodeId: string, scanD
 export async function sendPeriodicAnalyticsSummaries() {
   try {
     // Get all users who have had activity in the last 24 hours
+    // First, get unique QR codes that have scans in the last 24 hours
+    // Note: We filter out null qrCodeId values in the loop below since Prisma groupBy
+    // doesn't support null filtering in the where clause reliably
     const activeScans = await prisma.scan.groupBy({
       by: ['qrCodeId'],
       where: {
@@ -492,29 +584,93 @@ export async function sendPeriodicAnalyticsSummaries() {
     })
 
     const userIds = new Set<string>()
+    let skippedCount = 0
+    let errorCount = 0
     
     for (const scan of activeScans) {
-      const qrCode = await prisma.qrCode.findUnique({
-        where: { id: scan.qrCodeId },
-        select: { userId: true }
-      })
-      if (qrCode) {
-        userIds.add(qrCode.userId)
+      // Add null check to prevent errors
+      if (!scan || !scan.qrCodeId) {
+        skippedCount++
+        continue
+      }
+
+      try {
+        const qrCode = await prisma.qrCode.findUnique({
+          where: { id: scan.qrCodeId },
+          select: { 
+            userId: true,
+            isDeleted: true,
+          }
+        })
+        
+        // Only add if QR code exists, is not deleted, and has a valid userId
+        if (qrCode && !qrCode.isDeleted && qrCode.userId) {
+          userIds.add(qrCode.userId)
+        } else {
+          skippedCount++
+        }
+      } catch (qrCodeError) {
+        // Log but continue processing other scans
+        console.error(`Error fetching QR code ${scan.qrCodeId}:`, qrCodeError)
+        errorCount++
+        continue
       }
     }
 
     // Send daily digest to active users
     const userIdArray = Array.from(userIds)
+    let emailsSent = 0
+    let emailsFailed = 0
+    let notificationsOnly = 0
+    
     for (const userId of userIdArray) {
-      await sendDailyAnalyticsDigest(userId)
-      // Small delay to avoid overwhelming the system
-      await new Promise(resolve => setTimeout(resolve, 100))
+      try {
+        const result = await sendDailyAnalyticsDigest(userId)
+        
+        if (result.sent) {
+          if (result.emailSent === true) {
+            emailsSent++
+          } else if (result.emailSent === false) {
+            emailsFailed++
+            notificationsOnly++
+          } else {
+            // Legacy: if emailSent is not set, assume notification was created
+            notificationsOnly++
+          }
+        }
+        
+        // Small delay to avoid overwhelming the system
+        await new Promise(resolve => setTimeout(resolve, 100))
+      } catch (digestError) {
+        // Log but continue processing other users
+        console.error(`Error sending daily digest to user ${userId}:`, digestError)
+        errorCount++
+        continue
+      }
     }
 
-    return { success: true, userCount: userIdArray.length }
+    const summary = {
+      success: true,
+      userCount: userIdArray.length,
+      emailsSent,
+      emailsFailed,
+      notificationsOnly,
+      skippedQRCodes: skippedCount,
+      errors: errorCount,
+    }
+
+    console.log('Analytics summaries sent:', summary)
+    
+    return summary
   } catch (error) {
     console.error('Error sending periodic summaries:', error)
-    return { success: false, error }
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error),
+      userCount: 0,
+      emailsSent: 0,
+      emailsFailed: 0,
+    }
   }
 }
 

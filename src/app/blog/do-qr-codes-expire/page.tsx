@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { Calendar, User, Clock, Share2, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'Do QR Codes Expire? Everything You Need to Know [2025 Guide]',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'The complete truth about QR code expiration and how to create codes that last forever.',
     type: 'article',
     publishedTime: '2025-01-22T00:00:00.000Z',
+    modifiedTime: '2025-01-22T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Guide', 'Static', 'Dynamic'],
   },
+  alternates: {
+    canonical: '/blog/do-qr-codes-expire',
+  },
 }
+
+const publishDate = '2025-01-22T00:00:00.000Z'
+const articleUrl = '/blog/do-qr-codes-expire'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="Do QR Codes Expire? (And How to Make Permanent Ones)"
+        description="Learn if QR codes expire, the difference between static and dynamic codes, and how to create permanent QR codes that never expire."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={2000}
+        timeRequired="PT8M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'Do QR Codes Expire?', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -568,8 +584,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            },
+            {
+              title: 'QR Code Size Guide',
+              url: '/blog/qr-code-size-guide',
+              description: 'Learn the optimal QR code size for print, billboards, business cards, and posters.'
+            },
+            {
+              title: 'QR Code Best Practices',
+              url: '/blog/qr-code-best-practices',
+              description: 'Learn the essential design principles and best practices for creating QR codes.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 

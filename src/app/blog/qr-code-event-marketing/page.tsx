@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, Users, Calendar as CalendarIcon, MapPin, Smartphone } from 'lucide-react'
+import { Calendar, User, Clock, Share2, Users, Calendar as CalendarIcon, MapPin, Smartphone } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'Event Marketing with QR Codes: Registration & Networking',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Boost event attendance and engagement with strategic QR code implementation for registration and networking.',
     type: 'article',
     publishedTime: '2023-12-28T00:00:00.000Z',
+    modifiedTime: '2023-12-28T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['QR Code', 'Events', 'Marketing', 'Networking'],
   },
+  alternates: {
+    canonical: '/blog/qr-code-event-marketing',
+  },
 }
+
+const publishDate = '2023-12-28T00:00:00.000Z'
+const articleUrl = '/blog/qr-code-event-marketing'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="Event Marketing with QR Codes: Registration & Networking"
+        description="Boost event attendance and engagement with strategic QR code implementation for registration, networking, and attendee tracking."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={1000}
+        timeRequired="PT4M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'Event Marketing with QR Codes', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -334,7 +350,28 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'QR Code Marketing Guide',
+              url: '/blog/qr-code-marketing-guide',
+              description: 'Learn how to use QR codes effectively in your marketing campaigns.'
+            },
+            {
+              title: 'How to Create a WiFi QR Code',
+              url: '/blog/how-to-create-wifi-qr-code',
+              description: 'Learn how to create WiFi QR codes for events and networking.'
+            },
+            {
+              title: 'Best QR Code Generators 2025',
+              url: '/blog/best-qr-code-generators-2025',
+              description: 'Compare the top QR code generator tools and find the best one for your needs.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }

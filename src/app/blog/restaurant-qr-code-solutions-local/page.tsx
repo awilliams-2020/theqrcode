@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Calendar, User, Clock, ArrowLeft, Share2, MapPin, Utensils, TrendingUp, Wifi } from 'lucide-react'
+import { Calendar, User, Clock, Share2, MapPin, Utensils, TrendingUp, Wifi } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import BlogArticleSchema from '@/components/BlogArticleSchema'
+import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
   title: 'Restaurant QR Code Solutions: Complete Local Guide [2025]',
@@ -11,29 +14,42 @@ export const metadata: Metadata = {
     description: 'Everything restaurants need to know about QR codes for menus, WiFi, payments, and customer engagement.',
     type: 'article',
     publishedTime: '2025-01-25T00:00:00.000Z',
+    modifiedTime: '2025-01-25T00:00:00.000Z',
     authors: ['TheQRCode.io Team'],
     tags: ['Restaurant', 'QR Code', 'Local Business', 'Digital Menu'],
   },
+  alternates: {
+    canonical: '/blog/restaurant-qr-code-solutions-local',
+  },
 }
+
+const publishDate = '2025-01-25T00:00:00.000Z'
+const articleUrl = '/blog/restaurant-qr-code-solutions-local'
 
 export default function BlogPost() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href="/blog" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-
-      {/* Article Header */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+    <>
+      <BlogArticleSchema
+        title="Restaurant QR Code Solutions: Complete Guide for Local Restaurants"
+        description="Complete guide to QR codes for restaurants. Digital menus, WiFi sharing, contactless payments, and customer reviews. Setup in minutes."
+        datePublished={publishDate}
+        dateModified={publishDate}
+        url={articleUrl}
+        wordCount={2800}
+        timeRequired="PT11M"
+        proficiencyLevel="Beginner"
+      />
+      
+      <div className="min-h-screen bg-white">
+        {/* Article Header */}
+        <article className="max-w-4xl mx-auto px-4 py-12">
+          <Breadcrumbs 
+            items={[
+              { name: 'Blog', url: '/blog' },
+              { name: 'Restaurant QR Code Solutions', url: articleUrl }
+            ]}
+            className="mb-6"
+          />
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -75,7 +91,7 @@ export default function BlogPost() {
               <Utensils className="inline-block mr-2 mb-1" size={24} />
               What You'll Learn
             </h3>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-gray-800">
               <li>• Digital menu QR codes (update prices instantly)</li>
               <li>• WiFi QR codes for guest access</li>
               <li>• Review QR codes to boost online ratings</li>
@@ -98,7 +114,7 @@ export default function BlogPost() {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-blue-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Customer Benefits</h3>
-              <ul className="text-sm text-gray-700 space-y-2">
+              <ul className="text-sm text-gray-800 space-y-2">
                 <li>✓ View menu on their own device</li>
                 <li>✓ See high-quality food photos</li>
                 <li>✓ Filter by dietary restrictions</li>
@@ -110,7 +126,7 @@ export default function BlogPost() {
 
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Restaurant Benefits</h3>
-              <ul className="text-sm text-gray-700 space-y-2">
+              <ul className="text-sm text-gray-800 space-y-2">
                 <li>✓ Update prices anytime (no reprinting)</li>
                 <li>✓ Reduce printing costs by 80%+</li>
                 <li>✓ Get more Google/Yelp reviews</li>
@@ -126,7 +142,7 @@ export default function BlogPost() {
               <TrendingUp className="inline-block mr-2 mb-1" size={24} />
               Real Results from Local Restaurants
             </h3>
-            <div className="space-y-3 text-gray-700">
+            <div className="space-y-3 text-gray-800">
               <p>
                 <strong>Local Bistro (Chicago):</strong> Saved $4,800/year on menu printing, increased average 
                 order value by 18% with menu photos
@@ -151,7 +167,7 @@ export default function BlogPost() {
 
           <div className="bg-gray-50 p-6 rounded-lg mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">How It Works:</h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-gray-800">
               <li>Create your digital menu (PDF, website, or menu platform)</li>
               <li>Generate a QR code that links to your menu</li>
               <li>Print QR codes on table tents, window stickers, or place cards</li>
@@ -164,18 +180,18 @@ export default function BlogPost() {
           <div className="space-y-6 mb-8">
             <div className="border-l-4 border-blue-500 pl-6">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Option 1: PDF Menu (Easiest)</h4>
-              <p className="text-gray-700 mb-3">
+              <p className="text-gray-800 mb-3">
                 Upload your existing menu as a PDF and generate a QR code.
               </p>
               <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2"><strong>Pros:</strong></p>
-                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <p className="text-sm text-gray-800 mb-2"><strong>Pros:</strong></p>
+                <ul className="text-sm text-gray-800 space-y-1 ml-4">
                   <li>• Quick to set up (5 minutes)</li>
                   <li>• Use your existing menu design</li>
                   <li>• Free to host (Google Drive, Dropbox)</li>
                 </ul>
-                <p className="text-sm text-gray-700 mt-3 mb-2"><strong>Cons:</strong></p>
-                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <p className="text-sm text-gray-800 mt-3 mb-2"><strong>Cons:</strong></p>
+                <ul className="text-sm text-gray-800 space-y-1 ml-4">
                   <li>• Not mobile-optimized</li>
                   <li>• Can't track views</li>
                   <li>• Harder to update</li>
@@ -185,19 +201,19 @@ export default function BlogPost() {
 
             <div className="border-l-4 border-green-500 pl-6">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Option 2: Simple Website Menu (Best)</h4>
-              <p className="text-gray-700 mb-3">
+              <p className="text-gray-800 mb-3">
                 Create a mobile-optimized menu website with photos and descriptions.
               </p>
               <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2"><strong>Pros:</strong></p>
-                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <p className="text-sm text-gray-800 mb-2"><strong>Pros:</strong></p>
+                <ul className="text-sm text-gray-800 space-y-1 ml-4">
                   <li>• Mobile-optimized viewing</li>
                   <li>• Easy to update prices/items</li>
                   <li>• Add photos and descriptions</li>
                   <li>• Track views and popular items</li>
                 </ul>
-                <p className="text-sm text-gray-700 mt-3 mb-2"><strong>Tools:</strong></p>
-                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <p className="text-sm text-gray-800 mt-3 mb-2"><strong>Tools:</strong></p>
+                <ul className="text-sm text-gray-800 space-y-1 ml-4">
                   <li>• Canva (free menu templates)</li>
                   <li>• Google Sites (free website builder)</li>
                   <li>• Your existing website</li>
@@ -207,18 +223,18 @@ export default function BlogPost() {
 
             <div className="border-l-4 border-purple-500 pl-6">
               <h4 className="text-xl font-bold text-gray-900 mb-2">Option 3: Menu Platform (Most Features)</h4>
-              <p className="text-gray-700 mb-3">
+              <p className="text-gray-800 mb-3">
                 Use a dedicated digital menu platform with ordering capabilities.
               </p>
               <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2"><strong>Pros:</strong></p>
-                <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <p className="text-sm text-gray-800 mb-2"><strong>Pros:</strong></p>
+                <ul className="text-sm text-gray-800 space-y-1 ml-4">
                   <li>• Built-in ordering system</li>
                   <li>• Automatic menu updates</li>
                   <li>• Analytics dashboard</li>
                   <li>• Multi-language support</li>
                 </ul>
-                <p className="text-sm text-gray-700 mt-3 mb-2"><strong>Cost:</strong> $30-100/month</p>
+                <p className="text-sm text-gray-800 mt-3 mb-2"><strong>Cost:</strong> $30-100/month</p>
               </div>
             </div>
           </div>
@@ -226,7 +242,7 @@ export default function BlogPost() {
           <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Step-by-Step: Create Your Menu QR Code</h3>
 
           <div className="bg-blue-50 p-6 rounded-lg mb-8">
-            <ol className="list-decimal pl-6 space-y-4 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-4 text-gray-800">
               <li>
                 <strong>Create your digital menu:</strong>
                 <ul className="text-sm mt-2 ml-4 space-y-1">
@@ -286,7 +302,7 @@ export default function BlogPost() {
 
           <div className="bg-green-50 p-6 rounded-lg mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Benefits:</h3>
-            <ul className="text-gray-700 space-y-2">
+            <ul className="text-gray-800 space-y-2">
               <li>✓ Customers connect instantly (no typing)</li>
               <li>✓ Reduces staff interruptions by 90%+</li>
               <li>✓ Better experience for international visitors</li>
@@ -298,7 +314,7 @@ export default function BlogPost() {
           <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">How to Create WiFi QR Code:</h3>
 
           <div className="bg-gray-50 p-6 rounded-lg mb-8">
-            <ol className="list-decimal pl-6 space-y-3 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-3 text-gray-800">
               <li>Go to <Link href="/wifi-qr-code-generator" className="text-blue-600 hover:underline">TheQRCode.io/wifi</Link></li>
               <li>Enter your WiFi network name (SSID)</li>
               <li>Enter password</li>
@@ -309,7 +325,7 @@ export default function BlogPost() {
           </div>
 
           <div className="bg-yellow-50 p-4 rounded-lg mb-8">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-800">
               <strong>Pro Tip:</strong> Create separate guest and staff networks. Only share guest network via QR code. 
               This keeps your main network secure while providing easy access for customers.
             </p>
@@ -324,10 +340,10 @@ export default function BlogPost() {
 
           <div className="bg-purple-50 p-6 rounded-lg mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Why It Works:</h3>
-            <p className="text-gray-700 mb-3">
+            <p className="text-gray-800 mb-3">
               Most satisfied customers don't leave reviews because it's inconvenient. QR codes remove the friction:
             </p>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-gray-800">
               <li>Customer scans QR code on receipt or table tent</li>
               <li>Taken directly to your Google/Yelp review page</li>
               <li>Write review in 30 seconds</li>
@@ -339,7 +355,7 @@ export default function BlogPost() {
 
           <div className="bg-blue-50 p-6 rounded-lg mb-8">
             <h4 className="font-semibold text-gray-900 mb-3">Google Reviews:</h4>
-            <ol className="list-decimal pl-6 space-y-2 text-sm text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-sm text-gray-800">
               <li>Search your restaurant on Google Maps</li>
               <li>Scroll to reviews section</li>
               <li>Click "Share" → Copy the review link</li>
@@ -350,7 +366,7 @@ export default function BlogPost() {
 
           <div className="bg-orange-50 p-6 rounded-lg mb-8">
             <h4 className="font-semibold text-gray-900 mb-3">Yelp Reviews:</h4>
-            <ol className="list-decimal pl-6 space-y-2 text-sm text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-sm text-gray-800">
               <li>Go to your Yelp business page</li>
               <li>Copy the URL</li>
               <li>Add "/writeareview" to the end</li>
@@ -360,7 +376,7 @@ export default function BlogPost() {
           </div>
 
           <div className="bg-red-50 p-4 rounded-lg mb-8">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-800">
               <strong>Important:</strong> Only ask happy customers for reviews. Use staff judgment - if they loved 
               their meal, mention the QR code. Never incentivize reviews (against Google/Yelp policies).
             </p>
@@ -371,35 +387,35 @@ export default function BlogPost() {
           <div className="space-y-6 mb-8">
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">🍷 Wine List & Specials</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-800">
                 Create separate QR codes for wine lists, daily specials, or seasonal menus. Update anytime without reprinting.
               </p>
             </div>
 
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">🎉 Event Reservations</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-800">
                 Link to reservation system (OpenTable, Resy) or event signup forms. Makes booking instant and easy.
               </p>
             </div>
 
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">💳 Contactless Payment</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-800">
                 Generate payment QR codes (Venmo, PayPal, Square) for easy tipping or bill splitting.
               </p>
             </div>
 
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">📱 Social Media</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-800">
                 Link to Instagram for food photos or Facebook for events. Grow your social following effortlessly.
               </p>
             </div>
 
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">🎁 Loyalty Programs</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-800">
                 Direct customers to loyalty signup or rewards app. Build a database of repeat customers.
               </p>
             </div>
@@ -409,7 +425,7 @@ export default function BlogPost() {
           
           <div className="bg-green-50 p-6 rounded-lg mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Week 1: Basic Implementation</h3>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-gray-800">
               <li className="flex items-start gap-2">
                 <input type="checkbox" className="mt-1" />
                 <span>Create digital menu (PDF or website)</span>
@@ -435,7 +451,7 @@ export default function BlogPost() {
 
           <div className="bg-blue-50 p-6 rounded-lg mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Week 2: Optimization</h3>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-gray-800">
               <li className="flex items-start gap-2">
                 <input type="checkbox" className="mt-1" />
                 <span>Create review collection QR codes</span>
@@ -505,7 +521,7 @@ export default function BlogPost() {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-red-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">❌ Don't Do This:</h3>
-              <ul className="text-sm text-gray-700 space-y-2">
+              <ul className="text-sm text-gray-800 space-y-2">
                 <li>• QR codes without context ("Scan Me" - for what?)</li>
                 <li>• Low-quality menu PDFs (blurry, hard to read)</li>
                 <li>• Forgetting to test on multiple phones</li>
@@ -517,7 +533,7 @@ export default function BlogPost() {
 
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">✅ Best Practices:</h3>
-              <ul className="text-sm text-gray-700 space-y-2">
+              <ul className="text-sm text-gray-800 space-y-2">
                 <li>• Clear instructions: "Scan for Menu"</li>
                 <li>• Mobile-optimized menu pages</li>
                 <li>• Test with 5+ different phones</li>
@@ -537,7 +553,7 @@ export default function BlogPost() {
 
           <div className="bg-yellow-50 p-6 rounded-lg mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Quick Start (This Weekend):</h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700">
+            <ol className="list-decimal pl-6 space-y-2 text-gray-800">
               <li>Upload your menu to Google Drive as PDF (make it public)</li>
               <li>Create QR code at <Link href="/qr-code-for-restaurants" className="text-blue-600 hover:underline">TheQRCode.io/restaurants</Link></li>
               <li>Print 5 table tents as a test</li>
@@ -562,7 +578,7 @@ export default function BlogPost() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Ready to Set Up QR Codes for Your Restaurant?
             </h3>
-            <p className="text-gray-700 mb-6">
+            <p className="text-gray-800 mb-6">
               Create restaurant-optimized QR codes in minutes. Free to start, no credit card required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -581,8 +597,29 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+        <RelatedContent
+          items={[
+            {
+              title: 'How to Create a Restaurant QR Code',
+              url: '/blog/how-to-create-a-restaurant-qr-code',
+              description: 'Step-by-step guide to creating QR codes for restaurant menus and ordering systems.'
+            },
+            {
+              title: 'Restaurant QR Code Menu Setup in 5 Minutes',
+              url: '/blog/restaurant-qr-code-menu-setup-5-minutes',
+              description: 'Quick guide to setting up QR code menus for restaurants in just 5 minutes.'
+            },
+            {
+              title: 'QR Code for Restaurants',
+              url: '/qr-code-for-restaurants',
+              description: 'Complete guide to using QR codes in restaurants for menus, WiFi, and more.'
+            }
+          ]}
+          className="mt-12"
+        />
       </article>
     </div>
+    </>
   )
 }
 
