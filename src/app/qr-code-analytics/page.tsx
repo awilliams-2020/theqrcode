@@ -3,11 +3,15 @@ import { BarChart3, TrendingUp, Globe, Smartphone, Clock, Users, MapPin, Activit
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'QR-Code Analytics - Track & Analyze QR Code Performance | TheQRCode.io',
-  description: 'QR-code analytics platform - Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
-  keywords: ['qr-code analytics', 'qr code analytics', 'qr code tracking', 'qr code insights', 'qr code metrics', 'qr code performance', 'qr code monitoring'],
+  title: 'QR Code Analytics | Track & Analyze QR Code Performance - TheQRCode.io',
+  description: 'QR code analytics platform - Track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring. Free analytics included.',
+  keywords: [
+    'qr-code analytics', 'qr code analytics', 'qr code tracking', 'qr code insights', 
+    'qr code metrics', 'qr code performance', 'qr code monitoring',
+    'qr code analytics dashboard', 'track qr code scans', 'qr code statistics'
+  ],
   openGraph: {
-    title: 'QR Code Analytics - Track & Analyze QR Code Performance',
+    title: 'QR Code Analytics | Track & Analyze QR Code Performance',
     description: 'Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
     type: 'website',
     url: 'https://theqrcode.io/qr-code-analytics',

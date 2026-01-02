@@ -1,11 +1,64 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { logger } from './lib/logger'
+import { ServerActionRateLimiter } from './lib/server-action-rate-limiter'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || 'unknown'
   const domain = hostname.split(':')[0] // Remove port if present
+  
+  // Extract IP address from request
+  const ipAddress = getClientIP(request)
+  
+  // Check for Server Action requests
+  // Next.js Server Actions are POST requests with specific headers/content-type
+  const contentType = request.headers.get('content-type') || ''
+  const isServerAction = request.method === 'POST' && (
+    pathname.startsWith('/_next/action') || 
+    contentType.includes('text/plain') || // Server Actions use text/plain
+    contentType.includes('application/x-www-form-urlencoded') || // Form submissions
+    request.headers.get('next-action') !== null // Next.js Server Action header
+  )
+  
+  if (isServerAction) {
+    // Apply rate limiting for Server Actions
+    const rateLimitResult = ServerActionRateLimiter.checkRateLimit(ipAddress)
+    
+    if (!rateLimitResult.allowed) {
+      logger.warn('SERVER-ACTION', 'Server Action rate limit exceeded', {
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        pathname,
+        retryAfter: rateLimitResult.retryAfter
+      })
+      
+      return new NextResponse(
+        JSON.stringify({ 
+          error: 'Too many requests',
+          retryAfter: rateLimitResult.retryAfter 
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(rateLimitResult.retryAfter || 60),
+            'X-RateLimit-Limit': '60',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(rateLimitResult.resetTime)
+          }
+        }
+      )
+    }
+    
+    // Log Server Action request for monitoring
+    logger.serverAction('Server Action request', {
+      ipAddress,
+      userAgent: request.headers.get('user-agent') || 'unknown',
+      pathname,
+      remaining: rateLimitResult.remaining
+    })
+  }
   
   // Check if this is an OAuth signin or callback request
   if (pathname.startsWith('/api/auth/signin/') || pathname.startsWith('/api/auth/callback/')) {
@@ -13,25 +66,65 @@ export function middleware(request: NextRequest) {
     const isBot = detectBot(request, domain)
     
     if (isBot) {
-      logger.warn('BOT-DETECTION', `Bot detected and blocked: ${pathname}`)
+      logger.warn('BOT-DETECTION', `Bot detected and blocked: ${pathname}`, {
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown'
+      })
       return new NextResponse('Unauthorized', { status: 401 })
     }
   }
   
   // Check for other protected routes that bots might try to access
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/')) {
-    logger.api(`API request detected: ${pathname}`)
+    logger.api(`API request detected: ${pathname}`, {
+      ipAddress,
+      userAgent: request.headers.get('user-agent') || 'unknown'
+    })
     
     // Basic bot detection for API routes
     const isBot = detectBotForApi(request, domain)
     
     if (isBot) {
-      logger.warn('BOT-DETECTION', `Bot detected and blocked on API: ${pathname}`)
+      logger.warn('BOT-DETECTION', `Bot detected and blocked on API: ${pathname}`, {
+        ipAddress,
+        userAgent: request.headers.get('user-agent') || 'unknown'
+      })
       return new NextResponse('Unauthorized', { status: 401 })
     }
   }
   
   return NextResponse.next()
+}
+
+/**
+ * Extract client IP address from request
+ * Handles various proxy headers (X-Forwarded-For, X-Real-IP, etc.)
+ */
+function getClientIP(request: NextRequest): string {
+  // Check X-Forwarded-For header (most common proxy header)
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    // X-Forwarded-For can contain multiple IPs, take the first one
+    const ips = forwardedFor.split(',').map(ip => ip.trim())
+    if (ips.length > 0 && ips[0]) {
+      return ips[0]
+    }
+  }
+  
+  // Check X-Real-IP header
+  const realIP = request.headers.get('x-real-ip')
+  if (realIP) {
+    return realIP
+  }
+  
+  // Check CF-Connecting-IP (Cloudflare)
+  const cfIP = request.headers.get('cf-connecting-ip')
+  if (cfIP) {
+    return cfIP
+  }
+  
+  // Fallback to request IP (may be proxy IP in production)
+  return request.ip || 'unknown'
 }
 
 function detectBot(request: NextRequest, domain: string): boolean {
@@ -196,5 +289,9 @@ export const config = {
     // Match OAuth API routes
     '/api/auth/signin/:path*',
     '/api/auth/callback/:path*',
+    // Match Server Action routes
+    '/_next/action/:path*',
+    // Match all API routes for monitoring
+    '/api/:path*',
   ],
 }

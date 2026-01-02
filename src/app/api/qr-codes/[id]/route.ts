@@ -68,15 +68,15 @@ export async function PUT(
       return NextResponse.json({ error: 'QR code not found' }, { status: 404 })
     }
 
-    // Check if we need to generate a short URL for dynamic QR codes
+    // Handle short URL for dynamic QR codes
+    // Preserve existing shortUrl when disabling/re-enabling tracking to prevent orphaned shortcodes
     let shortUrl = qrCode.shortUrl
     if (isDynamic && !shortUrl) {
-      // Generate short URL for newly enabled dynamic QR codes
+      // Generate short URL only if dynamic tracking is enabled and no shortUrl exists
       shortUrl = await URLShortener.generateShortUrl(id)
-    } else if (!isDynamic && shortUrl) {
-      // Remove short URL if disabling dynamic features
-      shortUrl = null
     }
+    // Note: We preserve shortUrl even when isDynamic is false to maintain shortcode continuity
+    // This ensures that disabling and re-enabling tracking doesn't orphan the original shortcode
 
     const updatedQrCode = await prisma.qrCode.update({
       where: { id: id },

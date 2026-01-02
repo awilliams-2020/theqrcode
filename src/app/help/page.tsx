@@ -102,16 +102,17 @@ export default function HelpPage() {
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">How do I track QR code scans?</h3>
               <p className="text-gray-600">
-                All QR codes created with TheQRCode.io automatically include tracking capabilities. 
-                You can view detailed analytics in your dashboard, including scan counts, locations, 
+                Tracking capabilities can be enabled when creating a QR code or after creation in your dashboard. 
+                Once enabled, you can view detailed analytics including scan counts, locations, 
                 devices, and timestamps.
               </p>
             </div>
             <div className="border-b border-gray-200 pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Can I edit a QR code after creating it?</h3>
               <p className="text-gray-600">
-                QR codes created with our platform are static and cannot be edited after creation. 
-                If you need to change the destination URL, you'll need to create a new QR code.
+                Dynamic QR codes can be updated after creation, allowing you to change the destination URL 
+                without needing to regenerate the QR code. However, static QR codes cannot be edited 
+                after creation and will require creating a new QR code if you need to change the destination.
               </p>
             </div>
             <div className="border-b border-gray-200 pb-6">
@@ -125,8 +126,9 @@ export default function HelpPage() {
             <div className="pb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Is there a limit to the number of QR codes I can create?</h3>
               <p className="text-gray-600">
-                Our platform allows you to create QR codes for free. There are no limits on the number 
-                of QR codes you can generate, and all features are available to all users.
+                QR code limits vary by plan. The free plan includes 10 QR codes, Starter plan includes 100 QR codes, 
+                Pro plan includes 500 QR codes, and Business plan offers unlimited QR codes. You can upgrade your plan 
+                at any time to increase your limit. <Link href="/pricing" className="text-blue-600 hover:text-blue-700 underline">View our pricing plans</Link> for details.
               </p>
             </div>
           </div>

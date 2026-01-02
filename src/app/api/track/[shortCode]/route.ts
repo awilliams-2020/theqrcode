@@ -1294,6 +1294,12 @@ export async function POST(
       return NextResponse.json({ error: 'QR code not found', shortCode, shortUrl }, { status: 404 })
     }
 
+    // If tracking is disabled (isDynamic is false), don't record scans but allow redirect
+    if (!qrCode.isDynamic) {
+      console.log('Tracking disabled for QR code, skipping scan recording')
+      return NextResponse.json({ success: true, message: 'Tracking disabled, scan not recorded' })
+    }
+
     // Get request body for fingerprint data
     const body = await request.json().catch(() => ({}))
     const { fingerprint, timestamp } = body

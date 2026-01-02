@@ -4,12 +4,20 @@ import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
   title: 'QR Code API | Programmatic QR Code Generation & Analytics - TheQRCode.io',
-  description: 'Powerful QR Code API for developers. Generate QR codes programmatically, track analytics, manage webhooks. RESTful API with comprehensive documentation. Start free!',
-  keywords: 'qr code api, qr code generation api, qr api, qr code rest api, developer qr code, programmatic qr code, webhook api, real-time notifications',
+  description: 'QR Code API - Powerful REST API for developers. Generate QR codes programmatically, track analytics, manage webhooks. RESTful API with comprehensive documentation. Free trial available. Start free!',
+  keywords: [
+    'qr code api', 'qr code generation api', 'qr api', 'qr code rest api', 
+    'developer qr code', 'programmatic qr code', 'webhook api', 'real-time notifications',
+    'qrcode api', 'qr code api documentation', 'qr code api integration'
+  ],
   openGraph: {
-    title: 'QR Code API for Developers | TheQRCode.io',
-    description: 'Powerful REST API for generating and managing QR codes programmatically with real-time webhook notifications',
+    title: 'QR Code API for Developers | Programmatic QR Code Generation',
+    description: 'Powerful REST API for generating and managing QR codes programmatically with real-time webhook notifications. Free trial available.',
     type: 'website',
+    url: 'https://theqrcode.io/qr-code-api',
+  },
+  alternates: {
+    canonical: '/qr-code-api',
   },
 }
 
@@ -26,7 +34,7 @@ export default function APILandingPage() {
             },
             {
               question: "How do I get API access?",
-              answer: "API access is included with our Pro plan ($29/month) and Business plan ($99/month). After subscribing, you can generate API keys from your dashboard and start making API calls immediately."
+              answer: "API access is included with our Pro plan ($29/month). After subscribing, you can generate API keys from your dashboard and start making API calls immediately."
             },
             {
               question: "What programming languages are supported?",
@@ -34,7 +42,7 @@ export default function APILandingPage() {
             },
             {
               question: "Is there rate limiting on the API?",
-              answer: "Yes, API rate limits vary by plan. Pro plan includes 1,000 requests per hour, while Business plan includes 10,000 requests per hour. Rate limit headers are included in all API responses."
+              answer: "Yes, API rate limits vary by plan. Pro plan includes 1,000 requests per hour. Rate limit headers are included in all API responses."
             },
             {
               question: "Can I track QR code scans via API?",
@@ -42,7 +50,7 @@ export default function APILandingPage() {
             },
             {
               question: "Is there API documentation?",
-              answer: "Yes, comprehensive API documentation is available with code examples, endpoint descriptions, authentication details, and webhook setup instructions. Documentation is accessible from your dashboard after subscribing to a Pro or Business plan."
+              answer: "Yes, comprehensive API documentation is available with code examples, endpoint descriptions, authentication details, and webhook setup instructions. Documentation is accessible from your dashboard after subscribing to a Pro plan."
             }
           ]
         }} 

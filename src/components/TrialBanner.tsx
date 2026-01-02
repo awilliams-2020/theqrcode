@@ -24,8 +24,6 @@ export default function TrialBanner({ trialEndsAt, status, currentPlan = 'pro', 
         return '100 QR codes, 10,000 scans, and advanced analytics'
       case 'pro':
         return '500 QR codes, 500,000 scans, and advanced analytics'
-      case 'business':
-        return 'unlimited QR codes, unlimited scans, and enterprise analytics'
       default:
         return 'premium features'
     }
@@ -33,8 +31,7 @@ export default function TrialBanner({ trialEndsAt, status, currentPlan = 'pro', 
 
   const planDisplayNames = {
     starter: 'Starter',
-    pro: 'Pro', 
-    business: 'Business'
+    pro: 'Pro'
   }
 
   const daysRemaining = getTrialDaysRemaining(trialEndsAt)

@@ -492,7 +492,7 @@ export default function BlogPost() {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Pro Plan Features</h3>
             <ul className="space-y-2 text-gray-800">
               <li><strong>Price:</strong> $29/month (or $290/year with annual billing)</li>
-              <li><strong>Restaurant Menu QR Codes:</strong> Unlimited</li>
+              <li><strong>QR Codes:</strong> 500 QR codes (including Restaurant Menu QR codes)</li>
               <li><strong>All QR Code Types:</strong> Full access</li>
               <li><strong>Analytics:</strong> Advanced tracking and insights</li>
               <li><strong>Customization:</strong> Full branding and design options</li>

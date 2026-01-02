@@ -4,7 +4,7 @@
  */
 
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
-export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR' | 'CRON-JOBS'
+export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR' | 'CRON-JOBS' | 'SERVER-ACTION'
 
 interface LogContext {
   userId?: string
@@ -35,10 +35,12 @@ class Logger {
       if (context.requestId) contextParts.push(`req:${context.requestId}`)
       if (context.component) contextParts.push(`comp:${context.component}`)
       if (context.action) contextParts.push(`action:${context.action}`)
+      if (context.ipAddress) contextParts.push(`ip:${context.ipAddress}`)
+      if (context.userAgent) contextParts.push(`ua:${context.userAgent}`)
       
       // Add any other custom context
       Object.entries(context).forEach(([key, value]) => {
-        if (!['userId', 'requestId', 'component', 'action'].includes(key)) {
+        if (!['userId', 'requestId', 'component', 'action', 'ipAddress', 'userAgent'].includes(key)) {
           contextParts.push(`${key}:${value}`)
         }
       })
@@ -108,6 +110,10 @@ class Logger {
 
   botDetection(message: string, context?: LogContext): void {
     this.info('BOT-DETECTION', message, context)
+  }
+
+  serverAction(message: string, context?: LogContext): void {
+    this.info('SERVER-ACTION', message, context)
   }
 
   // Error logging with automatic context extraction

@@ -57,11 +57,15 @@ export class QRStyleRenderer {
       }
     }
 
-    // Add logo if provided
+    // Add logo if provided - ensure image is loaded before generating QR code
     if (logo) {
       // If we have a dataUrl (from persisted data), use it directly
       // Otherwise, convert the file to a dataUrl
       const logoDataURL = logo.dataUrl || await this.fileToDataURL(logo.file)
+      
+      // Preload the image to ensure it's fully loaded before generating QR code
+      await this.preloadImage(logoDataURL)
+      
       config.image = logoDataURL
       config.imageOptions = {
         hideBackgroundDots: true,
@@ -71,10 +75,10 @@ export class QRStyleRenderer {
     }
 
     const qrCode = new QRCodeStyling(config)
-    return this.qrCodeToDataURL(qrCode)
+    return this.qrCodeToDataURL(qrCode, !!logo)
   }
 
-  private static async qrCodeToDataURL(qrCode: any): Promise<string> {
+  private static async qrCodeToDataURL(qrCode: any, hasLogo: boolean = false): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
         // Create a container div (qr-code-styling requires a container, not a canvas)
@@ -89,40 +93,95 @@ export class QRStyleRenderer {
         // Append QR code to the container
         qrCode.append(container)
         
-        // Wait for the QR code to be drawn (especially important for images)
-        setTimeout(() => {
+        let lastDataURL = ''
+        let stableCount = 0
+        const requiredStableChecks = hasLogo ? 3 : 2 // Need more stable checks with logo
+        
+        // Function to check if QR code is ready
+        const checkQRCodeReady = () => {
           try {
             // Get the canvas element that was created by qr-code-styling
             const canvas = container.querySelector('canvas')
             
-            if (!canvas) {
-              document.body.removeChild(container)
-              reject(new Error('Canvas element not found'))
-              return
+            if (!canvas || canvas.width === 0 || canvas.height === 0) {
+              return false
             }
             
             // Convert canvas to data URL
             const dataURL = canvas.toDataURL('image/png')
             
-            // Clean up
-            document.body.removeChild(container)
-            
+            // Verify data URL is valid
             if (!dataURL || dataURL === 'data:,' || dataURL.length < 100) {
-              reject(new Error('Failed to generate QR code image'))
-              return
+              return false
             }
             
-            resolve(dataURL)
+            // Ensure the canvas content is stable (rendered consistently)
+            // This prevents premature resolution, especially on route changes
+            if (dataURL === lastDataURL) {
+              stableCount++
+              if (stableCount >= requiredStableChecks) {
+                // Content is stable, QR code is ready
+                document.body.removeChild(container)
+                resolve(dataURL)
+                return true
+              }
+            } else {
+              // Content changed, reset stability counter
+              stableCount = 0
+              lastDataURL = dataURL
+            }
+            return false
           } catch (error) {
             if (document.body.contains(container)) {
               document.body.removeChild(container)
             }
             reject(error)
+            return true
           }
-        }, 500) // Wait for rendering to complete including logo
+        }
+        
+        // Use polling with appropriate intervals
+        let attempts = 0
+        const maxAttempts = hasLogo ? 150 : 60 // More attempts if logo is present
+        const checkInterval = hasLogo ? 50 : 30 // Check more frequently with logo
+        
+        const checkLoop = () => {
+          attempts++
+          
+          if (checkQRCodeReady()) {
+            return // Success, already resolved/rejected
+          }
+          
+          if (attempts >= maxAttempts) {
+            // Final attempt after timeout
+            setTimeout(() => {
+              if (!checkQRCodeReady()) {
+                if (document.body.contains(container)) {
+                  document.body.removeChild(container)
+                }
+                reject(new Error('QR code generation timeout - image may not have loaded properly'))
+              }
+            }, 500)
+            return
+          }
+          
+          setTimeout(checkLoop, checkInterval)
+        }
+        
+        // Start checking after initial render delay (longer for logos)
+        setTimeout(checkLoop, hasLogo ? 150 : 50)
       } catch (error) {
         reject(error)
       }
+    })
+  }
+  
+  private static async preloadImage(dataUrl: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error('Failed to load logo image'))
+      img.src = dataUrl
     })
   }
 

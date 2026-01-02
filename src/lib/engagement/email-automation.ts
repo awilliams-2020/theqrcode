@@ -268,7 +268,9 @@ export async function sendMonthlyInsights() {
   const users = await prisma.user.findMany({
     where: { isDeleted: false },
     include: {
-      qrCodes: true,
+      qrCodes: {
+        where: { isDeleted: false },
+      },
       subscription: true,
     },
   })
@@ -278,9 +280,12 @@ export async function sendMonthlyInsights() {
   const month = now.toLocaleDateString('en-US', { month: 'long' })
 
   for (const user of users) {
-    if (!user.email || user.qrCodes.length === 0) continue
+    // Filter to only active (non-deleted) QR codes
+    const activeQrCodes = user.qrCodes.filter(qr => !qr.isDeleted)
+    
+    if (!user.email || activeQrCodes.length === 0) continue
 
-    const qrCodeIds = user.qrCodes.map(qr => qr.id)
+    const qrCodeIds = activeQrCodes.map(qr => qr.id)
     const scanCount = await prisma.scan.count({
       where: {
         qrCodeId: { in: qrCodeIds },
@@ -313,8 +318,8 @@ export async function sendMonthlyInsights() {
       scanGrowth = 0
     }
 
-    // Find top performing QR code
-    const topQrCode = user.qrCodes[0]?.name || 'N/A'
+    // Find top performing QR code (from active QR codes only)
+    const topQrCode = activeQrCodes[0]?.name || 'N/A'
 
     const insightsEmail = createEmailOptions({
       to: user.email,
@@ -322,7 +327,7 @@ export async function sendMonthlyInsights() {
       html: emailTemplates.usageInsights.html({
         name: user.name || 'there',
         month,
-        qrCodeCount: user.qrCodes.length,
+        qrCodeCount: activeQrCodes.length,
         scanCount,
         topQrCode,
         scanGrowth,
@@ -330,7 +335,7 @@ export async function sendMonthlyInsights() {
       text: emailTemplates.usageInsights.text({
         name: user.name || 'there',
         month,
-        qrCodeCount: user.qrCodes.length,
+        qrCodeCount: activeQrCodes.length,
         scanCount,
         topQrCode,
         scanGrowth,
@@ -414,13 +419,19 @@ export async function sendTrialExpiredEmail(userId: string, previousPlan: string
 }
 
 // Send re-engagement emails to inactive users
+// Only sends ONCE per user when they hit ~30 days inactive (before deletion warnings start)
 export async function sendReEngagementEmails() {
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const thirtyFiveDaysAgo = new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000)
 
   const users = await prisma.user.findMany({
     where: {
       isDeleted: false,
-      lastLoginAt: { lt: thirtyDaysAgo },
+      lastLoginAt: {
+        lt: thirtyDaysAgo, // At least 30 days inactive
+        gte: thirtyFiveDaysAgo, // But not more than 35 days (narrow window to catch once)
+      },
     },
   })
 
@@ -430,6 +441,25 @@ export async function sendReEngagementEmails() {
     if (!user.email || !user.lastLoginAt) continue
 
     const daysSinceLastLogin = Math.ceil((Date.now() - user.lastLoginAt.getTime()) / (1000 * 60 * 60 * 24))
+    
+    // Double-check we're in the right range (30-35 days)
+    if (daysSinceLastLogin < 30 || daysSinceLastLogin > 35) {
+      continue
+    }
+
+    // Check if we've already sent a re-engagement email to this user (ever)
+    const existingReEngagementEmail = await prisma.emailLog.findFirst({
+      where: {
+        userId: user.id,
+        emailType: 'notification',
+        subject: emailTemplates.reEngagement.subject,
+      },
+    })
+
+    // Skip if we already sent a re-engagement email (only send once per user)
+    if (existingReEngagementEmail) {
+      continue
+    }
 
     const reEngagementEmail = createEmailOptions({
       to: user.email,
@@ -454,18 +484,19 @@ export async function sendReEngagementEmails() {
 }
 
 // Send inactive user deletion warning emails
+// Only sends to users who are 60+ days inactive (re-engagement emails handle 30-59 days)
 export async function sendInactiveUserDeletionWarnings() {
   const now = new Date()
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
 
   // Find users who are inactive (not deleted, and lastLoginAt is old)
-  // We check for users who haven't logged in for 30-90 days
+  // We check for users who haven't logged in for 60-90 days (60+ days inactive)
   const inactiveUsers = await prisma.user.findMany({
     where: {
       isDeleted: false,
       lastLoginAt: {
-        lt: thirtyDaysAgo, // At least 30 days since last login
+        lt: sixtyDaysAgo, // At least 60 days since last login (no re-engagement emails)
         gte: ninetyDaysAgo, // But not yet 90 days (those will be deleted)
       },
     },
@@ -495,7 +526,8 @@ export async function sendInactiveUserDeletionWarnings() {
     let subject: string | null = null
 
     // Determine which warning to send based on days until deletion
-    // Send warnings at 60, 30, and 15 days before deletion (30, 60, 75 days inactive)
+    // Warnings start at 60 days inactive (30 days until deletion)
+    // Send warnings at 30, 15 days before deletion (60, 75 days inactive)
     // We use ranges to catch users within 2 days of the threshold
     if (daysUntilDeletion <= 15 && daysUntilDeletion >= 14) {
       // 15 days warning (75 days inactive) - send when 14-15 days remaining
@@ -503,13 +535,11 @@ export async function sendInactiveUserDeletionWarnings() {
       subject = emailTemplates.inactiveUserWarning15Days.subject
     } else if (daysUntilDeletion <= 30 && daysUntilDeletion >= 29) {
       // 30 days warning (60 days inactive) - send when 29-30 days remaining
+      // This is the first warning since we start warnings at 60 days inactive
       emailTemplate = emailTemplates.inactiveUserWarning30Days
       subject = emailTemplates.inactiveUserWarning30Days.subject
-    } else if (daysUntilDeletion <= 60 && daysUntilDeletion >= 59) {
-      // 60 days warning (30 days inactive) - send when 59-60 days remaining
-      emailTemplate = emailTemplates.inactiveUserWarning60Days
-      subject = emailTemplates.inactiveUserWarning60Days.subject
     }
+    // Note: 60-day warning removed since warnings now start at 60 days inactive (30 days until deletion)
 
     // Only send if we're at a threshold
     if (!emailTemplate || !subject) {

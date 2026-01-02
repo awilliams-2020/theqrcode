@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import { headers } from 'next/headers'
 import './globals.css'
 import { Providers } from './providers'
 import dynamic from 'next/dynamic'
@@ -19,6 +20,8 @@ const ConditionalMain = dynamic(() => import('@/components/ConditionalMain'), {
 
 const inter = Inter({ subsets: ['latin'] })
 
+// Note: For dev subdomain blocking, we need to check hostname at runtime
+// This will be handled in the RootLayout component below
 export const metadata: Metadata = {
   title: {
     default: 'TheQRCode.io - Create & Track QR Codes with Advanced Analytics',
@@ -115,7 +118,7 @@ export const viewport: Viewport = {
   themeColor: '#ffffff',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
@@ -124,9 +127,18 @@ export default function RootLayout({
   const matomoUrl = process.env.NEXT_PUBLIC_MATOMO_URL;
   const matomoSiteId = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
   
+  // Check if running on dev subdomain (server-side check via headers)
+  const headersList = await headers()
+  const hostname = headersList.get('host') || ''
+  const isDevSubdomain = hostname.includes('dev.theqrcode.io')
+  
   return (
     <html lang="en">
       <head>
+        {/* Block dev subdomain from search engines */}
+        {isDevSubdomain && (
+          <meta name="robots" content="noindex, nofollow" />
+        )}
         {/* Comprehensive favicon links for better Google Ads compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />

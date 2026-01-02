@@ -6,12 +6,21 @@ import BlogArticleSchema from '@/components/BlogArticleSchema'
 import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
-  title: 'QR Code Best Practices: Design Tips for Maximum Engagement',
-  description: 'Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results. Expert tips for QR code design.',
-  keywords: ['QR code best practices', 'QR code design', 'QR code tips', 'QR code engagement', 'QR code marketing'],
+  title: 'QR Code Best Practices: Design Tips for Maximum Engagement [2025 Guide]',
+  description: 'Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results. Expert tips for QR code design, placement, and optimization.',
+  keywords: [
+    'QR code best practices', 
+    'QR code design', 
+    'QR code tips', 
+    'QR code engagement', 
+    'QR code marketing',
+    'qr code optimization',
+    'qr code design guide',
+    'how to design qr codes'
+  ],
   openGraph: {
     title: 'QR Code Best Practices: Design Tips for Maximum Engagement',
-    description: 'Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results.',
+    description: 'Learn the essential design principles and best practices for creating QR codes that drive engagement and deliver results. Expert tips included.',
     type: 'article',
     publishedTime: '2024-01-15T00:00:00.000Z',
     modifiedTime: '2024-01-15T00:00:00.000Z',

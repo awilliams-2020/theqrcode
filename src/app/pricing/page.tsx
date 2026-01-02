@@ -6,15 +6,18 @@ import { Metadata } from 'next'
 import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'QR Code IO Pricing | Affordable QR Code Plans - TheQRCode.io',
-  description: 'QR Code IO pricing - Choose from Free, Starter ($9/mo), Pro ($29/mo), or Business ($99/mo) plans. 14-day free trial. No credit card required. Compare features and find the perfect plan. Start free today!',
+  title: 'QR Code IO Pricing: Free Plan + $9/mo Starter | 14-Day Trial - TheQRCode.io',
+  description: 'QR Code IO pricing - Start free forever! Free plan: 10 QR codes, 1,000 scans/month, basic QR types (URL, Text, WiFi, Contact). Starter $9/mo: 100 QR codes, 10K scans, all types. Pro $29/mo: 500 QR codes, 500K scans. 14-day free trial on paid plans. No credit card required. Compare plans now!',
   keywords: [
     'qr code io pricing', 'qr code pricing', 'qr code generator pricing', 
-    'qr code cost', 'qr code plans', 'qr code subscription', 'free qr code'
+    'qr code cost', 'qr code plans', 'qr code subscription', 'free qr code',
+    'qr code.io pricing', 'qrcode.io pricing', 'qr-code.io pricing', 'qr io pricing',
+    'qr code io free', 'is qr code io free', 'qr code io pricing plans',
+    'free qr code generator', 'qr code free plan', 'qr code pricing comparison'
   ],
   openGraph: {
-    title: 'QR Code IO Pricing | Affordable Plans Starting at $9/mo',
-    description: 'Choose from Free, Starter, Pro, or Business plans. 14-day free trial. No credit card required.',
+    title: 'QR Code IO Pricing: Free Plan + $9/mo Starter | 14-Day Trial',
+    description: 'Start free forever! Free plan includes 10 QR codes, basic QR types. Starter $9/mo: 100 QR codes, all types. Pro $29/mo: 500 QR codes. 14-day free trial. No credit card required.',
     type: 'website',
     url: 'https://theqrcode.io/pricing',
   },
@@ -37,7 +40,7 @@ export default async function Pricing() {
           faqs: [
             {
               question: "What's included in the free plan?",
-              answer: "The free plan includes 10 QR codes, 1,000 scans per month, basic analytics, and access to all QR code types (URL, Text, WiFi, Contact). Perfect for trying out our platform or small personal projects."
+              answer: "The free plan includes 10 QR codes, 1,000 scans per month, basic analytics, and access to basic QR code types (URL, Text, WiFi, Contact). Email and Menu QR codes are available on paid plans. Perfect for trying out our platform or small personal projects."
             },
             {
               question: "Can I upgrade or downgrade my plan anytime?",

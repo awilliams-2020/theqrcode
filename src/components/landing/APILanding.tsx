@@ -136,7 +136,7 @@ print(f"Top location: {analytics['topLocation']}")`
     'Real-time analytics API',
     'Custom branding and styling',
     'Multiple format exports (PNG, SVG, PDF)',
-    'Rate limiting: Up to 5000 req/hour (Pro), 10000 req/hour (Business)',
+    'Rate limiting: Up to 1,000 req/hour (Pro)',
     'API key authentication',
     'Real-time webhook notifications',
     'Secure webhook signature verification',

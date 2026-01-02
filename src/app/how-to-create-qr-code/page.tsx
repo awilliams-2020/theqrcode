@@ -3,9 +3,25 @@ import { QrCode, CheckCircle, ArrowRight, Download, Palette, BarChart3, Wifi, Ma
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'How to Create a QR Code - Step by Step Guide | TheQRCode.io',
-  description: 'Learn how to create QR codes in 3 simple steps. Complete tutorial with examples for URLs, WiFi, contacts, and text. Start creating QR codes today!',
-  keywords: ['how to create qr code', 'qr code tutorial', 'qr code guide', 'create qr code step by step', 'qr code instructions'],
+  title: 'How to Create a QR Code in 3 Steps [2025 Guide] | Free Tutorial',
+  description: 'How to create a QR code - Learn in 3 simple steps. Complete tutorial with examples for URLs, WiFi, contacts, and text. Free QR code generator included. No signup required. Start creating QR codes today!',
+  keywords: [
+    'how to create a qr code', 'how to create qr code', 'how to make a qr code',
+    'qr code tutorial', 'qr code guide', 'create qr code step by step', 
+    'qr code instructions', 'qr code generator tutorial', 'how to make qr code',
+    'free qr code tutorial', 'how to make a qr', 'how can i create a qr code',
+    'how to create a qr code for a menu in 5 steps', 'how to create online menu with qr code',
+    'how to start using a qr ordering system', 'how to add a qr menu to hotel rooms'
+  ],
+  openGraph: {
+    title: 'How to Create a QR Code in 3 Steps [Free Guide]',
+    description: 'Complete step-by-step tutorial on creating QR codes. Learn how to make QR codes for URLs, WiFi, contacts, and more. Free QR code generator included.',
+    type: 'website',
+    url: 'https://theqrcode.io/how-to-create-qr-code',
+  },
+  alternates: {
+    canonical: '/how-to-create-qr-code',
+  },
 }
 
 export default function HowToCreateQRCodePage() {

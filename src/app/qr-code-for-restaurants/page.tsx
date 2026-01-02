@@ -3,16 +3,26 @@ import RestaurantLanding from '@/components/landing/RestaurantLanding'
 import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'Restaurant Menu QR Code Generator | Update Prices Instantly - TheQRCode.io',
-  description: 'Restaurant menu QR code generator - Create dynamic QR codes for your restaurant menu, WiFi, and reviews. Update anytime without reprinting. Perfect for restaurants, cafes, and food businesses. Track customer engagement with analytics. Start free!',
+  title: 'Restaurant Menu QR Code Generator | Create QR Code Menu in 5 Minutes',
+  description: 'Restaurant menu QR code generator - Create QR codes for restaurant menus, WiFi, and reviews. Update menu prices instantly without reprinting. Perfect for restaurants, cafes, and food businesses. Free QR code generator. Track customer engagement with analytics. Start free!',
   keywords: [
+    'restaurant menu qr code', 'restaurant qr code menu', 'qr code restaurant menu',
     'restaurant qr code', 'menu qr code', 'digital menu qr', 'restaurant menu generator', 
     'cafe qr code', 'food menu qr', 'contactless menu', 'restaurant technology',
-    'food service qr', 'restaurant marketing', 'menu updates', 'contactless dining'
+    'food service qr', 'restaurant marketing', 'menu updates', 'contactless dining',
+    'qr codes menu', 'qr code menu restaurant', 'restaurants qr code menu',
+    'restaurant digital qr menu', 'qr menu for restaurants', 'scan qr code for menu',
+    'restaurant qr menu', 'menu qr code', 'qr code for restaurant menu',
+    'qr menu restaurant', 'restaurant qr code menus', 'qr code menus for restaurants',
+    'how to create a qr code for a menu in 5 steps', 'qr code scanner menu restaurant',
+    'qr code scan for restaurant menu', 'how to create online menu with qr code',
+    'digital restaurant menu qr code', 'qr menus for restaurants', 'qr code to menu',
+    'restaurant menu scan code', 'online menu qr code', 'qr restaurant menu',
+    'qr menu', 'qr menu for restaurant', 'menu qrcode', 'qrcode menu'
   ],
   openGraph: {
-    title: 'Restaurant QR Code Generator | Stop Printing New Menus',
-    description: 'Update your menu prices instantly without reprinting. Create QR codes for menus, WiFi, and reviews.',
+    title: 'Restaurant Menu QR Code Generator | Create QR Code Menu in 5 Minutes',
+    description: 'Create QR codes for restaurant menus, WiFi, and reviews. Update menu prices instantly without reprinting. Free QR code generator included.',
     type: 'website',
     url: 'https://theqrcode.io/qr-code-for-restaurants',
     images: [
@@ -65,7 +75,7 @@ export default function RestaurantLandingPage() {
             },
             {
               question: "How much does a restaurant QR code cost?",
-              answer: "Our free plan includes 10 QR codes perfect for small restaurants. Paid plans start at $9/month and include unlimited QR codes, advanced analytics, custom branding, and priority support. No setup fees or long-term contracts."
+              answer: "Our free plan includes 10 QR codes perfect for small restaurants. Paid plans start at $9/month (Starter: 100 QR codes) and $29/month (Pro: 500 QR codes), with advanced analytics, custom branding, and priority support. Business plan offers unlimited QR codes. No setup fees or long-term contracts."
             },
             {
               question: "Do customers need to download an app to scan?",

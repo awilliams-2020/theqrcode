@@ -3,16 +3,23 @@ import QRGeneratorLanding from '@/components/landing/QRGeneratorLanding'
 import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'Free QR Code Generator | Create Custom QR Codes Instantly - TheQRCode.io',
-  description: 'Generate free QR codes in seconds. Create custom QR codes for URLs, WiFi, contacts, and more. Track scans with advanced analytics. No credit card required. Start creating now!',
+  title: 'Free QR Code Generator | Create QR Codes Online - No Signup Required',
+  description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration, no account needed. Generate QR codes for URLs, WiFi, contacts, and more. Track scans with real-time analytics. Start creating free QR codes now!',
   keywords: [
-    'qr code generator', 'create qr code', 'qr code maker', 'free qr code', 
+    'free qr code generator', 'qr code generator', 'create qr code', 'qr code maker', 'free qr code', 
     'custom qr code', 'qr code creator', 'qr code builder', 'qr code tool',
-    'online qr generator', 'qr code online', 'qr code free', 'qr code maker online'
+    'online qr generator', 'qr code online', 'qr code free', 'qr code maker online',
+    'qr code with analytics', 'track qr code', 'qr code tracker',
+    'free qr code generator no registration', 'free qr code generator without registration',
+    'free qr code generator no account', 'qr code generator without registration',
+    'qr code generator without password', 'create qr code free', 'make qr code free',
+    'generate qr code', 'make qr code', 'create qr code generator free', 'free qr code maker',
+    'make qr codes free', 'how can i create a qr code', 'qr code generator best',
+    'best qr code generator', 'top qr code generator', 'what is the best qr code generator'
   ],
   openGraph: {
-    title: 'Free QR Code Generator | Create Custom QR Codes',
-    description: 'Generate free QR codes in seconds with advanced analytics tracking',
+    title: 'Free QR Code Generator | Create QR Codes Online - No Signup Required',
+    description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration needed. Generate QR codes for URLs, WiFi, contacts, and more.',
     type: 'website',
     url: 'https://theqrcode.io/qr-code-generator',
     images: [
@@ -26,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free QR Code Generator | Create Custom QR Codes',
-    description: 'Generate free QR codes in seconds with advanced analytics tracking',
+    title: 'Free QR Code Generator | Create QR Codes Online - No Signup',
+    description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration needed. Start creating free QR codes now!',
     images: ['https://theqrcode.io/og-generator'],
   },
   alternates: {
@@ -83,7 +90,7 @@ export default function QRGeneratorLandingPage() {
           faqs: [
             {
               question: "Is the QR code generator really free?",
-              answer: "Yes! Our QR code generator is completely free to use. You can create unlimited QR codes without signing up. For advanced features like analytics tracking and custom branding, we offer paid plans starting at $9/month."
+              answer: "Yes! Our QR code generator is free to use. The free plan includes 10 QR codes and 1,000 scans per month. For advanced features like analytics tracking, custom branding, and higher limits, we offer paid plans starting at $9/month."
             },
             {
               question: "What types of QR codes can I create?",

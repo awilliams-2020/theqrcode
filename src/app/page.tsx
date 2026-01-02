@@ -5,16 +5,18 @@ import LandingPage from '@/components/LandingPage'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'QR Code IO | QR Code Generator with Analytics - TheQRCode.io',
-  description: 'QR Code IO - Generate beautiful QR codes instantly. Track scans with advanced analytics. Free QR code generator for restaurants, events, WiFi, and more. No signup required.',
+  title: 'QR Code IO | Free QR Code Generator with Analytics - TheQRCode.io',
+  description: 'QR Code IO - Create custom QR codes in seconds. Track scans with real-time analytics, location data, and device insights. Free QR code generator for restaurants, events, WiFi, contact cards, and more. No signup required. Start free today!',
   keywords: [
     'qr code io', 'qr io', 'qrcode io', 'qr-code.io', 'qr code generator', 
     'qr code analytics', 'free qr code generator', 'qr code maker',
-    'restaurant qr code', 'event qr code', 'wifi qr code'
+    'qr code tracker', 'restaurant qr code', 'event qr code', 'wifi qr code',
+    'contact qr code', 'qr code creator', 'dynamic qr code', 'qr code with analytics',
+    'qr code i o', 'qrcodeio', 'io qr code', 'qr code.io', 'qr.io'
   ],
   openGraph: {
     title: 'QR Code IO | Free QR Code Generator with Analytics',
-    description: 'Generate beautiful QR codes instantly. Track performance with advanced analytics. Perfect for businesses, restaurants, and events.',
+    description: 'Create custom QR codes in seconds. Track performance with advanced analytics including location, device type, and scan timing. Perfect for businesses, restaurants, and events.',
     type: 'website',
     url: 'https://theqrcode.io',
   },

@@ -5,8 +5,8 @@ import BlogArticleSchema from '@/components/BlogArticleSchema'
 import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
-  title: 'Restaurant Menu QR Code Setup in 5 Minutes | TheQRCode.io',
-  description: 'Complete guide to setting up QR code menus for restaurants. Free QR code generator, step-by-step instructions, and best practices for contactless dining.',
+  title: 'Restaurant QR Code Menu Setup in 5 Minutes [2025 Guide] | Free & Easy',
+  description: '✅ Set up QR code menus for your restaurant in just 5 minutes. FREE QR code generator included. Step-by-step tutorial with screenshots. No tech skills required! Perfect for contactless dining. Start free today!',
   keywords: [
     'restaurant QR code menu',
     'QR code menu setup',
@@ -15,11 +15,16 @@ export const metadata: Metadata = {
     'digital menu QR code',
     'QR code for restaurants',
     'menu QR code setup guide',
-    'restaurant QR code tutorial'
+    'restaurant QR code tutorial',
+    'how to create restaurant QR code menu',
+    'free restaurant QR code',
+    'restaurant menu qr code',
+    'qr code restaurant menu',
+    'scan qr code for menu'
   ],
   openGraph: {
-    title: 'Restaurant Menu QR Code Setup in 5 Minutes',
-    description: 'Complete guide to setting up QR code menus for restaurants. Free QR code generator and step-by-step instructions.',
+    title: 'Restaurant QR Code Menu Setup in 5 Minutes [FREE Guide]',
+    description: '✅ Complete step-by-step guide with screenshots. Set up QR code menus in 5 minutes. FREE QR code generator included. No tech skills required! Perfect for contactless dining.',
     images: ['/og-restaurant-qr-menu.jpg'],
     type: 'article',
     publishedTime: '2024-01-25T00:00:00.000Z',

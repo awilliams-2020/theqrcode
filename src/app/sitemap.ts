@@ -10,36 +10,48 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const monthlyUpdate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // 1 month ago
   
   return [
-    // Main pages
+    // Main pages - Prioritized based on performance data
     {
       url: baseUrl,
       lastModified: recentUpdate,
       changeFrequency: 'daily',
-      priority: 1.0,
+      priority: 1.0, // High impressions (201), needs CTR improvement
     },
     {
       url: `${baseUrl}/pricing`,
       lastModified: weeklyUpdate,
       changeFrequency: 'weekly',
-      priority: 0.9,
+      priority: 0.95, // Good CTR (2.47%), position 16.83 - boost priority
     },
     {
-      url: `${baseUrl}/features`,
+      url: `${baseUrl}/about`,
       lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      changeFrequency: 'monthly',
+      priority: 0.9, // Excellent CTR (3.45%), position 8.84 - boost priority
     },
     {
       url: `${baseUrl}/qr-code-generator`,
       lastModified: recentUpdate,
       changeFrequency: 'daily',
-      priority: 0.95,
+      priority: 0.95, // High priority tool page, position 63.24 needs improvement
+    },
+    {
+      url: `${baseUrl}/features`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.85, // Good CTR (4%), position 7.84 - maintain
     },
     {
       url: `${baseUrl}/qr-code-api`,
       lastModified: weeklyUpdate,
       changeFrequency: 'weekly',
       priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/api`,
+      lastModified: weeklyUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.8, // Position 11.44 - good ranking
     },
     {
       url: `${baseUrl}/blog`,
@@ -52,12 +64,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: weeklyUpdate,
       changeFrequency: 'monthly',
       priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'monthly',
-      priority: 0.5,
     },
     {
       url: `${baseUrl}/contact`,
@@ -101,7 +107,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/qr-code-for-weddings`,
       lastModified: weeklyUpdate,
       changeFrequency: 'weekly',
-      priority: 0.9,
+      priority: 0.85, // Position 82.36 - needs improvement, but good CTR (4%)
     },
     {
       url: `${baseUrl}/qr-code-for-events`,
@@ -185,9 +191,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/wifi-qr-code-generator`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'weekly',
-      priority: 0.9,
+      priority: 0.85, // Position 80.25 - needs improvement
+    },
+    {
+      url: `${baseUrl}/how-to-create-qr-code`,
+      lastModified: recentUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.85, // Position 69.87 - needs improvement, but good CTR (4.35%)
     },
     {
       url: `${baseUrl}/qr-code-api`,
@@ -231,9 +243,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Blog posts
     {
       url: `${baseUrl}/blog/qr-code-best-practices`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.7, // Impressions (35), position 41.54 - boost priority
     },
     {
       url: `${baseUrl}/blog/qr-code-marketing-guide`,
@@ -249,9 +261,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/qr-code-event-marketing`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.7, // Impressions (40), position 72.15 - boost priority
     },
     {
       url: `${baseUrl}/blog/qr-code-restaurant-marketing`,
@@ -273,9 +285,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/qr-code-size-guide`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.7, // High impressions (111), position 20.51 - boost priority
     },
     {
       url: `${baseUrl}/blog/restaurant-qr-code-solutions-local`,
@@ -285,15 +297,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/best-qr-code-generators-2025`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.75, // High impressions (79), 0 clicks - needs CTR improvement
     },
     {
       url: `${baseUrl}/blog/do-qr-codes-expire`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.75, // High impressions (342), position 11.03 - boost priority
     },
     {
       url: `${baseUrl}/blog/qr-code-landing-page-best-practices`,
@@ -328,74 +340,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/qr-code-size-calculator-guide`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'weekly',
-      priority: 0.8,
+      priority: 0.8, // Excellent CTR (12.5%), position 13 - maintain high priority
     },
     {
       url: `${baseUrl}/blog/restaurant-qr-code-menu-setup-5-minutes`,
-      lastModified: new Date(),
+      lastModified: recentUpdate,
       changeFrequency: 'weekly',
-      priority: 0.8,
+      priority: 0.85, // Very high impressions (211), 0 clicks - critical for CTR improvement
     },
-    
-    // High-value tool pages
-    {
-      url: `${baseUrl}/qr-code-size-calculator`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/qr-code-readability-checker`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/qr-code-roi-calculator`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/qr-code-compliance-checker`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    
-    // Industry-specific landing pages (no local variations)
-    {
-      url: `${baseUrl}/restaurant-qr-code-solutions`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/real-estate-qr-code-marketing`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/retail-qr-code-strategies`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/healthcare-qr-code-solutions`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/education-qr-code-tools`,
-      lastModified: weeklyUpdate,
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
+
   ]
 }
 

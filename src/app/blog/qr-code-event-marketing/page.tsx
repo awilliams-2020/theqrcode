@@ -6,12 +6,21 @@ import BlogArticleSchema from '@/components/BlogArticleSchema'
 import RelatedContent from '@/components/RelatedContent'
 
 export const metadata: Metadata = {
-  title: 'Event Marketing with QR Codes: Registration & Networking',
-  description: 'Boost event attendance and engagement with strategic QR code implementation for registration, networking, and attendee tracking.',
-  keywords: ['QR code events', 'event marketing', 'event registration', 'QR code networking', 'event tracking'],
+  title: 'Event Marketing with QR Codes: Complete Guide to Registration & Networking [2025]',
+  description: 'Boost event attendance and engagement with strategic QR code implementation. Learn how to use QR codes for registration, networking, and attendee tracking. Free QR code generator included.',
+  keywords: [
+    'QR code events', 
+    'event marketing', 
+    'event registration', 
+    'QR code networking', 
+    'event tracking',
+    'qr code for events',
+    'event qr code generator',
+    'qr code event management'
+  ],
   openGraph: {
-    title: 'Event Marketing with QR Codes: Registration & Networking',
-    description: 'Boost event attendance and engagement with strategic QR code implementation for registration and networking.',
+    title: 'Event Marketing with QR Codes: Complete Guide to Registration & Networking',
+    description: 'Boost event attendance and engagement with strategic QR code implementation. Free QR code generator and step-by-step guide included.',
     type: 'article',
     publishedTime: '2023-12-28T00:00:00.000Z',
     modifiedTime: '2023-12-28T00:00:00.000Z',

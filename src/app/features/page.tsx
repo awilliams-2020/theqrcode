@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { QrCode, BarChart3, Zap, Shield, Palette, Download, Users, Globe, Smartphone, Wifi, Mail, User, Settings } from 'lucide-react'
+import { QrCode, BarChart3, Zap, Shield, Palette, Download, Users, Globe, Smartphone, Wifi, Mail, User, Settings, UtensilsCrossed } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Features - QR Code Generator with Advanced Analytics',
@@ -17,8 +17,8 @@ const features = [
   {
     icon: QrCode,
     title: 'Multiple QR Code Types',
-    description: 'Generate QR codes for URLs, WiFi networks, contact cards, text, and email addresses.',
-    details: ['URL QR codes', 'WiFi QR codes', 'Contact (vCard) QR codes', 'Text QR codes', 'Email QR codes'],
+    description: 'Generate QR codes for URLs, WiFi networks, contact cards, text, email addresses, and restaurant menus.',
+    details: ['URL QR codes', 'WiFi QR codes', 'Contact (vCard) QR codes', 'Text QR codes', 'Email QR codes', 'Menu QR codes'],
     available: 'All Plans'
   },
   {
@@ -121,6 +121,13 @@ const qrTypes = [
     description: 'Generate QR codes that display plain text when scanned.',
     useCases: ['Instructions', 'Messages', 'Notes', 'Information sharing'],
     available: 'All Plans'
+  },
+  {
+    icon: UtensilsCrossed,
+    title: 'Menu QR Codes',
+    description: 'Create QR codes that link to digital restaurant menus with customizable layouts.',
+    useCases: ['Restaurant menus', 'Cafe menus', 'Food trucks', 'Bar menus'],
+    available: 'Starter+'
   }
 ]
 

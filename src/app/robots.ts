@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         // Default allow all - only disallow specific paths
+        // Note: dev.theqrcode.io subdomain should be blocked via its own robots.txt or noindex meta tags
         disallow: [
           '/dashboard/',
           '/api/',

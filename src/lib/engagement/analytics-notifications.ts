@@ -265,6 +265,102 @@ export async function sendHourlyAnalyticsSummary(userId: string) {
 /**
  * Send daily analytics digest (both email and notification)
  */
+/**
+ * Get start and end of day in UTC for a given timezone
+ * Returns UTC timestamps that represent the start/end of "today" and "yesterday" in the user's timezone
+ */
+function getDayBoundsInUTC(timezone: string): { todayStart: Date; todayEnd: Date; yesterdayStart: Date; yesterdayEnd: Date } {
+  const now = new Date()
+  
+  // Get current date components in user's timezone
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  
+  const timeFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+  
+  const todayParts = dateFormatter.formatToParts(now)
+  const todayYear = parseInt(todayParts.find(p => p.type === 'year')!.value)
+  const todayMonth = parseInt(todayParts.find(p => p.type === 'month')!.value) - 1 // 0-indexed
+  const todayDay = parseInt(todayParts.find(p => p.type === 'day')!.value)
+  
+  // Get yesterday's date in user's timezone
+  const yesterdayDate = new Date(todayYear, todayMonth, todayDay)
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const yesterdayYear = yesterdayDate.getFullYear()
+  const yesterdayMonth = yesterdayDate.getMonth()
+  const yesterdayDay = yesterdayDate.getDate()
+  
+  /**
+   * Find the UTC time that corresponds to midnight (00:00:00) in the given timezone for a specific date
+   */
+  const getUTCForLocalMidnight = (year: number, month: number, day: number, tz: string): Date => {
+    // Use a reference point (noon UTC) to calculate the timezone offset
+    // This avoids DST edge cases at midnight
+    const noonUTC = new Date(Date.UTC(year, month, day, 12, 0, 0, 0))
+    
+    // Get what time noon UTC is in the user's timezone
+    const noonParts = timeFormatter.formatToParts(noonUTC)
+    const noonHour = parseInt(noonParts.find(p => p.type === 'hour')!.value)
+    const noonMinute = parseInt(noonParts.find(p => p.type === 'minute')!.value)
+    
+    // Calculate offset: if UTC noon shows as 07:00 in EST, then EST is UTC-5
+    // So EST midnight (00:00 EST) = UTC 05:00
+    // Offset = noonHour - 12 (but handle 24-hour format)
+    let offsetHours = noonHour - 12
+    if (offsetHours < -12) offsetHours += 24
+    if (offsetHours > 12) offsetHours -= 24
+    
+    // Now find the UTC time that shows as midnight in the timezone
+    // We'll search around the expected time
+    const expectedHour = 12 + offsetHours
+    let searchStart = expectedHour < 0 
+      ? new Date(Date.UTC(year, month, day - 1, 24 + expectedHour, 0, 0, 0))
+      : new Date(Date.UTC(year, month, day, expectedHour, 0, 0, 0))
+    
+    // Fine-tune by checking nearby hours
+    for (let hourOffset = -2; hourOffset <= 2; hourOffset++) {
+      const candidate = new Date(searchStart.getTime() + hourOffset * 60 * 60 * 1000)
+      const candidateParts = timeFormatter.formatToParts(candidate)
+      const candidateDateParts = dateFormatter.formatToParts(candidate)
+      const candidateDay = parseInt(candidateDateParts.find(p => p.type === 'day')!.value)
+      const candidateHour = parseInt(candidateParts.find(p => p.type === 'hour')!.value)
+      const candidateMinute = parseInt(candidateParts.find(p => p.type === 'minute')!.value)
+      const candidateSecond = parseInt(candidateParts.find(p => p.type === 'second')!.value)
+      
+      // Check if this is midnight in the timezone for the correct day
+      if (candidateDay === day && candidateHour === 0 && candidateMinute === 0 && candidateSecond === 0) {
+        return candidate
+      }
+    }
+    
+    // Fallback: use calculated offset
+    const midnightUTC = new Date(Date.UTC(year, month, day, 0, 0, 0, 0))
+    return new Date(midnightUTC.getTime() - (offsetHours * 60 + noonMinute) * 60 * 1000)
+  }
+  
+  const todayStartUTC = getUTCForLocalMidnight(todayYear, todayMonth, todayDay, timezone)
+  const todayEndUTC = new Date(todayStartUTC.getTime() + 24 * 60 * 60 * 1000 - 1)
+  const yesterdayStartUTC = getUTCForLocalMidnight(yesterdayYear, yesterdayMonth, yesterdayDay, timezone)
+  const yesterdayEndUTC = new Date(yesterdayStartUTC.getTime() + 24 * 60 * 60 * 1000 - 1)
+  
+  return {
+    todayStart: todayStartUTC,
+    todayEnd: todayEndUTC,
+    yesterdayStart: yesterdayStartUTC,
+    yesterdayEnd: yesterdayEndUTC,
+  }
+}
+
 export async function sendDailyAnalyticsDigest(userId: string) {
   try {
     // Get user info and check if they should receive emails
@@ -275,6 +371,7 @@ export async function sendDailyAnalyticsDigest(userId: string) {
         email: true,
         name: true,
         isDeleted: true,
+        timezone: true,
         subscription: {
           select: {
             plan: true,
@@ -297,22 +394,31 @@ export async function sendDailyAnalyticsDigest(userId: string) {
       return { sent: false, reason: 'User does not have analytics access (free plan)' }
     }
 
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000)
+    // Use user's timezone or default to UTC
+    const userTimezone = user.timezone || 'UTC'
     
-    // Get today's scans
+    // Get day bounds in UTC based on user's timezone
+    const { todayStart, todayEnd, yesterdayStart, yesterdayEnd } = getDayBoundsInUTC(userTimezone)
+    
+    // Get today's scans (in user's local timezone)
     const todayScans = await prisma.scan.count({
       where: {
         qrCode: { userId },
-        scannedAt: { gte: oneDayAgo }
+        scannedAt: { 
+          gte: todayStart,
+          lte: todayEnd
+        }
       }
     })
 
-    // Get yesterday's scans for comparison
+    // Get yesterday's scans for comparison (in user's local timezone)
     const yesterdayScans = await prisma.scan.count({
       where: {
         qrCode: { userId },
-        scannedAt: { gte: twoDaysAgo, lt: oneDayAgo }
+        scannedAt: { 
+          gte: yesterdayStart,
+          lte: yesterdayEnd
+        }
       }
     })
 
