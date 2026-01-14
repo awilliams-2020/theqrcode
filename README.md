@@ -7,14 +7,22 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)](https://www.postgresql.org/)
 
+> **For AI Assistants:** This is a production SaaS platform for QR code generation, analytics, and management. See [`docs/AI_ONBOARDING.md`](docs/AI_ONBOARDING.md) for development guide, [`docs/AI_PROMPT.md`](docs/AI_PROMPT.md) for quick reference, and [`.ai-metadata.json`](.ai-metadata.json) for structured metadata.
+
 A production-ready SaaS platform for generating, customizing, and tracking QR codes with comprehensive analytics, subscription management, and developer-friendly API access. Built with Next.js 15, PostgreSQL, Prisma, and Docker.
+
+**Also known as:** theqrcode-io, qr-code-platform, qr-code-saas
 
 ## 🎯 What This Project Does
 
-TheQRCode.io is a full-featured QR code management platform that enables businesses, marketers, and developers to:
-- **Generate** custom QR codes for URLs, WiFi networks, contact cards (vCard), email, text, and restaurant menus
+TheQRCode.io is a full-featured QR code generator and management platform that enables anyone to:
+- **Create** QR codes instantly - free QR code generator for URLs, WiFi networks, contact cards (vCard), email, text, and restaurant menus
+- **Customize** QR codes with colors, logos, frames, and branding options - make your QR code unique
 - **Track** QR code performance with real-time analytics including location, device type, and scan timing
-- **Customize** QR codes with colors, logos, frames, and branding options
+- **Update** dynamic QR codes without reprinting - change the destination anytime
+- **Share** QR codes easily - perfect for business cards, menus, websites, and social media
+
+For businesses, marketers, and developers:
 - **Manage** subscriptions with Stripe integration and tiered pricing plans
 - **Integrate** via RESTful API for programmatic QR code generation and management
 - **Automate** user engagement with email notifications, trial reminders, and usage insights
@@ -144,6 +152,14 @@ docker exec theqrcode nc -zv mail.redbudway.com 465
 
 ## 🚀 Use Cases
 
+### For Consumers
+- **Personal Use** - Create QR codes for your website, social media profiles, or contact information
+- **WiFi Sharing** - Generate WiFi QR codes to easily share your network password
+- **Contact Cards** - Create vCard QR codes for your business card
+- **Quick Links** - Generate QR codes for URLs to share offline
+- **Email QR Codes** - Create QR codes that open email with pre-filled subject and body
+- **Text QR Codes** - Share messages, notes, or instructions via QR code
+
 ### For Businesses
 - **Restaurants** - Digital menus, WiFi access, review collection
 - **Real Estate** - Property listings, open house information, contact sharing
@@ -270,4 +286,11 @@ Private - All rights reserved
 
 **Live Site:** https://theqrcode.io
 
-**Keywords:** QR code generator, QR code analytics, QR code API, dynamic QR codes, QR code tracking, QR code marketing, business QR codes, restaurant QR code, real estate QR code, event QR code, WiFi QR code, contact QR code, QR code SaaS, QR code platform
+**Keywords:** QR code generator, free QR code generator, QR code maker, create QR code, QR code creator, make QR code, QR code online, custom QR code, QR code generator with logo, QR code generator custom colors, QR code for business, QR code for restaurant, QR code menu, WiFi QR code, contact QR code, QR code tracking, QR code analytics, dynamic QR code, QR code scanner, QR code builder, QR code designer, QR code marketing, business QR codes, real estate QR code, event QR code, QR code SaaS, QR code platform, Next.js 15, PostgreSQL, Prisma, Stripe integration, SaaS platform, API integration, webhook, email automation, subscription management
+
+**AI Assistant Resources:**
+- 📖 [`docs/AI_ONBOARDING.md`](docs/AI_ONBOARDING.md) - Complete development guide for AI assistants
+- 🚀 [`docs/AI_PROMPT.md`](docs/AI_PROMPT.md) - Quick reference for understanding and recommending this project
+- 📋 [`.cursorrules`](.cursorrules) - Cursor IDE rules and patterns
+- 📁 [`.cursor/rules/`](.cursor/rules/) - Detailed development patterns
+- 📊 [`.ai-metadata.json`](.ai-metadata.json) - Structured project metadata for AI discovery

@@ -87,8 +87,9 @@ export default function BlogPost() {
         <div className="prose prose-lg max-w-none">
           <p className="text-xl text-gray-800 mb-8 leading-relaxed">
             The short answer: <strong>Static QR codes never expire</strong>, and <strong>dynamic QR codes don't expire either</strong>—they 
-            have scan limits based on your plan. However, if the service shuts down, dynamic codes will stop working. 
-            This comprehensive guide explains the difference and how to ensure your QR codes work forever.
+            have scan limits based on your plan, but codes continue working even when limits are exceeded (scans just aren't recorded). 
+            However, if the service shuts down, dynamic codes will stop working. This comprehensive guide explains the difference and 
+            how to ensure your QR codes work forever.
           </p>
 
           <div className="bg-green-50 p-6 rounded-lg mb-8">
@@ -98,7 +99,7 @@ export default function BlogPost() {
             </h3>
             <div className="space-y-2 text-gray-700">
               <p><strong>Static QR Codes:</strong> Never expire (permanent)</p>
-              <p><strong>Dynamic QR Codes:</strong> Don't expire, but have scan limits based on your plan</p>
+              <p><strong>Dynamic QR Codes:</strong> Don't expire; continue working when scan limits exceeded (scans just aren't recorded)</p>
               <p><strong>Physical Damage:</strong> Can make codes unscannable over time</p>
               <p><strong>Best Practice:</strong> Use static for permanent items, dynamic for campaigns</p>
             </div>
@@ -119,8 +120,8 @@ export default function BlogPost() {
                 Data is embedded directly in the QR code. The code <strong>never expires</strong> and works forever.
               </p>
               <div className="bg-white p-4 rounded-lg mb-4">
-                <p className="text-sm text-gray-600 mb-2"><strong>How it works:</strong></p>
-                <code className="text-xs block bg-gray-100 p-2 rounded">
+                <p className="text-sm text-gray-800 mb-2"><strong>How it works:</strong></p>
+                <code className="text-xs block bg-gray-100 p-2 rounded text-gray-900">
                   QR Code → Contains "https://example.com"
                 </code>
               </div>
@@ -139,14 +140,15 @@ export default function BlogPost() {
               </div>
               <p className="text-gray-700 mb-4">
                 Code contains a redirect URL. The destination can be changed. <strong>Has scan limits based on your plan</strong>—free 
-                plans typically have lower monthly scan limits, while paid plans offer higher limits.
+                plans typically have lower monthly scan limits, while paid plans offer higher limits. Codes continue working even 
+                when limits are exceeded; scans just aren't recorded in analytics.
               </p>
               <div className="bg-white p-4 rounded-lg mb-4">
-                <p className="text-sm text-gray-600 mb-2"><strong>How it works:</strong></p>
-                <code className="text-xs block bg-gray-100 p-2 rounded mb-1">
-                  QR Code → "https://qr.io/abc123"
+                <p className="text-sm text-gray-800 mb-2"><strong>How it works:</strong></p>
+                <code className="text-xs block bg-gray-100 p-2 rounded mb-1 text-gray-900">
+                  QR Code → "https://theqrcode.io/abc123"
                 </code>
-                <code className="text-xs block bg-gray-100 p-2 rounded">
+                <code className="text-xs block bg-gray-100 p-2 rounded text-gray-900">
                   Redirect → "https://your-website.com"
                 </code>
               </div>
@@ -154,7 +156,7 @@ export default function BlogPost() {
                 <li>✓ Track scans and analytics</li>
                 <li>✓ Change destination anytime</li>
                 <li>✓ A/B testing capability</li>
-                <li>⚠️ Scan limits based on plan (free plans have lower limits)</li>
+                <li>⚠️ Scan limits based on plan (codes work regardless; scans aren't recorded when limit exceeded)</li>
               </ul>
             </div>
           </div>
@@ -169,14 +171,16 @@ export default function BlogPost() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">1. You Exceed Your Scan Limit (Dynamic Codes)</h3>
               <p className="text-gray-700 mb-3">
                 Dynamic QR codes don't expire, but they have monthly scan limits based on your plan. If you exceed your plan's 
-                scan limit, scanning may be temporarily restricted until the limit resets or you upgrade.
+                scan limit, the QR codes continue working and redirecting users normally—scans just aren't recorded in your analytics 
+                until the limit resets or you upgrade.
               </p>
               <div className="bg-orange-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-700 mb-2"><strong>What happens:</strong></p>
                 <ul className="text-sm text-gray-700 space-y-1 ml-4">
                   <li>• Free plans typically have 1,000 scans per month</li>
                   <li>• Paid plans offer higher scan limits (10K-500K+ per month)</li>
-                  <li>• Codes continue working after limit resets</li>
+                  <li>• Codes continue working normally—scans just aren't tracked when limit is exceeded</li>
+                  <li>• Scan tracking resumes when limit resets or you upgrade</li>
                   <li>• You can upgrade to increase your scan limit</li>
                 </ul>
               </div>
@@ -330,7 +334,7 @@ export default function BlogPost() {
                 <tr>
                   <td className="border border-gray-300 px-4 py-3 text-gray-800 font-semibold">Expiration</td>
                   <td className="border border-gray-300 px-4 py-3 text-gray-800">Never (permanent)</td>
-                  <td className="border border-gray-300 px-4 py-3 text-gray-800">Never expire, but have scan limits</td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-800">Never expire; scans aren't recorded when limit exceeded</td>
                 </tr>
                 <tr>
                   <td className="border border-gray-300 px-4 py-3 text-gray-800 font-semibold">Cost</td>
@@ -432,13 +436,13 @@ export default function BlogPost() {
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold text-xl">1</span>
                 <div>
-                  <strong>Monitor your scan usage:</strong> Track monthly scans to avoid hitting plan limits
+                  <strong>Monitor your scan usage:</strong> Track monthly scans to ensure analytics continue recording (codes work regardless)
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-yellow-600 font-bold text-xl">2</span>
                 <div>
-                  <strong>Upgrade when needed:</strong> If you consistently hit limits, upgrade to a higher plan
+                  <strong>Upgrade when needed:</strong> If you consistently hit limits and want continuous analytics tracking, upgrade to a higher plan
                 </div>
               </li>
               <li className="flex items-start gap-2">
@@ -465,7 +469,8 @@ export default function BlogPost() {
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">What Happens When You Hit Scan Limits?</h2>
           
           <p className="text-gray-800 mb-6 leading-relaxed">
-            Dynamic QR codes don't expire, but if you exceed your plan's monthly scan limit, you may experience:
+            Dynamic QR codes don't expire, and they continue working even when you exceed your plan's monthly scan limit. 
+            The only difference is that scans aren't recorded in your analytics until the limit resets or you upgrade:
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 mb-8">
@@ -481,7 +486,8 @@ export default function BlogPost() {
               <AlertTriangle className="text-yellow-600 mb-2" size={24} />
               <h4 className="font-semibold text-gray-900 mb-2">Scan Limit Reached</h4>
               <p className="text-sm text-gray-700">
-                If you exceed your monthly scan limit, scanning may be restricted until the limit resets or you upgrade.
+                If you exceed your monthly scan limit, QR codes continue working normally—scans just aren't recorded 
+                in analytics until the limit resets or you upgrade.
               </p>
             </div>
 
@@ -501,7 +507,8 @@ export default function BlogPost() {
               <h4 className="font-semibold text-gray-900 mb-2">Do dynamic QR codes expire if I don't have a paid plan?</h4>
               <p className="text-sm text-gray-700">
                 No, dynamic QR codes don't expire. Free plans have monthly scan limits (typically 1,000 scans per month), 
-                but the codes themselves continue working. You can upgrade to increase your scan limit if needed.
+                but the codes themselves continue working normally even when the limit is exceeded—scans just aren't recorded 
+                in your analytics. You can upgrade to increase your scan limit if needed.
               </p>
             </div>
 
@@ -509,7 +516,8 @@ export default function BlogPost() {
               <h4 className="font-semibold text-gray-900 mb-2">How long do free QR codes last?</h4>
               <p className="text-sm text-gray-700">
                 Static QR codes from free generators last forever. Dynamic QR codes on free plans also don't expire—they 
-                have monthly scan limits that reset each month. The codes continue working indefinitely within your plan's limits.
+                have monthly scan limits that reset each month. The codes continue working indefinitely, even when scan limits 
+                are exceeded; scans just aren't recorded in analytics until the limit resets.
               </p>
             </div>
 
@@ -541,9 +549,10 @@ export default function BlogPost() {
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Conclusion</h2>
           <p className="text-gray-800 mb-8 leading-relaxed">
             <strong>Static QR codes never expire</strong> and are perfect for permanent applications. <strong>Dynamic QR codes 
-            also don't expire</strong> but have monthly scan limits based on your plan. Free plans offer lower limits, while 
-            paid plans provide higher limits. Choose based on your needs, and if you're investing in printed materials, always 
-            consider the long-term implications of your QR code strategy.
+            also don't expire</strong> and continue working even when monthly scan limits are exceeded—scans just aren't recorded 
+            in analytics until the limit resets or you upgrade. Free plans offer lower limits, while paid plans provide higher limits. 
+            Choose based on your needs, and if you're investing in printed materials, always consider the long-term implications 
+            of your QR code strategy.
           </p>
 
           <div className="bg-blue-50 p-6 rounded-lg mb-8">

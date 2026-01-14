@@ -39,12 +39,12 @@ export default function QRGeneratorLanding() {
   ]
 
   const qrTypes = [
-    { icon: QrCode, name: 'URL', description: 'Link to websites or landing pages' },
-    { icon: FileText, name: 'Plain Text', description: 'Any text content or message' },
-    { icon: Wifi, name: 'WiFi', description: 'Share network access instantly' },
-    { icon: User, name: 'vCard', description: 'Share contact information' },
-    { icon: Mail, name: 'Email', description: 'Pre-filled email messages' },
-    { icon: Utensils, name: 'Menu', description: 'Create digital restaurant menus with categories and items' },
+    { icon: QrCode, name: 'URL', description: 'Link to websites or landing pages', planRequired: null as 'free' | 'starter' | 'pro' | null },
+    { icon: FileText, name: 'Plain Text', description: 'Any text content or message', planRequired: null as 'free' | 'starter' | 'pro' | null },
+    { icon: Wifi, name: 'WiFi', description: 'Share network access instantly', planRequired: null as 'free' | 'starter' | 'pro' | null },
+    { icon: User, name: 'vCard', description: 'Share contact information', planRequired: null as 'free' | 'starter' | 'pro' | null },
+    { icon: Mail, name: 'Email', description: 'Pre-filled email messages', planRequired: 'starter' as 'free' | 'starter' | 'pro' | null },
+    { icon: Utensils, name: 'Menu', description: 'Create digital restaurant menus with categories and items', planRequired: 'pro' as 'free' | 'starter' | 'pro' | null },
   ]
 
   const benefits = [
@@ -108,7 +108,19 @@ export default function QRGeneratorLanding() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {qrTypes.map((type, index) => (
               <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200 hover:shadow-lg transition-shadow">
-                <type.icon className="h-12 w-12 text-blue-600 mb-4" />
+                <div className="flex items-start justify-between mb-4">
+                  <type.icon className="h-12 w-12 text-blue-600" />
+                  {type.planRequired === 'starter' && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                      Starter+
+                    </span>
+                  )}
+                  {type.planRequired === 'pro' && (
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+                      Pro+
+                    </span>
+                  )}
+                </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{type.name}</h3>
                 <p className="text-gray-600">{type.description}</p>
               </div>

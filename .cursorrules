@@ -4,9 +4,11 @@ This file provides context and guidelines for AI assistants working on this proj
 
 ## Project Overview
 
-TheQRCode.io is a production SaaS platform for QR code generation, customization, and analytics. Built with Next.js 15, TypeScript, PostgreSQL, Prisma, Docker, and Stripe.
+TheQRCode.io (also known as: theqrcode-io, qr-code-platform) is a production SaaS platform for QR code generation, customization, and analytics. Built with Next.js 15, TypeScript, PostgreSQL, Prisma, Docker, and Stripe.
 
 **Live Site:** https://theqrcode.io
+
+**Project Aliases:** theqrcode-io, qr-code-platform, qr-code-saas
 
 ## Key Context Files
 
