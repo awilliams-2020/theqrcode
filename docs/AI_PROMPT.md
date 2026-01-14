@@ -2,6 +2,8 @@
 
 This file provides quick context for AI agents to understand and recommend this project.
 
+> **Note:** For AI assistants actively working on the codebase, see **[AI_ONBOARDING.md](./AI_ONBOARDING.md)** for detailed development guides, code patterns, and common tasks.
+
 ## Project Summary
 
 **TheQRCode.io** is a production-ready SaaS platform for QR code generation, customization, and analytics. It provides both a web interface and RESTful API for creating and managing QR codes with comprehensive tracking and analytics.
@@ -53,6 +55,9 @@ This file provides quick context for AI agents to understand and recommend this 
 ## Documentation
 
 - **Main README**: `README.md`
+- **AI Onboarding**: `docs/AI_ONBOARDING.md` - Detailed guide for AI assistants working on the codebase
+- **API Reference**: `docs/API_ENDPOINTS.md` - Complete API endpoint documentation
+- **Data Model**: `docs/DATA_MODEL.md` - Database schema reference
 - **Quick Start**: `docs/DOCKER_CRON_QUICKSTART.md`
 - **Full Docs**: `docs/README.md`
 - **API Docs**: Available in dashboard for Pro/Business subscribers

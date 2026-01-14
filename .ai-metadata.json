@@ -98,8 +98,79 @@
     "readme": "README.md",
     "docs_directory": "docs/",
     "quick_start": "docs/DOCKER_CRON_QUICKSTART.md",
-    "api_docs": "Available in dashboard",
-    "deployment": "docs/DEPLOYMENT_CHECKLIST.md"
+    "api_docs": "docs/API_ENDPOINTS.md",
+    "data_model": "docs/DATA_MODEL.md",
+    "ai_onboarding": "docs/AI_ONBOARDING.md",
+    "ai_prompt": "docs/AI_PROMPT.md",
+    "deployment": "docs/DEPLOYMENT_CHECKLIST.md",
+    "cursor_rules": ".cursor/rules/",
+    "cursor_readme": ".cursor/README.md"
+  },
+  "api_endpoints": {
+    "authentication": [
+      "/api/auth/[...nextauth]",
+      "/api/auth/signup-password",
+      "/api/auth/signup-plan",
+      "/api/auth/forgot-password",
+      "/api/auth/reset-password",
+      "/api/auth/otp/send",
+      "/api/auth/otp/verify",
+      "/api/auth/verify-email"
+    ],
+    "qr_codes": [
+      "/api/qr-codes",
+      "/api/qr-codes/[id]",
+      "/api/track/[shortCode]",
+      "/api/qr-info/[shortCode]",
+      "/api/qr-image/[shortCode]"
+    ],
+    "analytics": [
+      "/api/analytics",
+      "/api/analytics/[qrCodeId]",
+      "/api/analytics/export",
+      "/api/analytics/notifications"
+    ],
+    "api_v1": [
+      "/api/v1/qr-codes",
+      "/api/v1/qr-codes/[id]",
+      "/api/v1/qr-codes/bulk",
+      "/api/v1/analytics",
+      "/api/v1/scans",
+      "/api/v1/api-keys",
+      "/api/v1/webhooks",
+      "/api/v1/share"
+    ],
+    "user": [
+      "/api/user/subscription",
+      "/api/user/timezone",
+      "/api/user/export-data",
+      "/api/user/delete-account"
+    ],
+    "stripe": [
+      "/api/stripe/checkout",
+      "/api/stripe/portal",
+      "/api/stripe/create-customer",
+      "/api/stripe/webhook"
+    ],
+    "notifications": [
+      "/api/notifications",
+      "/api/notifications/[id]"
+    ],
+    "cron": [
+      "/api/cron/daily",
+      "/api/cron/weekly",
+      "/api/cron/monthly",
+      "/api/cron/health-check"
+    ]
+  },
+  "data_models": {
+    "core": ["User", "QrCode", "Scan", "Subscription"],
+    "authentication": ["Account", "VerificationToken", "OtpToken", "PasswordResetToken", "EmailVerificationToken"],
+    "api_integration": ["ApiKey", "ApiUsage", "Webhook", "WebhookEvent"],
+    "engagement": ["QrShare", "Notification", "Announcement", "AnnouncementView", "EmailCampaign", "EmailLog"],
+    "feedback": ["Feedback"],
+    "monitoring": ["UptimeCheck", "DowntimeIncident"],
+    "security": ["TrialAbusePrevention"]
   },
   "keywords": [
     "qr-code-generator",

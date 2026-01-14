@@ -1,0 +1,126 @@
+# TheQRCode.io - Cursor IDE Rules
+
+This file provides context and guidelines for AI assistants working on this project.
+
+## Project Overview
+
+TheQRCode.io is a production SaaS platform for QR code generation, customization, and analytics. Built with Next.js 15, TypeScript, PostgreSQL, Prisma, Docker, and Stripe.
+
+**Live Site:** https://theqrcode.io
+
+## Key Context Files
+
+- **README.md** - Main project documentation
+- **.ai-metadata.json** - Structured project metadata
+- **docs/AI_PROMPT.md** - Quick reference for AI agents
+- **.cursor/rules/** - Detailed development patterns and guidelines
+- **prisma/schema.prisma** - Complete database schema
+
+## Architecture
+
+- **Framework:** Next.js 15 with App Router
+- **Language:** TypeScript (strict mode)
+- **Database:** PostgreSQL with Prisma ORM
+- **Auth:** NextAuth.js v4 with Google OAuth
+- **Payments:** Stripe integration
+- **Deployment:** Docker containerized
+- **Styling:** Tailwind CSS v4
+
+## Directory Structure
+
+```
+src/
+├── app/              # Next.js App Router (pages + API routes)
+│   ├── api/         # Backend API endpoints
+│   ├── dashboard/   # Protected dashboard pages
+│   └── [pages]/     # Public pages
+├── components/      # React components
+├── lib/             # Core libraries
+│   ├── engagement/  # Email automation system
+│   └── qr-generator*.ts  # QR code generation
+└── prisma/          # Database schema and migrations
+```
+
+## Important Patterns
+
+### API Routes
+- Located in `src/app/api/`
+- Use Next.js 13+ Route Handlers (GET, POST, PATCH, DELETE)
+- Always check authentication with `await auth()`
+- Validate input with Zod schemas
+- Return standardized JSON responses
+
+### Database Access
+- Use Prisma client from `@/lib/prisma`
+- Always include proper error handling
+- Use transactions for multi-step operations
+- Follow patterns in `.cursor/rules/database-prisma.mdc`
+
+### Component Development
+- Use TypeScript with strict typing
+- Follow patterns in `.cursor/rules/component-design.mdc`
+- Use Tailwind CSS for styling
+- Implement proper error boundaries
+
+## Common Tasks
+
+### Adding a New API Endpoint
+1. Create route file in `src/app/api/[endpoint]/route.ts`
+2. Implement HTTP methods (GET, POST, etc.)
+3. Add authentication check
+4. Validate input with Zod
+5. Use Prisma for database operations
+6. Return JSON response
+7. Add tests in `tests/` directory
+
+### Adding a New Database Model
+1. Update `prisma/schema.prisma`
+2. Run `npx prisma migrate dev`
+3. Generate Prisma client: `npx prisma generate`
+4. Update TypeScript types automatically
+
+### Adding a New Component
+1. Create component in `src/components/`
+2. Use TypeScript with proper types
+3. Follow component patterns from existing code
+4. Add to appropriate page/layout
+
+## Testing
+
+- API endpoints: `npm run test:api`
+- Components: `npm run test:components`
+- Full coverage: `npm run test:coverage`
+
+## Environment Variables
+
+Key variables (see `docs/ENV_SETUP.md` for full list):
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXTAUTH_SECRET` - NextAuth session secret
+- `NEXTAUTH_URL` - Application URL
+- `STRIPE_SECRET_KEY` - Stripe API key
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+
+## Quick Reference
+
+- **API Documentation:** See `docs/INTEGRATION_MAP.md` and API routes in `src/app/api/`
+- **Database Schema:** `prisma/schema.prisma`
+- **QR Code Types:** URL, WiFi, Contact (vCard), Email, Text, Restaurant Menu
+- **Subscription Plans:** Free, Starter ($9/mo), Pro ($29/mo), Business ($99/mo)
+
+## When Making Changes
+
+1. **Always** check existing patterns in `.cursor/rules/` directory
+2. **Always** run tests before committing
+3. **Always** update TypeScript types when changing schemas
+4. **Always** validate input with Zod schemas
+5. **Always** check authentication for protected routes
+6. **Always** handle errors gracefully with proper error messages
+
+## Common Issues
+
+- **Database connection:** Check `DATABASE_URL` env variable
+- **Authentication:** Verify `NEXTAUTH_SECRET` is set
+- **Stripe webhooks:** Ensure webhook secret matches Stripe dashboard
+- **Email sending:** Check SMTP configuration in env variables
+
+For detailed patterns and examples, see the `.cursor/rules/` directory.
