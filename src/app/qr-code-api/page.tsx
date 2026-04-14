@@ -376,15 +376,8 @@ export default function QRCodeAPIPage() {
                     <td className="px-6 py-4 text-gray-400">—</td>
                   </tr>
                   <tr className="bg-purple-50">
-                    <td className="px-6 py-4 font-semibold text-purple-900">Developer</td>
+                    <td className="px-6 py-4 font-semibold text-purple-900">Pro <span className="text-xs font-normal text-purple-600">$29/mo</span></td>
                     <td className="px-6 py-4 text-gray-600">5,000 req/hr</td>
-                    <td className="px-6 py-4 text-gray-600">API key</td>
-                    <td className="px-6 py-4"><CheckCircle className="h-4 w-4 text-green-500" /></td>
-                    <td className="px-6 py-4"><CheckCircle className="h-4 w-4 text-green-500" /></td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 font-semibold text-gray-900">Pro</td>
-                    <td className="px-6 py-4 text-gray-600">Unlimited</td>
                     <td className="px-6 py-4 text-gray-600">API key</td>
                     <td className="px-6 py-4"><CheckCircle className="h-4 w-4 text-green-500" /></td>
                     <td className="px-6 py-4"><CheckCircle className="h-4 w-4 text-green-500" /></td>

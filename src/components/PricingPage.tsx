@@ -50,7 +50,7 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     price: 29,
-    description: 'Best for growing companies',
+    description: 'For developers and growing companies',
     features: [
       '500 QR codes',
       '500,000 scans per month',
@@ -58,7 +58,10 @@ const plans = [
       'All QR code types',
       'Advanced customization',
       'Priority support',
-      'API access',
+      'REST API access — 5,000 req/hr',
+      'API key authentication',
+      'MCP server (Claude, Cursor)',
+      'Bulk generation endpoint',
     ],
     buttonText: 'Subscribe',
     featured: true,
@@ -123,10 +126,16 @@ const featureCategories = [
     ]
   },
   {
-    name: 'API & Integrations',
+    name: 'API & Developer',
     icon: Code,
     features: [
-      { name: 'REST API access', free: false, starter: false, pro: true },
+      { name: 'Public API (no auth)', free: '100 req/hr', starter: '100 req/hr', pro: '100 req/hr' },
+      { name: 'Authenticated REST API', free: false, starter: false, pro: true },
+      { name: 'API rate limit (authenticated)', free: false, starter: false, pro: '5,000 req/hr' },
+      { name: 'API key management', free: false, starter: false, pro: true },
+      { name: 'MCP server (Claude, Cursor, AI agents)', free: false, starter: false, pro: true },
+      { name: 'Bulk generation endpoint', free: false, starter: false, pro: true },
+      { name: 'OpenAPI spec', free: true, starter: true, pro: true },
     ]
   },
 ]
@@ -400,12 +409,74 @@ export default function PricingPage({ session }: PricingPageProps) {
         </div>
       </div>
 
+      {/* Developer callout */}
+      <div className="bg-gray-950 py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 text-purple-400 text-sm font-mono mb-3">
+                <Code className="h-4 w-4" />
+                <span>For developers</span>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Everything you need to build with QR codes
+              </h2>
+              <p className="text-gray-400 text-sm mb-4">
+                Pro unlocks the authenticated REST API (5,000 req/hr), API key management,
+                the MCP server for Claude and Cursor, and the bulk endpoint. The public API
+                (100 req/hr, no auth) stays free on all plans.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a href="/mcp" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
+                  MCP setup guide →
+                </a>
+                <a href="/qr-code-api" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
+                  REST API docs →
+                </a>
+                <a href="/ai-agents" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
+                  AI agent integration →
+                </a>
+              </div>
+            </div>
+            <div className="shrink-0 bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm font-mono">
+              <p className="text-gray-500 text-xs mb-3">Public API — free, no auth</p>
+              <p className="text-green-400 mb-4">POST /api/public/qr-codes</p>
+              <p className="text-gray-500 text-xs mb-3">Authenticated API — Pro</p>
+              <p className="text-green-400">POST /api/v1/qr-codes</p>
+              <p className="text-gray-500 mt-1 text-xs">Authorization: Bearer &lt;api-key&gt;</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* FAQ Section */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
           Frequently Asked Questions
         </h2>
         <div className="space-y-6">
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h3 className="font-semibold text-lg mb-2 text-gray-900">
+              Can I use the API without a paid plan?
+            </h3>
+            <p className="text-gray-600">
+              Yes. The public API at <code className="bg-gray-100 px-1 rounded text-sm">/api/public/qr-codes</code> requires
+              no auth and is free on all plans at 100 requests/hour per IP. The Pro plan adds
+              an authenticated endpoint with 5,000 req/hr, API key management, MCP server access,
+              and the bulk endpoint.
+            </p>
+          </div>
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <h3 className="font-semibold text-lg mb-2 text-gray-900">
+              How do I connect Claude or Cursor to theqrcode.io?
+            </h3>
+            <p className="text-gray-600">
+              Add <code className="bg-gray-100 px-1 rounded text-sm">https://mcp.theqrcode.io/mcp</code> as an MCP server
+              in your client config. The MCP server is available on the Pro plan. See the{' '}
+              <a href="/mcp" className="text-blue-600 hover:underline">MCP setup guide</a> for
+              step-by-step instructions for Claude Desktop and Cursor.
+            </p>
+          </div>
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h3 className="font-semibold text-lg mb-2 text-gray-900">
               Can I change plans later?
