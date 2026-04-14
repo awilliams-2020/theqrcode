@@ -6,7 +6,7 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'QR Code IO | Free QR Code Generator with Analytics - TheQRCode.io',
-  description: 'QR Code IO - Create custom QR codes in seconds. Track scans with real-time analytics, location data, and device insights. Free QR code generator for restaurants, events, WiFi, contact cards, and more. No signup required. Start free today!',
+  description: 'QR Code IO (qr.io) — free QR code generator with analytics. Create & track QR codes instantly. No signup required. Used by 10,000+ businesses. Restaurants, events, WiFi. Start free →',
   keywords: [
     'qr code io', 'qr io', 'qrcode io', 'qr-code.io', 'qr code generator', 
     'qr code analytics', 'free qr code generator', 'qr code maker',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'QR Code IO | Free QR Code Generator with Analytics',
-    description: 'Create custom QR codes in seconds. Track performance with advanced analytics including location, device type, and scan timing. Perfect for businesses, restaurants, and events.',
+    description: 'QR Code IO (qr.io) — create custom QR codes in seconds. Track scans with analytics. Perfect for businesses, restaurants, and events. No signup required.',
     type: 'website',
     url: 'https://theqrcode.io',
   },

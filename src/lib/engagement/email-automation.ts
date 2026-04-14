@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { createTransporter, createEmailOptions } from '../email'
 import { emailTemplates } from './email-templates'
 import { PLAN_LIMITS } from '../constants'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
@@ -60,7 +61,7 @@ export async function sendEmailCampaign(campaignId: string) {
 
       sentCount++
     } catch (error) {
-      console.error(`Failed to send email to ${user.email}:`, error)
+      logger.logError(error as Error, 'NOTIFICATION', 'Failed to send email', { email: user.email })
       
       await prisma.emailLog.create({
         data: {
@@ -135,7 +136,6 @@ async function getTargetAudience(targetAudience: string) {
 
     case 'starter':
     case 'pro':
-    case 'business':
       return prisma.user.findMany({
         where: {
           isDeleted: false,
@@ -149,8 +149,27 @@ async function getTargetAudience(targetAudience: string) {
   }
 }
 
+/** Optional overrides so caller can pass just-applied plan/trial (e.g. after verify-email) and avoid race with DB read. */
+export type WelcomeEmailOverrides = {
+  plan: string
+  trialDays?: number
+  isOnTrial?: boolean
+  qrCodeLimit?: string
+}
+
+/** Returns true if user has already received the welcome email (used to avoid duplicates for OAuth flow). */
+export async function hasReceivedWelcomeEmail(userId: string): Promise<boolean> {
+  const existing = await prisma.emailLog.findFirst({
+    where: {
+      userId,
+      subject: emailTemplates.welcome.subject,
+    },
+  })
+  return !!existing
+}
+
 // Send welcome email to new user
-export async function sendWelcomeEmail(userId: string) {
+export async function sendWelcomeEmail(userId: string, overrides?: WelcomeEmailOverrides) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { subscription: true },
@@ -158,15 +177,14 @@ export async function sendWelcomeEmail(userId: string) {
 
   if (!user || !user.email) return
 
-  const isOnTrial = user.subscription?.trialEndsAt && user.subscription.trialEndsAt > new Date()
-  const trialDays = isOnTrial && user.subscription?.trialEndsAt
+  const currentPlan = overrides?.plan ?? user.subscription?.plan ?? 'free'
+  const isOnTrial = overrides?.isOnTrial ?? !!(user.subscription?.trialEndsAt && user.subscription.trialEndsAt > new Date())
+  const trialDays = overrides?.trialDays ?? (isOnTrial && user.subscription?.trialEndsAt
     ? Math.ceil((user.subscription.trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : undefined
-
-  // Get plan limits for QR codes
-  const currentPlan = user.subscription?.plan || 'free'
+    : undefined)
   const limits = PLAN_LIMITS[currentPlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.free
-  const qrCodeLimit = limits.qrCodes === -1 ? 'unlimited' : limits.qrCodes.toLocaleString()
+  const qrCodesNum = (limits as { qrCodes: number }).qrCodes
+  const qrCodeLimit = overrides?.qrCodeLimit ?? (qrCodesNum === -1 ? 'unlimited' : qrCodesNum.toLocaleString())
 
   const transporter = createTransporter()
   
@@ -277,31 +295,31 @@ export async function sendMonthlyInsights() {
 
   const transporter = createTransporter()
   const now = new Date()
-  const month = now.toLocaleDateString('en-US', { month: 'long' })
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+  const month = lastMonthStart.toLocaleDateString('en-US', { month: 'long' })
 
   for (const user of users) {
     // Filter to only active (non-deleted) QR codes
     const activeQrCodes = user.qrCodes.filter(qr => !qr.isDeleted)
-    
+
     if (!user.email || activeQrCodes.length === 0) continue
 
     const qrCodeIds = activeQrCodes.map(qr => qr.id)
     const scanCount = await prisma.scan.count({
       where: {
         qrCodeId: { in: qrCodeIds },
-        scannedAt: {
-          gte: new Date(now.getFullYear(), now.getMonth(), 1),
-        },
+        scannedAt: { gte: lastMonthStart, lte: lastMonthEnd },
       },
     })
 
-    // Get last month's scan count for growth calculation
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+    // Get the month before last's scan count for growth calculation
+    const twoMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+    const twoMonthsAgoEnd = new Date(now.getFullYear(), now.getMonth() - 1, 0)
     const lastMonthScans = await prisma.scan.count({
       where: {
         qrCodeId: { in: qrCodeIds },
-        scannedAt: { gte: lastMonthStart, lte: lastMonthEnd },
+        scannedAt: { gte: twoMonthsAgoStart, lte: twoMonthsAgoEnd },
       },
     })
 
@@ -405,7 +423,7 @@ export async function sendTrialExpiredEmail(userId: string, previousPlan: string
       },
     })
   } catch (error) {
-    console.error(`Failed to send trial expired email to ${user.email}:`, error)
+    logger.logError(error as Error, 'NOTIFICATION', 'Failed to send trial expired email', { userId: user.id, email: user.email })
     
     await prisma.emailLog.create({
       data: {
@@ -589,9 +607,9 @@ export async function sendInactiveUserDeletionWarnings() {
         },
       })
 
-      console.log(`✓ Inactive user warning sent to ${user.email} (${daysUntilDeletion} days until deletion)`)
+      logger.info('NOTIFICATION', 'Inactive user warning sent', { userId: user.id, email: user.email, daysUntilDeletion })
     } catch (error) {
-      console.error(`Failed to send inactive user warning to ${user.email}:`, error)
+      logger.logError(error as Error, 'NOTIFICATION', 'Failed to send inactive user warning', { userId: user.id, email: user.email })
       
       await prisma.emailLog.create({
         data: {

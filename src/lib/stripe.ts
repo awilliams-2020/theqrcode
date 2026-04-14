@@ -20,11 +20,6 @@ export const STRIPE_PLANS = {
     name: 'Pro',
     price: 29,
   },
-  business: {
-    priceId: process.env.STRIPE_BUSINESS_PRICE_ID || 'price_business',
-    name: 'Business',
-    price: 99,
-  },
 } as const
 
 export type StripePlan = keyof typeof STRIPE_PLANS
@@ -62,6 +57,26 @@ export async function createStripeCustomer({
 }
 
 /**
+ * Delete a Stripe customer. No-op if Stripe is not configured or customerId is empty.
+ * Ignores 404 (customer already deleted or not found).
+ */
+export async function deleteStripeCustomer(customerId: string | null | undefined): Promise<void> {
+  if (!customerId?.trim()) return
+  if (!stripe) return
+
+  try {
+    await stripe.customers.del(customerId)
+  } catch (error: unknown) {
+    const err = error as { code?: string }
+    if (err?.code === 'resource_missing_no_such_customer') {
+      return // Already deleted or never existed
+    }
+    console.error('Error deleting Stripe customer:', error)
+    throw error
+  }
+}
+
+/**
  * Create a Stripe checkout session for subscription
  */
 export async function createCheckoutSession({
@@ -71,6 +86,7 @@ export async function createCheckoutSession({
   successUrl,
   cancelUrl,
   customerId,
+  gclid,
 }: {
   userId: string
   userEmail: string
@@ -78,6 +94,7 @@ export async function createCheckoutSession({
   successUrl: string
   cancelUrl: string
   customerId?: string
+  gclid?: string
 }) {
   if (!stripe) {
     throw new Error('Stripe is not configured. Please check your STRIPE_SECRET_KEY environment variable.')
@@ -104,6 +121,7 @@ export async function createCheckoutSession({
       metadata: {
         userId,
         plan,
+        ...(gclid && { gclid }),
       },
       subscription_data: {
         metadata: {

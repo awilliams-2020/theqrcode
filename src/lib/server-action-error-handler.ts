@@ -4,7 +4,6 @@
  */
 
 import { logger } from './logger'
-import { ServerActionRateLimiter } from './server-action-rate-limiter'
 
 interface ServerActionErrorContext {
   ipAddress?: string
@@ -32,23 +31,6 @@ export function logServerActionError(
   
   // Determine if this is a probing attempt (invalid action ID)
   const isProbing = actionId === 'x' || actionId === 'unknown' || !actionId || actionId.length < 8
-  
-  // Apply strict rate limiting for probing attempts
-  if (isProbing && context.ipAddress) {
-    const rateLimitResult = ServerActionRateLimiter.checkStrictRateLimit(context.ipAddress)
-    
-    if (!rateLimitResult.allowed) {
-      logger.warn('SERVER-ACTION', 'Server Action probing rate limit exceeded', {
-        ipAddress: context.ipAddress,
-        userAgent: context.userAgent,
-        actionId: actionId || 'unknown',
-        pathname: context.pathname,
-        retryAfter: rateLimitResult.retryAfter,
-        isProbing: true
-      })
-      return
-    }
-  }
   
   // Log the error with full context
   logger.error('SERVER-ACTION', `Server Action error: ${errorMessage}`, {

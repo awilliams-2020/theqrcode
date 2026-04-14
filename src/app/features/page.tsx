@@ -111,7 +111,7 @@ const qrTypes = [
   {
     icon: Mail,
     title: 'Email QR Codes',
-    description: 'Generate QR codes that open email clients with pre-filled information.',
+    description: 'Generate QR codes for email addresses.',
     useCases: ['Contact forms', 'Newsletter signups', 'Support requests', 'Feedback collection'],
     available: 'Starter+'
   },

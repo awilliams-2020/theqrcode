@@ -1,7 +1,5 @@
-'use client'
-
 interface StructuredDataProps {
-  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage' | 'BreadcrumbList' | 'Product' | 'Service' | 'Article' | 'HowTo' | 'TechArticle' | 'Course'
+  type: 'Organization' | 'WebSite' | 'SoftwareApplication' | 'FAQPage' | 'BreadcrumbList' | 'Product' | 'Service' | 'Article' | 'HowTo' | 'TechArticle' | 'Course' | 'WebAPI'
   data: any
 }
 
@@ -44,7 +42,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "description": "Professional QR code generator with advanced analytics and tracking capabilities.",
           "url": "https://theqrcode.io",
           "screenshot": "https://theqrcode.io/og",
-          "dateModified": new Date().toISOString().split('T')[0],
+          "dateModified": "2025-01-01",
           "author": {
             "@type": "Organization",
             "name": "TheQRCode.io"
@@ -187,8 +185,8 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
               "url": "https://theqrcode.io/logo.png"
             }
           },
-          "datePublished": data.datePublished || new Date().toISOString(),
-          "dateModified": data.dateModified || new Date().toISOString(),
+          "datePublished": data.datePublished || "2025-01-01",
+          "dateModified": data.dateModified || "2025-01-01",
           "image": data.image || "https://theqrcode.io/og",
           "url": data.url || "https://theqrcode.io",
           "wordCount": data.wordCount || 1000,
@@ -225,6 +223,51 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             "priceCurrency": "USD",
             "availability": "https://schema.org/InStock"
           },
+          ...data
+        }
+      
+      case 'WebAPI':
+        return {
+          "@context": "https://schema.org",
+          "@type": "WebAPI",
+          "name": data.name || "TheQRCode.io Public API",
+          "description": data.description || "Generate QR codes instantly without authentication. Perfect for AI assistants and automated integrations.",
+          "documentation": data.documentation || "https://theqrcode.io/api/public/qr-codes",
+          "url": data.url || "https://theqrcode.io/api/public/qr-codes",
+          "termsOfService": "https://theqrcode.io/terms",
+          "provider": {
+            "@type": "Organization",
+            "name": "TheQRCode.io",
+            "url": "https://theqrcode.io",
+            "logo": "https://theqrcode.io/logo.png"
+          },
+          "apiVersion": data.apiVersion || "1.0.0",
+          "authentication": "None",
+          "accessMode": "public",
+          "accessModeSufficient": "public",
+          "isAccessibleForFree": true,
+          "usageInfo": "Rate limited to 100 requests per hour per IP address. No authentication required. Supports URL, WiFi, Contact (vCard), Text, and Email QR codes.",
+          "serviceType": "QR Code Generation",
+          "areaServed": {
+            "@type": "Place",
+            "name": "Worldwide"
+          },
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Any",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "softwareVersion": data.apiVersion || "1.0.0",
+          "releaseNotes": "Public API for AI assistants to generate QR codes without user authentication.",
+          "featureList": [
+            "Generate URL QR codes",
+            "Generate WiFi QR codes",
+            "Generate Contact (vCard) QR codes",
+            "Generate Text QR codes",
+            "Generate Email QR codes",
+            "Custom QR code styling",
+            "Shareable image URLs",
+            "No authentication required"
+          ],
+          "screenshot": "https://theqrcode.io/og",
           ...data
         }
       

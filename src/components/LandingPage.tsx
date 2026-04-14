@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { QrCode, BarChart3, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
-import Script from 'next/script'
 import { trackSignup, trackLandingPage } from '@/lib/matomo-tracking'
 import PublicQRGenerator from './PublicQRGenerator'
 
@@ -62,30 +61,11 @@ export default function LandingPage() {
       features: ['500 QR codes', '500,000 scans per month', 'Real-time analytics', 'All QR code types', 'Advanced customization', 'Priority support', 'API access'],
       cta: 'Subscribe',
       popular: true
-    },
-    {
-      name: 'Business',
-      price: '$99',
-      period: 'per month',
-      description: 'For large enterprises',
-      features: ['Unlimited QR codes', 'Unlimited scans', 'Enterprise analytics', 'All QR code types', 'White label options', '24/7 support', 'Full API access', 'Custom integrations'],
-      cta: 'Subscribe',
-      popular: false
     }
   ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Google Analytics Conversion Tracking for HomePage */}
-      <Script id="google-conversion-tracking" strategy="afterInteractive">
-        {`
-          gtag('event', 'conversion', {
-              'send_to': 'AW-584884144/bqVLCNXV96obELC_8pYC',
-              'value': 1.0,
-              'currency': 'USD'
-          });
-        `}
-      </Script>
       {/* Hero Section with Generator */}
       <section className="px-4 py-12 md:py-20">
         <div className="max-w-7xl mx-auto">
@@ -161,7 +141,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {pricingPlans.filter(p => p.name !== 'Business').map((plan, index) => (
+            {pricingPlans.map((plan, index) => (
               <div
                 key={index}
                 className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-200 hover:scale-105 ${
@@ -228,6 +208,77 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Internal Links Section for SEO */}
+      <section className="px-4 py-16 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Popular Resources
+            </h2>
+            <p className="text-lg text-gray-600">
+              Explore our guides, tools, and resources
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* High-Value Pages */}
+            <Link 
+              href="/pricing" 
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-blue-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Pricing Plans</h3>
+              <p className="text-gray-600 mb-4">Compare our free and paid plans. Start free forever or upgrade for advanced features.</p>
+              <span className="text-blue-600 font-medium">View Pricing →</span>
+            </Link>
+
+            <Link 
+              href="/qr-code-generator" 
+              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-green-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Free QR Code Generator</h3>
+              <p className="text-gray-600 mb-4">Create custom QR codes instantly. No signup required. Perfect for URLs, WiFi, contacts, and more.</p>
+              <span className="text-green-600 font-medium">Generate QR Code →</span>
+            </Link>
+
+            <Link 
+              href="/blog/do-qr-codes-expire" 
+              className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-orange-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Do QR Codes Expire?</h3>
+              <p className="text-gray-600 mb-4">Learn if QR codes expire and how to create permanent codes that last forever.</p>
+              <span className="text-orange-600 font-medium">Read Guide →</span>
+            </Link>
+
+            <Link 
+              href="/blog/restaurant-qr-code-menu-setup-5-minutes" 
+              className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-red-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Restaurant QR Code Menu Setup</h3>
+              <p className="text-gray-600 mb-4">Set up QR code menus for your restaurant in just 5 minutes. Free guide with step-by-step instructions.</p>
+              <span className="text-red-600 font-medium">Learn More →</span>
+            </Link>
+
+            <Link 
+              href="/qr-code-for-restaurants" 
+              className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-purple-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">QR Codes for Restaurants</h3>
+              <p className="text-gray-600 mb-4">Complete guide to using QR codes in restaurants for menus, WiFi, and contactless dining.</p>
+              <span className="text-purple-600 font-medium">Explore Solutions →</span>
+            </Link>
+
+            <Link 
+              href="/api" 
+              className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-6 hover:shadow-lg transition-shadow border border-gray-100"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">API Documentation</h3>
+              <p className="text-gray-600 mb-4">Integrate QR code generation into your applications with our comprehensive REST API.</p>
+              <span className="text-gray-600 font-medium">View API Docs →</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="px-4 py-16 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto">
@@ -265,6 +316,11 @@ export default function LandingPage() {
                 <li>
                   <Link href="/api" className="text-gray-400 hover:text-white transition-colors">
                     API Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/for-ai-assistants" className="text-gray-400 hover:text-white transition-colors">
+                    For AI Assistants
                   </Link>
                 </li>
               </ul>

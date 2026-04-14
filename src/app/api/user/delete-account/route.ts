@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
+import { deleteStripeCustomer } from '@/lib/stripe'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -13,21 +15,28 @@ export async function DELETE(request: NextRequest) {
 
     const userId = session.user.id
 
+    // Capture Stripe customer ID before transaction (so we can delete in Stripe after DB is updated)
+    const subscriptionBefore = await prisma.subscription.findUnique({
+      where: { userId },
+      select: { stripeCustomerId: true },
+    })
+    const stripeCustomerIdToDelete = subscriptionBefore?.stripeCustomerId ?? null
+
     // Perform GDPR-compliant data anonymization (Hybrid Approach)
     await prisma.$transaction(async (tx) => {
       // 1. Check if user had a trial BEFORE we modify the subscription
       // This must be done first to capture the trialEndsAt value before it's nullified
       const userWithSubscription = await tx.user.findUnique({
         where: { id: userId },
-        select: { 
+        select: {
           email: true,
           subscription: {
             select: {
               trialEndsAt: true,
-              status: true
-            }
-          }
-        }
+              status: true,
+            },
+          },
+        },
       })
       
       // Only add to trial abuse prevention if user actually had a trial
@@ -56,23 +65,18 @@ export async function DELETE(request: NextRequest) {
           stripeSubscriptionId: null,
           stripePriceId: null,
           stripeCurrentPeriodEnd: null,
-          status: 'cancelled', // Mark as cancelled, not active
-          trialEndsAt: null
+          status: 'canceled',
+          trialEndsAt: null,
           // NOTE: We intentionally keep the 'plan' field unchanged for churn analytics
-        }
+        },
       })
 
-      // 5. DELETE authentication sessions (no personal data to anonymize)
-      await tx.session.deleteMany({
-        where: { userId: userId }
-      })
-
-      // 6. DELETE OAuth account data (tokens, etc.)
+      // 5. DELETE OAuth account data (tokens, etc.)
       await tx.account.deleteMany({
         where: { userId: userId }
       })
       
-      // 7. Track for trial abuse prevention if user had a trial
+      // 6. Track for trial abuse prevention if user had a trial
       if (hadTrial) {
         // Create hash of email for trial abuse prevention (GDPR-compliant)
         // Normalize email to prevent duplicate hashes from case/whitespace differences
@@ -92,7 +96,7 @@ export async function DELETE(request: NextRequest) {
         })
       }
       
-      // 8. Anonymize user record
+      // 7. Anonymize user record
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -106,14 +110,24 @@ export async function DELETE(request: NextRequest) {
       })
     })
 
+    // Delete Stripe customer after DB is updated
+    if (stripeCustomerIdToDelete) {
+      try {
+        await deleteStripeCustomer(stripeCustomerIdToDelete)
+        logger.info('AUTH', 'Stripe customer deleted', { userId })
+      } catch (stripeErr) {
+        logger.logError(stripeErr as Error, 'AUTH', 'Stripe customer delete failed (subscription already cleared)', { userId })
+        // Don't fail the request; our DB is already consistent
+      }
+    }
 
-    console.log('User account GDPR-compliant deletion completed:', userId)
+    logger.info('AUTH', 'User account GDPR-compliant deletion completed', { userId })
 
     return NextResponse.json({ 
       message: 'Account and all personal data deleted successfully' 
     })
   } catch (error) {
-    console.error('Error deleting account:', error)
+    logger.logError(error as Error, 'AUTH', 'Error deleting account')
     return NextResponse.json(
       { error: 'Failed to delete account' },
       { status: 500 }

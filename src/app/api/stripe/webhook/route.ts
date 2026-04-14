@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import * as crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { constructWebhookEvent } from '@/lib/stripe'
 import Stripe from 'stripe'
 import { trackSubscription } from '@/lib/matomo-tracking'
 import { captureException } from '@/lib/sentry'
+import { uploadClickConversion } from '@/lib/google-ads'
+import { logger } from '@/lib/logger'
+import { calculateTrialEndDate } from '@/lib/trial'
 
 // Disable body parsing, need raw body for webhook signature verification
 export const runtime = 'nodejs'
@@ -21,7 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  console.log('[WEBHOOK] Received webhook request at', new Date().toISOString())
+    logger.info('WEBHOOK', 'Received webhook request', { at: new Date().toISOString() })
   
   try {
     // Get raw body as Buffer to preserve exact bytes for signature verification
@@ -29,22 +33,21 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await request.arrayBuffer()
     const body = Buffer.from(arrayBuffer)
     
-    console.log('[WEBHOOK] Body size:', body.length, 'bytes')
+    logger.info('WEBHOOK', 'Webhook body received', { bodySize: body.length })
     
     // Get Stripe signature from headers
     const headersList = await headers()
     const signature = headersList.get('stripe-signature')
 
     if (!signature) {
-      console.error('[WEBHOOK] No Stripe signature found in headers')
-      console.log('[WEBHOOK] Available headers:', Object.fromEntries(headersList.entries()))
+      logger.error('WEBHOOK', 'No Stripe signature found in headers', { headers: JSON.stringify(Object.fromEntries(headersList.entries())) })
       return NextResponse.json(
         { error: 'No signature' },
         { status: 400 }
       )
     }
 
-    console.log('[WEBHOOK] Signature found, verifying...')
+    logger.info('WEBHOOK', 'Signature found, verifying')
 
     // Verify webhook signature and construct event
     // Pass body as Buffer directly to preserve exact bytes for signature verification
@@ -52,9 +55,9 @@ export async function POST(request: NextRequest) {
     try {
       event = constructWebhookEvent(body, signature)
       const mode = event.livemode ? 'LIVE' : 'TEST'
-      console.log(`[WEBHOOK] Signature verified successfully. Mode: ${mode}, Event type: ${event.type}, Event ID: ${event.id}`)
+      logger.info('WEBHOOK', 'Signature verified', { mode, eventType: event.type, eventId: event.id })
     } catch (err) {
-      console.error('[WEBHOOK] Signature verification failed:', err)
+      logger.logError(err as Error, 'WEBHOOK', 'Signature verification failed')
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -95,16 +98,16 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
+        logger.info('WEBHOOK', 'Unhandled event type', { eventType: event.type })
     }
 
     const duration = Date.now() - startTime
-    console.log(`[WEBHOOK] Successfully processed event ${event.type} in ${duration}ms`)
+    logger.info('WEBHOOK', 'Event processed', { eventType: event.type, durationMs: duration })
     
     return NextResponse.json({ received: true, eventId: event.id, eventType: event.type })
   } catch (error) {
     const duration = Date.now() - startTime
-    console.error('[WEBHOOK] Error processing webhook after', duration, 'ms:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error processing webhook', { durationMs: duration })
     captureException(error, { endpoint: '/api/stripe/webhook', method: 'POST' })
     return NextResponse.json(
       { error: 'Webhook handler failed' },
@@ -119,7 +122,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const plan = session.metadata?.plan
 
   if (!userId || !plan) {
-    console.error('Missing userId or plan in checkout session metadata')
+    logger.error('WEBHOOK', 'Missing userId or plan in checkout session metadata')
     return
   }
 
@@ -142,12 +145,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       }
     }
 
-    // Get previous subscription to check if this is an upgrade
+    // Get previous subscription to check if this is an upgrade and trial eligibility
     const previousSubscription = await prisma.subscription.findUnique({
       where: { userId }
     })
 
     const isUpgrade = Boolean(previousSubscription && previousSubscription.plan !== 'free' && previousSubscription.plan !== plan)
+
+    // Free-plan users upgrading via checkout get a trial if they haven't already had one (TrialAbusePrevention)
+    let status: 'active' | 'trialing' = 'active'
+    let trialEndsAt: Date | null = null
+    if (previousSubscription?.plan === 'free') {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true },
+      })
+      const normalizedEmail = (user?.email ?? '').toLowerCase().trim()
+      const emailHash = crypto.createHash('sha256').update(normalizedEmail).digest('hex')
+      const hasDeletedAccount = await prisma.trialAbusePrevention.findUnique({
+        where: { emailHash },
+      })
+      const neverHadTrial = previousSubscription.trialEndsAt == null
+      if (!hasDeletedAccount && neverHadTrial) {
+        status = 'trialing'
+        trialEndsAt = calculateTrialEndDate()
+        logger.info('WEBHOOK', 'Free user upgrading — granting trial', { userId, plan })
+      }
+    }
 
     // Update or create subscription record
     await prisma.subscription.upsert({
@@ -158,8 +182,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         stripeSubscriptionId: session.subscription as string,
         stripePriceId,
         plan,
-        status: 'active',
-        trialEndsAt: null, // End trial when paid subscription starts
+        status,
+        trialEndsAt,
         stripeCurrentPeriodEnd,
       },
       update: {
@@ -167,16 +191,42 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         stripeSubscriptionId: session.subscription as string,
         stripePriceId,
         plan,
-        status: 'active',
-        trialEndsAt: null, // End trial when upgrading from trial
+        status,
+        trialEndsAt,
         stripeCurrentPeriodEnd,
       },
     })
 
-    console.log(`Subscription created/updated for user ${userId} - Plan: ${plan}, Status: active, Trial ended`)
+    logger.info('WEBHOOK', 'Subscription created/updated', { userId, plan, status })
+
+    // Google Ads: only purchase conversion here (trial/signup conversion is sent from verify-email and save-gclid)
+    const revenue = session.amount_total ? session.amount_total / 100 : 0
+    const purchaseActionId = process.env.GOOGLE_ADS_CONVERSION_ACTION_ID
+    prisma.user.findUnique({ where: { id: userId }, select: { gclid: true } })
+      .then(async user => {
+        if (!user?.gclid) {
+          logger.info('GOOGLE-ADS', 'Conversion skipped — user has no gclid', { userId })
+          return
+        }
+        if (!purchaseActionId) {
+          logger.info('GOOGLE-ADS', 'Conversion skipped — GOOGLE_ADS_CONVERSION_ACTION_ID not set', { userId })
+          return
+        }
+        try {
+          await uploadClickConversion({
+            gclid: user.gclid,
+            conversionDateTime: new Date(),
+            conversionValue: revenue,
+            conversionActionId: purchaseActionId,
+          })
+          logger.info('GOOGLE-ADS', 'Conversion upload succeeded', { userId, gclid: user.gclid })
+        } catch (err) {
+          logger.logError(err as Error, 'GOOGLE-ADS', 'Conversion upload failed', { userId })
+        }
+      })
+      .catch(err => logger.logError(err as Error, 'GOOGLE-ADS', 'Conversion upload failed', { userId }))
 
     // Track subscription purchase in Matomo (async, don't block)
-    const revenue = session.amount_total ? session.amount_total / 100 : 0 // Convert cents to dollars
     trackSubscription.purchase(
       userId,
       plan,
@@ -186,11 +236,32 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         isUpgrade,
         previousPlan: previousSubscription?.plan,
       }
-    ).catch(err => console.error('Failed to track subscription purchase:', err))
+    ).catch(err => logger.logError(err as Error, 'PAYMENT', 'Failed to track subscription purchase in Matomo'))
   } catch (error) {
-    console.error('Error handling checkout completed:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling checkout completed')
     throw error
   }
+}
+
+// When downgrading to free, add to TrialAbusePrevention if they had a trial (prevents re-trial by upgrading again)
+async function addToTrialAbusePreventionIfHadTrial(userId: string): Promise<void> {
+  const sub = await prisma.subscription.findUnique({
+    where: { userId },
+    select: { status: true, trialEndsAt: true },
+  })
+  if (!sub || (sub.status !== 'trialing' && !sub.trialEndsAt)) return
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  })
+  if (!user?.email) return
+  const emailHash = crypto.createHash('sha256').update(user.email.toLowerCase().trim()).digest('hex')
+  await prisma.trialAbusePrevention.upsert({
+    where: { emailHash },
+    create: { emailHash, deletedAt: new Date() },
+    update: { deletedAt: new Date() },
+  })
+  logger.info('WEBHOOK', 'Added to TrialAbusePrevention (had trial)', { userId })
 }
 
 // Handle subscription updates
@@ -198,7 +269,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.userId
 
   if (!userId) {
-    console.error('Missing userId in subscription metadata')
+    logger.error('WEBHOOK', 'Missing userId in subscription metadata')
     return
   }
 
@@ -222,12 +293,14 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     if (subscription.status === 'canceled') {
       if (subscription.cancel_at_period_end) {
         // Cancel at period end - keep current plan until period ends
-        console.log(`Subscription set to cancel at period end for user ${userId}`)
+        logger.info('WEBHOOK', 'Subscription set to cancel at period end', { userId })
       } else {
-        // Immediate cancellation - downgrade to free
+        // Immediate cancellation - downgrade to free; prevent re-trial abuse
+        await addToTrialAbusePreventionIfHadTrial(userId)
         updateData.plan = 'free'
+        updateData.trialEndsAt = null
         updateData.stripeCurrentPeriodEnd = null
-        console.log(`Subscription immediately canceled for user ${userId} - downgraded to free`)
+        logger.info('WEBHOOK', 'Subscription immediately canceled, downgraded to free', { userId })
       }
     }
 
@@ -236,9 +309,9 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       data: updateData,
     })
 
-    console.log(`Subscription updated for user ${userId} - Status: ${subscription.status}`)
+    logger.info('WEBHOOK', 'Subscription updated', { userId, status: subscription.status })
   } catch (error) {
-    console.error('Error handling subscription update:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling subscription update')
     throw error
   }
 }
@@ -248,7 +321,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.userId
 
   if (!userId) {
-    console.error('Missing userId in subscription metadata')
+    logger.error('WEBHOOK', 'Missing userId in subscription metadata')
     return
   }
 
@@ -265,8 +338,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
     // If subscription was canceled immediately (not at period end)
     if (subscription.cancel_at_period_end === false) {
-      // Immediate cancellation - downgrade to free
+      // Immediate cancellation - downgrade to free; prevent re-trial abuse
+      await addToTrialAbusePreventionIfHadTrial(userId)
       updateData.plan = 'free'
+      updateData.trialEndsAt = null
       updateData.stripeCurrentPeriodEnd = null
     } else {
       // Cancel at period end - keep current plan until period ends
@@ -284,17 +359,17 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       data: updateData,
     })
 
-    console.log(`Subscription canceled for user ${userId} - Cancel at period end: ${subscription.cancel_at_period_end}`)
+    logger.info('WEBHOOK', 'Subscription canceled', { userId, cancelAtPeriodEnd: subscription.cancel_at_period_end })
 
     // Track subscription cancellation in Matomo (async, don't block)
     if (currentSubscription) {
       trackSubscription.cancel(
         userId,
         currentSubscription.plan
-      ).catch(err => console.error('Failed to track subscription cancellation:', err))
+      ).catch(err => logger.logError(err as Error, 'PAYMENT', 'Failed to track subscription cancellation in Matomo'))
     }
   } catch (error) {
-    console.error('Error handling subscription deletion:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling subscription deletion')
     throw error
   }
 }
@@ -304,24 +379,26 @@ async function handleSubscriptionEnded(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.userId
 
   if (!userId) {
-    console.error('Missing userId in subscription metadata')
+    logger.error('WEBHOOK', 'Missing userId in subscription metadata')
     return
   }
 
   try {
+    await addToTrialAbusePreventionIfHadTrial(userId)
     // When subscription actually ends, downgrade to free plan
     await prisma.subscription.update({
       where: { userId },
       data: {
         status: 'canceled',
         plan: 'free',
+        trialEndsAt: null,
         stripeCurrentPeriodEnd: null,
       },
     })
 
-    console.log(`Subscription ended for user ${userId} - downgraded to free plan`)
+    logger.info('WEBHOOK', 'Subscription ended, downgraded to free', { userId })
   } catch (error) {
-    console.error('Error handling subscription ended:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling subscription ended')
     throw error
   }
 }
@@ -349,7 +426,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
         },
       })
 
-      console.log(`Invoice payment succeeded for subscription ${subscriptionId}`)
+      logger.info('WEBHOOK', 'Invoice payment succeeded', { subscriptionId })
 
       // Track subscription renewal in Matomo if this is a recurring payment (async, don't block)
       // Invoices for new subscriptions are already tracked in handleCheckoutCompleted
@@ -359,7 +436,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
           subscription.userId,
           subscription.plan,
           revenue
-        ).catch(err => console.error('Failed to track subscription renewal:', err))
+        ).catch(err => logger.logError(err as Error, 'PAYMENT', 'Failed to track subscription renewal in Matomo'))
       }
     } else {
       // Just update status if we can't find the user
@@ -371,7 +448,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
       })
     }
   } catch (error) {
-    console.error('Error handling invoice payment succeeded:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling invoice payment succeeded')
     throw error
   }
 }
@@ -393,9 +470,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       },
     })
 
-    console.log(`Invoice payment failed for subscription ${subscriptionId}`)
+    logger.info('WEBHOOK', 'Invoice payment failed', { subscriptionId })
   } catch (error) {
-    console.error('Error handling invoice payment failed:', error)
+    logger.logError(error as Error, 'WEBHOOK', 'Error handling invoice payment failed')
     throw error
   }
 }

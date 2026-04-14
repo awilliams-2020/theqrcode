@@ -224,11 +224,6 @@ export function logError(error: {
   if (process.env.NODE_ENV === 'development') {
     console.error('Error logged:', errorLog)
   }
-  
-  // In production, you'd also send to Sentry or another error tracking service
-  if (process.env.NODE_ENV === 'production') {
-    // Example: Sentry.captureException(new Error(error.message))
-  }
 }
 
 export function getErrorLogs(timeRange?: { start: Date; end: Date }) {

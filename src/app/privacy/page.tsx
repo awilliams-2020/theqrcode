@@ -172,14 +172,8 @@ export default function PrivacyPage() {
             If you have any questions about this Privacy Policy or our data practices, please contact us:
           </p>
           <div className="bg-gray-50 p-6 rounded-lg">
-            <p className="text-gray-700 mb-2">
-              <strong>Email:</strong> privacy@theqrcode.io
-            </p>
-            <p className="text-gray-700 mb-2">
-              <strong>Address:</strong> 123 Tech Street, San Francisco, CA 94105, United States
-            </p>
             <p className="text-gray-700">
-              <strong>Phone:</strong> +1 (555) 123-4567
+              <strong>Email:</strong> support@theqrcode.io
             </p>
           </div>
         </div>

@@ -92,22 +92,9 @@ export async function GET(request: NextRequest) {
 async function testExternalServices() {
   const services: Record<string, any> = {}
   
-  try {
-    // Test Stripe connection (if configured)
-    if (process.env.STRIPE_SECRET_KEY) {
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-      await stripe.balance.retrieve()
-      services.stripe = {
-        status: 'healthy',
-        responseTime: 0 // Stripe doesn't return response time
-      }
-    }
-  } catch (error) {
-    services.stripe = {
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }
-  }
+  // Don't test Stripe in public health endpoint - security risk
+  // Stripe connectivity should be tested internally, not exposed publicly
+  // The health endpoint should only check critical services like database
   
   // Test email service (if configured)
   const emailProvider = process.env.EMAIL_PROVIDER?.toLowerCase()

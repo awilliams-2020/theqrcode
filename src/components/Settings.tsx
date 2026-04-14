@@ -5,6 +5,7 @@ import { User, Mail, Calendar, AlertTriangle, Settings as SettingsIcon, ArrowLef
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/useToast'
+import { useMatomo } from '@/hooks/useMatomo'
 import { formatDistanceToNow } from 'date-fns'
 import { COMMON_TIMEZONES, getCurrentTimeInTimezone, formatDateInTimezone } from '@/lib/date-utils'
 
@@ -62,6 +63,7 @@ export default function Settings({
   accountCreatedAt,
   userTimezone = 'UTC'
 }: SettingsProps) {
+  const matomo = useMatomo()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [isExportingData, setIsExportingData] = useState(false)
@@ -85,8 +87,8 @@ export default function Settings({
   const { showSuccess, showError, showWarning } = useToast()
   const router = useRouter()
 
-  // Check if user has Pro plan (pro or business) or is in trial with Pro plan
-  const hasApiAccess = (currentPlan === 'pro' || currentPlan === 'business') || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'business'))
+  // Check if user has Pro plan or is in trial with Pro plan
+  const hasApiAccess = currentPlan === 'pro' || (isTrialActive && currentPlan === 'pro')
 
   // Load API keys on component mount if user has API access
   useEffect(() => {
@@ -250,6 +252,12 @@ export default function Settings({
         const error = await response.json()
         throw new Error(error.error || 'Failed to delete account')
       }
+
+      matomo.trackEvent({
+        category: 'Account',
+        action: 'deleted',
+        name: user.id,
+      })
 
       showSuccess(
         'Account Deleted',
@@ -914,17 +922,7 @@ function CreateApiKeyModal({
     const effectivePlan = currentPlan
     
     // Only show permissions for Pro plans or Pro trial plans
-    if (effectivePlan === 'business' || (isTrialActive && effectivePlan === 'business')) {
-      return [
-        { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
-        { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
-        { id: 'analytics:read', name: 'Read Analytics', description: 'Access basic analytics data' },
-        { id: 'analytics:advanced', name: 'Advanced Analytics', description: 'Access advanced analytics features' },
-        { id: 'webhooks:manage', name: 'Manage Webhooks', description: 'Create and manage webhooks' },
-        { id: 'team:read', name: 'Read Team Data', description: 'Access team/organization data' },
-        { id: 'bulk:write', name: 'Bulk Operations', description: 'Perform bulk create/delete operations' }
-      ]
-    } else if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
+    if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
       return [
         { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
         { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
@@ -1083,7 +1081,7 @@ function CreateApiKeyModal({
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'business' ? 'Business' : 'Free'}
+                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'starter' ? 'Starter' : 'Free'}
                   {isTrialActive && ' (Trial)'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
@@ -1140,17 +1138,7 @@ function EditApiKeyModal({ apiKey, currentPlan, isTrialActive, onClose, onUpdate
     const effectivePlan = currentPlan
     
     // Only show permissions for Pro plans or Pro trial plans
-    if (effectivePlan === 'business' || (isTrialActive && effectivePlan === 'business')) {
-      return [
-        { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
-        { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
-        { id: 'analytics:read', name: 'Read Analytics', description: 'Access basic analytics data' },
-        { id: 'analytics:advanced', name: 'Advanced Analytics', description: 'Access advanced analytics features' },
-        { id: 'webhooks:manage', name: 'Manage Webhooks', description: 'Create and manage webhooks' },
-        { id: 'team:read', name: 'Read Team Data', description: 'Access team/organization data' },
-        { id: 'bulk:write', name: 'Bulk Operations', description: 'Perform bulk create/delete operations' }
-      ]
-    } else if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
+    if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
       return [
         { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
         { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
@@ -1245,7 +1233,7 @@ function EditApiKeyModal({ apiKey, currentPlan, isTrialActive, onClose, onUpdate
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'business' ? 'Business' : 'Free'}
+                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'starter' ? 'Starter' : 'Free'}
                   {isTrialActive && ' (Trial)'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">

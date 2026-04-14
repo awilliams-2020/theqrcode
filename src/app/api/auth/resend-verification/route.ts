@@ -61,9 +61,13 @@ export async function POST(request: NextRequest) {
     // Always return success even if user doesn't exist (security)
     // This prevents email enumeration attacks
     if (user && !user.emailVerified && user.password) {
-      // Only send verification email if user exists, has password auth, and email not yet verified
+      // Only send verification email if user exists, has password auth, and email not yet verified.
+      // Include plan from signup so pro/starter trial signups get the correct verification link.
       const verificationToken = await createEmailVerificationToken(email)
-      await sendVerificationEmail(email, verificationToken)
+      const plan = user.signupRequestedPlan && ['starter', 'pro'].includes(user.signupRequestedPlan)
+        ? user.signupRequestedPlan
+        : undefined
+      await sendVerificationEmail(email, verificationToken, plan ? { plan } : undefined)
     }
 
     return NextResponse.json(

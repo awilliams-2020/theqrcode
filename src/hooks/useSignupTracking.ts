@@ -63,9 +63,14 @@ export function useSignupTracking(options: UseSignupTrackingOptions = {}) {
     trackSignup.completeSignup(currentPlan.current, method, options.source);
   }, [options.source]);
 
-  // Track signup form error
+  // Track signup form error (API, signin, network - not validation blocked)
   const trackSignupFormError = useCallback((method: 'google' | 'github' | 'password', errorType: string) => {
     trackSignup.errorSignupForm(method, errorType, currentPlan.current);
+  }, []);
+
+  // Track signup form submit blocked by validation (empty/weak password) — FORM event, not ERROR
+  const trackSignupFormValidationBlocked = useCallback((method: 'google' | 'github' | 'password') => {
+    trackSignup.signupFormValidationBlocked(method, currentPlan.current);
   }, []);
 
   // Track signup abandonment
@@ -119,6 +124,7 @@ export function useSignupTracking(options: UseSignupTrackingOptions = {}) {
     trackSignupFormStart,
     trackSignupFormSuccess,
     trackSignupFormError,
+    trackSignupFormValidationBlocked,
     trackSignupAbandonment,
     trackSignupCTA,
     currentPlan: currentPlan.current,

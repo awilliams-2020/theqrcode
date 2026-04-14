@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Google Ads Search campaign for theqrcode $500 experiment. Copy to campaign-config.json, edit, then run the create script.",
+  "budget": {
+    "name": "TheQRCode Search Test Budget",
+    "dailyAmountUsd": 17,
+    "deliveryMethod": "STANDARD"
+  },
+  "campaign": {
+    "name": "TheQRCode Search – QR Generator & Tracking",
+    "status": "PAUSED",
+    "biddingStrategy": "MAXIMIZE_CONVERSIONS",
+    "networkSettings": {
+      "targetGoogleSearch": true,
+      "targetSearchNetwork": true,
+      "targetContentNetwork": false,
+      "targetPartnerSearchNetwork": false
+    }
+  },
+  "sitelinks": [
+    { "text": "Pricing", "url": "https://theqrcode.io/pricing" },
+    { "text": "Free Trial", "url": "https://theqrcode.io/auth/signup?plan=pro", "description1": "14-day trial, no card required", "description2": "Start in 30 seconds" },
+    { "text": "API", "url": "https://theqrcode.io/api", "description1": "REST API for QR generation", "description2": "Pro plan includes API access" },
+    { "text": "QR Code Generator", "url": "https://theqrcode.io/qr-code-generator", "description1": "Create QR codes in seconds", "description2": "Dynamic & static supported" },
+    { "text": "Features", "url": "https://theqrcode.io/features", "description1": "Tracking, analytics, branding", "description2": "Bulk create & API" },
+    { "text": "Use Cases", "url": "https://theqrcode.io", "description1": "Menus, events, WiFi, business", "description2": "See how others use QR codes" },
+    { "text": "Blog & Guides", "url": "https://theqrcode.io/blog", "description1": "Tips and best practices", "description2": "QR code ideas & tutorials" },
+    { "text": "Contact & Support", "url": "https://theqrcode.io/contact", "description1": "Help when you need it", "description2": "Email and docs" },
+    { "text": "Integrations", "url": "https://theqrcode.io/api", "description1": "API, webhooks", "description2": "Connect your tools" }
+  ],
+  "negativeKeywords": [
+    { "text": "free only", "matchType": "PHRASE" },
+    { "text": "no signup", "matchType": "PHRASE" },
+    { "text": "offline", "matchType": "PHRASE" },
+    { "text": "barcode", "matchType": "PHRASE" },
+    { "text": "canva", "matchType": "PHRASE" },
+    { "text": "qr code generator free", "matchType": "PHRASE" },
+    { "text": "qr code generator free online", "matchType": "PHRASE" },
+    { "text": "url to qr code free", "matchType": "PHRASE" },
+    { "text": "link to qr code free generator", "matchType": "PHRASE" },
+    { "text": "link to qr code generator free online", "matchType": "PHRASE" },
+    { "text": "qr free generator", "matchType": "PHRASE" },
+    { "text": "online free qr code generator", "matchType": "PHRASE" },
+    { "text": "generate free qr code", "matchType": "PHRASE" },
+    { "text": "free q r code generator", "matchType": "PHRASE" },
+    { "text": "make a qr code for free", "matchType": "PHRASE" },
+    { "text": "turn into qr code free", "matchType": "PHRASE" }
+  ],
+  "adGroups": [
+    {
+      "name": "QR Generator with Tracking",
+      "ads": [
+        {
+          "headlines": [
+            "Create QR Codes with Tracking",
+            "Dynamic QR Code Generator",
+            "Free Trial – TheQRCode.io",
+            "QR Code Generator + Analytics",
+            "Create QR Codes for Website",
+            "Professional QR Code Generator",
+            "Build QR Codes – Start Free",
+            "Track Scans & Analytics",
+            "Custom QR Codes – Free Trial",
+            "TheQRCode.io – Create & Track",
+            "Start Your 14-Day Free Trial",
+            "QR Codes for Business",
+            "Dynamic QR Code Analytics",
+            "No Card Required – Try Free",
+            "Create, Track, Grow"
+          ],
+          "descriptions": [
+            "Track scans & analytics. Dynamic QR codes. Start free trial.",
+            "QR code generator with analytics. No card required. Try free."
+          ],
+          "finalUrl": "https://theqrcode.io/pricing",
+          "path1": "tracking",
+          "path2": "trial"
+        },
+        {
+          "headlines": [
+            "QR Code Generator + Analytics",
+            "Dynamic QR Codes – TheQRCode",
+            "Start Your 14-Day Free Trial",
+            "Create QR Codes with Tracking",
+            "QR Code Generator with Tracking",
+            "Professional QR Codes – Free Trial",
+            "Build Custom QR Codes Online",
+            "Track Scans in Real Time",
+            "TheQRCode.io – Analytics Included",
+            "Free Trial – No Card Required",
+            "QR Codes for Restaurants & Events",
+            "Dynamic QR Code Generator",
+            "Create & Track QR Codes",
+            "Scale When You're Ready",
+            "Try TheQRCode.io Free"
+          ],
+          "descriptions": [
+            "Create QR codes with real-time analytics. Upgrade anytime.",
+            "Professional QR codes with tracking. Start free, scale when ready.",
+            "Track scans, customize design, use API. No card required for trial.",
+            "QR codes for business and marketing. Free trial, then scale up."
+          ],
+          "finalUrl": "https://theqrcode.io/pricing",
+          "path1": "analytics",
+          "path2": "free-trial"
+        },
+        {
+          "headlines": [
+            "Create QR Codes – Free Trial",
+            "Dynamic QR Code Analytics",
+            "TheQRCode.io – Create & Track",
+            "QR Generator with Tracking",
+            "Free Trial – TheQRCode.io",
+            "Create QR Codes for Website",
+            "Pro QR Code Generator",
+            "Track Scans & Analytics",
+            "Build QR Codes – No Commitment",
+            "Dynamic QR Codes – TheQRCode",
+            "Start Your 14-Day Free Trial",
+            "QR Codes for Business",
+            "Custom QR Codes – Free Trial",
+            "No Card Required – Try Free",
+            "Create, Track, Grow"
+          ],
+          "descriptions": [
+            "Build custom QR codes with tracking. Free trial, no commitment.",
+            "QR code generator with tracking. Create, track, grow."
+          ],
+          "finalUrl": "https://theqrcode.io/pricing",
+          "path1": "create",
+          "path2": "qr"
+        }
+      ],
+      "keywords": [
+        { "text": "QR code generator with tracking", "matchType": "PHRASE" },
+        { "text": "qr code generator online", "matchType": "PHRASE" },
+        { "text": "create qr code online", "matchType": "PHRASE" }
+      ]
+    }
+  ]
+}

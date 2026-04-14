@@ -223,11 +223,8 @@ ls -la theqrcode/docker/
 | File | Purpose |
 |------|---------|
 | [README.md](README.md) | Documentation index |
-| [DOCKER_CRON_QUICKSTART.md](DOCKER_CRON_QUICKSTART.md) | 5-minute setup |
-| [DOCKER_CRON_SETUP.md](DOCKER_CRON_SETUP.md) | Complete guide |
-| [DOCKER_CRON_COMPLETE.md](DOCKER_CRON_COMPLETE.md) | Full summary |
-| [ENGAGEMENT_SYSTEM.md](ENGAGEMENT_SYSTEM.md) | System reference |
-| [AUTOMATION_INTEGRATION.md](AUTOMATION_INTEGRATION.md) | Integration guide |
+| [DOCKER_CRON_SETUP.md](DOCKER_CRON_SETUP.md) | Docker + cron setup |
+| [ENGAGEMENT_SYSTEM.md](ENGAGEMENT_SYSTEM.md) | Engagement system |
 | [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Deploy steps |
 
 ---

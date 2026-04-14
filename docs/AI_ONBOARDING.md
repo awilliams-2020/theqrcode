@@ -61,7 +61,6 @@ theqrcode/
 - **Free** - Basic features, limited analytics
 - **Starter** - $9/month, enhanced analytics
 - **Pro** - $29/month, API access, webhooks
-- **Business** - $99/month, enterprise features
 
 ### Authentication Methods
 - **OAuth** - Google OAuth (primary)

@@ -24,7 +24,7 @@ async function getApiKey(req: NextRequest, context: { params: Promise<{ id: stri
     })
 
     const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || subscription?.plan === 'business' || (isTrialActive && (subscription?.plan === 'pro' || subscription?.plan === 'business'))
+    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
 
     if (!hasApiAccess) {
       return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })
@@ -74,7 +74,7 @@ async function updateApiKey(req: NextRequest, context: { params: Promise<{ id: s
     })
 
     const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || subscription?.plan === 'business' || (isTrialActive && (subscription?.plan === 'pro' || subscription?.plan === 'business'))
+    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
 
     if (!hasApiAccess) {
       return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })
@@ -130,7 +130,7 @@ async function deleteApiKey(req: NextRequest, context: { params: Promise<{ id: s
     })
 
     const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || subscription?.plan === 'business' || (isTrialActive && (subscription?.plan === 'pro' || subscription?.plan === 'business'))
+    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
 
     if (!hasApiAccess) {
       return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })

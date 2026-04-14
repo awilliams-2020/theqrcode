@@ -1,17 +1,11 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import Navbar from './Navbar'
 
 export default function ConditionalNavbar() {
   const pathname = usePathname()
-  const [isMounted, setIsMounted] = useState(false)
-  
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-  
+
   // Hide navbar on display routes and all landing pages
   const landingPages = [
     '/qr-code-for-restaurants',
@@ -28,16 +22,15 @@ export default function ConditionalNavbar() {
     '/wifi-qr-code-generator',
     '/qr-code-api',
   ]
-  
-  const shouldHideNavbar = 
-    pathname?.startsWith('/display/') || 
+
+  const shouldHideNavbar =
+    pathname?.startsWith('/display/') ||
     pathname?.startsWith('/menu/') ||
     landingPages.includes(pathname || '')
-  
-  // Use suppressHydrationWarning to prevent hydration mismatch
+
   if (shouldHideNavbar) {
-    return <div suppressHydrationWarning>{isMounted ? null : <Navbar />}</div>
+    return null
   }
-  
+
   return <Navbar />
 }

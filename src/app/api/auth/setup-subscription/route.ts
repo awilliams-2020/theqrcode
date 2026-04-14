@@ -3,6 +3,15 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { calculateTrialEndDate } from '@/lib/trial'
+import { logger } from '@/lib/logger'
+import { sendWelcomeEmail, hasReceivedWelcomeEmail } from '@/lib/engagement/email-automation'
+
+/**
+ * Setup subscription (plan + trial). Called from SubscriptionSetup when user lands on /auth/setup.
+ * That happens for: OAuth signup with trial (Google/GitHub → callbackUrl /auth/setup?plan=pro).
+ * NOT called when returning from Stripe checkout (Stripe success_url is /dashboard).
+ * See docs/WELCOME_EMAIL_FLOWS.md for full flow summary.
+ */
 
 // Extend the session type to include user id
 interface ExtendedSession {
@@ -24,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { plan } = await request.json()
     
     // Validate plan
-    if (!['free', 'starter', 'pro', 'business'].includes(plan)) {
+    if (!['free', 'starter', 'pro'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
@@ -60,7 +69,7 @@ export async function POST(request: NextRequest) {
       // If user had deleted account before and is trying to sign up with paid plan,
       // default them to free and redirect to checkout
       if (hasDeletedAccount && plan !== 'free') {
-        console.log(`User ${session.user.id} had previous trial, defaulting to free plan and redirecting to checkout for ${plan}`)
+        logger.info('AUTH', 'User had previous trial, defaulting to free plan and redirecting to checkout', { userId: session.user.id, plan })
         subscription = await prisma.subscription.update({
           where: { userId: session.user.id },
           data: {
@@ -85,13 +94,33 @@ export async function POST(request: NextRequest) {
         subscription = await prisma.subscription.update({
           where: { userId: session.user.id },
           data: {
-            plan: plan as 'free' | 'starter' | 'pro' | 'business',
+            plan: plan as 'free' | 'starter' | 'pro',
             status: status,
             trialEndsAt: trialEndsAt
           }
         })
-        console.log(`Updated subscription to plan ${plan} for user:`, session.user.id, 
-          trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (previous deletion or free plan)')
+        logger.info('AUTH', `Updated subscription to plan ${plan}`, {
+          userId: session.user.id,
+          trialEndsAt: trialEndsAt?.toISOString() ?? null
+        })
+      }
+      // Send welcome email for OAuth signups (plan now set) if not already sent
+      if (!shouldRedirectToCheckout && !(await hasReceivedWelcomeEmail(session.user.id))) {
+        const sub = await prisma.subscription.findUnique({ where: { userId: session.user.id } })
+        if (sub) {
+          const trialEndsAt = sub.trialEndsAt
+          const isOnTrial = !!(trialEndsAt && trialEndsAt > new Date())
+          const trialDays = isOnTrial && trialEndsAt
+            ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+            : undefined
+          const qrCodeLimit = plan === 'pro' ? '500' : plan === 'starter' ? '100' : undefined
+          sendWelcomeEmail(session.user.id, {
+            plan: sub.plan,
+            isOnTrial,
+            trialDays,
+            qrCodeLimit,
+          }).catch(err => logger.logError(err as Error, 'AUTH', 'Failed to send welcome email after setup'))
+        }
       }
     } else {
       // Create new subscription with selected plan
@@ -101,7 +130,7 @@ export async function POST(request: NextRequest) {
       // If user had deleted account before and is trying to sign up with paid plan,
       // default them to free and redirect to checkout
       if (hasDeletedAccount && plan !== 'free') {
-        console.log(`User ${session.user.id} had previous trial, defaulting to free plan and redirecting to checkout for ${plan}`)
+        logger.info('AUTH', 'User had previous trial, defaulting to free plan and redirecting to checkout', { userId: session.user.id, plan })
         subscription = await prisma.subscription.create({
           data: {
             userId: session.user.id,
@@ -126,13 +155,33 @@ export async function POST(request: NextRequest) {
         subscription = await prisma.subscription.create({
           data: {
             userId: session.user.id,
-            plan: plan as 'free' | 'starter' | 'pro' | 'business',
+            plan: plan as 'free' | 'starter' | 'pro',
             status: status,
             trialEndsAt: trialEndsAt
           }
         })
-        console.log(`Created subscription with plan ${plan} for user:`, session.user.id, 
-          trialEndsAt ? `Trial ends: ${trialEndsAt?.toISOString()}` : 'No trial (previous deletion or free plan)')
+        logger.info('AUTH', `Created subscription with plan ${plan}`, {
+          userId: session.user.id,
+          trialEndsAt: trialEndsAt?.toISOString() ?? null
+        })
+      }
+      // Send welcome email for OAuth signups (plan now set) if not already sent
+      if (!shouldRedirectToCheckout && !(await hasReceivedWelcomeEmail(session.user.id))) {
+        const sub = await prisma.subscription.findUnique({ where: { userId: session.user.id } })
+        if (sub) {
+          const trialEndsAt = sub.trialEndsAt
+          const isOnTrial = !!(trialEndsAt && trialEndsAt > new Date())
+          const trialDays = isOnTrial && trialEndsAt
+            ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+            : undefined
+          const qrCodeLimit = plan === 'pro' ? '500' : plan === 'starter' ? '100' : undefined
+          sendWelcomeEmail(session.user.id, {
+            plan: sub.plan,
+            isOnTrial,
+            trialDays,
+            qrCodeLimit,
+          }).catch(err => logger.logError(err as Error, 'AUTH', 'Failed to send welcome email after setup'))
+        }
       }
     }
 
@@ -143,7 +192,7 @@ export async function POST(request: NextRequest) {
       requestedPlan: shouldRedirectToCheckout ? requestedPlan : undefined
     })
   } catch (error) {
-    console.error('Error creating subscription:', error)
+    logger.logError(error as Error, 'AUTH', 'Error creating subscription')
     return NextResponse.json(
       { error: 'Failed to create subscription' },
       { status: 500 }

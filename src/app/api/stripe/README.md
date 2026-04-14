@@ -11,7 +11,7 @@ Creates a Stripe checkout session for a subscription.
 **Request Body:**
 ```json
 {
-  "plan": "starter" | "pro" | "business"
+  "plan": "starter" | "pro"
 }
 ```
 

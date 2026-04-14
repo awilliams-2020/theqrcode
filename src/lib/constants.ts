@@ -3,8 +3,6 @@
  */
 
 // Plan definitions with consistent pricing and features
-// NOTE: Business plan is temporarily hidden in the UI (see PricingPage, LandingPage, SignUp)
-// Backend still supports it for existing customers
 export const PLANS = {
   free: {
     id: 'free',
@@ -64,29 +62,6 @@ export const PLANS = {
       scans: 500000,
     },
   },
-  business: {
-    id: 'business',
-    name: 'Business',
-    price: 99,
-    description: 'For large enterprises',
-    features: [
-      'Unlimited QR codes',
-      'Unlimited scans',
-      'Enterprise analytics',
-      'All QR code types',
-      'White label options',
-      'Logo embedding',
-      'SVG & PDF downloads',
-      'Frame styles',
-      '24/7 support',
-      'Full API access',
-      'Custom integrations',
-    ],
-    limits: {
-      qrCodes: -1, // Unlimited
-      scans: -1,   // Unlimited
-    },
-  },
 } as const
 
 // Plan limits for easy access
@@ -94,7 +69,6 @@ export const PLAN_LIMITS = {
   free: PLANS.free.limits,
   starter: PLANS.starter.limits,
   pro: PLANS.pro.limits,
-  business: PLANS.business.limits,
 } as const
 
 // Plan display names
@@ -102,7 +76,6 @@ export const PLAN_DISPLAY_NAMES = {
   free: PLANS.free.name,
   starter: PLANS.starter.name,
   pro: PLANS.pro.name,
-  business: PLANS.business.name,
 } as const
 
 // Plan pricing for display
@@ -110,7 +83,6 @@ export const PLAN_PRICING = {
   free: { price: '$0', period: 'forever' },
   starter: { price: '$9', period: 'per month' },
   pro: { price: '$29', period: 'per month' },
-  business: { price: '$99', period: 'per month' },
 } as const
 
 // Trial configuration

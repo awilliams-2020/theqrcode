@@ -1,5 +1,6 @@
 // Global monitoring setup for capturing HTTP performance metrics
 import { recordPerformanceMetric } from './monitoring'
+import { logger } from './logger'
 
 // Track ongoing requests to calculate response times
 const requestTimings = new Map<string, number>()
@@ -10,15 +11,8 @@ function generateRequestId(): string {
 }
 
 export function setupGlobalMonitoring() {
-  console.log('Setting up global monitoring...')
-  
-  // In a production environment, you might want to use:
-  // - OpenTelemetry for distributed tracing
-  // - Sentry for error tracking
-  // - DataDog or New Relic for APM
-  
-  // For now, we'll use Next.js middleware and route-level monitoring
-  console.log('Global monitoring setup complete')
+  logger.info('SYSTEM', 'Setting up global monitoring')
+  logger.info('SYSTEM', 'Global monitoring setup complete')
 }
 
 // Helper function to be called at the start of API routes
@@ -39,7 +33,7 @@ export function endRequestTiming(
 ): number {
   const startTime = requestTimings.get(requestId)
   if (!startTime) {
-    console.warn(`No start time found for request ${requestId}`)
+    logger.warn('SYSTEM', 'No start time found for request', { requestId })
     return 0
   }
   

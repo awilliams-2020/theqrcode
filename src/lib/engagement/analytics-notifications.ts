@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { createNotification } from './notifications'
 import { createTransporter, createEmailOptions } from '../email'
 import { emailTemplates } from './email-templates'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
@@ -80,7 +81,7 @@ export async function detectScanSpike(userId: string, qrCodeId?: string) {
 
     return { spikeDetected: false, recentScans, averageHourlyScans }
   } catch (error) {
-    console.error('Error detecting scan spike:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error detecting scan spike')
     return { spikeDetected: false, error }
   }
 }
@@ -132,7 +133,7 @@ export async function notifyNewLocation(userId: string, qrCodeId: string, countr
 
     return { isNewLocation: false }
   } catch (error) {
-    console.error('Error checking new location:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error checking new location')
     return { isNewLocation: false, error }
   }
 }
@@ -196,7 +197,7 @@ export async function notifyDeviceTrend(userId: string, qrCodeId?: string) {
 
     return { trendDetected: false }
   } catch (error) {
-    console.error('Error detecting device trend:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error detecting device trend')
     return { trendDetected: false, error }
   }
 }
@@ -257,7 +258,7 @@ export async function sendHourlyAnalyticsSummary(userId: string) {
 
     return { sent: false, reason: 'Not enough activity' }
   } catch (error) {
-    console.error('Error sending hourly summary:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error sending hourly summary')
     return { sent: false, error }
   }
 }
@@ -388,7 +389,7 @@ export async function sendDailyAnalyticsDigest(userId: string) {
 
     // Check if user has analytics access (paid plans only)
     const plan = user.subscription?.plan || 'free'
-    const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+    const hasAnalyticsAccess = ['starter', 'pro'].includes(plan)
     
     if (!hasAnalyticsAccess) {
       return { sent: false, reason: 'User does not have analytics access (free plan)' }
@@ -494,7 +495,7 @@ export async function sendDailyAnalyticsDigest(userId: string) {
         return { sent: true, todayScans, percentageChange, emailSent: true }
       } catch (emailError) {
         // Log email failure but don't fail the whole operation
-        console.error(`Failed to send daily analytics digest email to ${user.email}:`, emailError)
+        logger.logError(emailError as Error, 'ANALYTICS', 'Failed to send daily analytics digest email', { userId: user.id, email: user.email })
         
         await prisma.emailLog.create({
           data: {
@@ -512,7 +513,7 @@ export async function sendDailyAnalyticsDigest(userId: string) {
 
     return { sent: false, reason: 'No scans today' }
   } catch (error) {
-    console.error('Error sending daily digest:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error sending daily digest')
     return { sent: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
@@ -578,7 +579,7 @@ export async function notifyPerformanceRecord(userId: string, qrCodeId: string, 
 
     return { isRecord: false, currentScans, historicalMax }
   } catch (error) {
-    console.error('Error checking performance record:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error checking performance record')
     return { isRecord: false, error }
   }
 }
@@ -633,7 +634,7 @@ export async function notifyScanVelocity(userId: string) {
 
     return { velocityAlert: false, scansPerFiveMinutes: recentScans }
   } catch (error) {
-    console.error('Error checking scan velocity:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error checking scan velocity')
     return { velocityAlert: false, error }
   }
 }
@@ -667,7 +668,7 @@ export async function runAnalyticsChecks(userId: string, qrCodeId: string, scanD
 
     return results
   } catch (error) {
-    console.error('Error running analytics checks:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error running analytics checks')
     return results
   }
 }
@@ -717,7 +718,7 @@ export async function sendPeriodicAnalyticsSummaries() {
         }
       } catch (qrCodeError) {
         // Log but continue processing other scans
-        console.error(`Error fetching QR code ${scan.qrCodeId}:`, qrCodeError)
+        logger.logError(qrCodeError as Error, 'ANALYTICS', 'Error fetching QR code', { qrCodeId: scan.qrCodeId })
         errorCount++
         continue
       }
@@ -749,7 +750,7 @@ export async function sendPeriodicAnalyticsSummaries() {
         await new Promise(resolve => setTimeout(resolve, 100))
       } catch (digestError) {
         // Log but continue processing other users
-        console.error(`Error sending daily digest to user ${userId}:`, digestError)
+        logger.logError(digestError as Error, 'ANALYTICS', 'Error sending daily digest to user', { userId })
         errorCount++
         continue
       }
@@ -765,11 +766,11 @@ export async function sendPeriodicAnalyticsSummaries() {
       errors: errorCount,
     }
 
-    console.log('Analytics summaries sent:', summary)
+    logger.info('ANALYTICS', 'Analytics summaries sent', summary)
     
     return summary
   } catch (error) {
-    console.error('Error sending periodic summaries:', error)
+    logger.logError(error as Error, 'ANALYTICS', 'Error sending periodic summaries')
     return { 
       success: false, 
       error: error instanceof Error ? error.message : String(error),

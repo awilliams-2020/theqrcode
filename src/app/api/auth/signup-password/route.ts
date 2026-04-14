@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, validatePassword } from '@/lib/password'
 import { createStripeCustomer } from '@/lib/stripe'
-import { sendWelcomeEmail } from '@/lib/engagement/email-automation'
 import { createEmailVerificationToken, sendVerificationEmail } from '@/lib/email-verification'
 import { trackUser } from '@/lib/matomo-tracking'
 
@@ -33,6 +32,9 @@ export async function POST(request: NextRequest) {
     const email = body.email.toLowerCase().trim()
     const name = body.name?.trim() || null
 
+    // Optional plan (starter, pro) — stored in verification link so trialing is applied after email verification
+    const requestedPlan = body.plan && ['starter', 'pro'].includes(body.plan) ? body.plan : null
+
     // Validate password strength
     const passwordValidation = validatePassword(body.password)
     if (!passwordValidation.valid) {
@@ -57,6 +59,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(body.password)
 
+    // Capture gclid cookie at signup time for later Google Ads conversion attribution
+    const gclid = request.cookies.get('gclid')?.value || null
+
     // Create user (email NOT verified yet)
     const user = await prisma.user.create({
       data: {
@@ -64,10 +69,12 @@ export async function POST(request: NextRequest) {
         name,
         password: hashedPassword,
         emailVerified: null, // Email verification required
+        ...(gclid && { gclid }),
+        ...(requestedPlan && { signupRequestedPlan: requestedPlan }),
       },
     })
 
-    // Create default subscription
+    // Create subscription as free by default; trialing plan is applied after email verification (verify-email API)
     await prisma.subscription.create({
       data: {
         userId: user.id,
@@ -77,8 +84,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Try to create Stripe customer
-    if (process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'development') {
+    // Create Stripe customer when Stripe is configured (use test key in dev for sandbox)
+    if (process.env.STRIPE_SECRET_KEY) {
       try {
         const stripeCustomer = await createStripeCustomer({
           userId: user.id,
@@ -95,10 +102,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Send verification email (don't send welcome email yet - wait for verification)
+    // Send verification email (include plan in link so verify-email can apply trialing after verification)
     try {
       const verificationToken = await createEmailVerificationToken(email)
-      await sendVerificationEmail(email, verificationToken)
+      await sendVerificationEmail(email, verificationToken, requestedPlan ? { plan: requestedPlan } : undefined)
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError)
       // Don't fail the signup if email fails - they can request a new one

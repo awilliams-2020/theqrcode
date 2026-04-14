@@ -1,0 +1,21 @@
+# Use-case / intent seeds – find phrases people use when they have a real project
+# Run: npx tsx scripts/google-ads/keyword-ideas.ts --seeds-file scripts/google-ads/seed-keywords-use-cases.txt --exclude "free,barcode" --min-volume 500
+# Pick LOW/MEDIUM competition and 1k–50k volume for the $500 test.
+
+qr code for restaurant
+qr code for restaurant menu
+qr code menu
+qr code for events
+qr code for business
+qr code for business cards
+qr code business card
+qr code for real estate
+qr code for wifi
+wifi qr code
+qr code for website
+qr code for marketing
+dynamic qr code for business
+trackable qr code business
+qr code with analytics business
+bulk qr code
+qr code api

@@ -339,7 +339,7 @@ export default function BlogPost() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/auth/signup?plan=business"
+                href="/auth/signup?plan=pro"
                 className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Get Secure QR Codes

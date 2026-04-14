@@ -163,22 +163,14 @@ export default function MenuDisplayPage({ params }: PageProps) {
   }
 
   const primaryColor = menuData.theme?.primaryColor || '#ea580c'
-  const secondaryColor = menuData.theme?.secondaryColor || '#fb923c'
-  const useGradient = menuData.theme?.useGradient !== false // Default to true
-
-  // Determine header background style
-  const headerBackground = useGradient
-    ? `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
-    : primaryColor
+  const backgroundColor = menuData.theme?.secondaryColor || '#fb923c'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: backgroundColor }}>
       {/* Header */}
-      <header 
+      <header
         className="sticky top-0 z-10 shadow-md"
-        style={{ 
-          background: headerBackground
-        }}
+        style={{ background: primaryColor }}
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-center mb-2">
@@ -189,12 +181,12 @@ export default function MenuDisplayPage({ params }: PageProps) {
                 className="h-10 w-10 object-contain mr-3"
               />
             ) : (
-              <Utensils className="h-8 w-8 text-white mr-3" />
+              <Utensils className="h-8 w-8 text-gray-900 mr-3" />
             )}
-            <h1 className="text-3xl font-bold text-white">{menuData.restaurantName}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{menuData.restaurantName}</h1>
           </div>
           {menuData.description && (
-            <p className="text-center text-white/90 text-sm">{menuData.description}</p>
+            <p className="text-center text-gray-700 text-sm">{menuData.description}</p>
           )}
         </div>
       </header>
@@ -295,10 +287,7 @@ function MenuItem({ item, primaryColor }: { item: MenuItem; primaryColor: string
             <p className="text-sm text-gray-600 mb-2">{item.description}</p>
           )}
           {item.price && (
-            <p 
-              className="text-lg font-bold"
-              style={{ color: primaryColor }}
-            >
+            <p className="text-lg font-bold text-gray-900">
               {item.price}
             </p>
           )}

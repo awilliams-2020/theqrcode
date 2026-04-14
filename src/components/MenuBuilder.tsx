@@ -18,7 +18,6 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
     theme: {
       primaryColor: '#ea580c',
       secondaryColor: '#fb923c',
-      useGradient: true
     }
   })
 
@@ -272,7 +271,7 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Secondary Color
+                  Background Color
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -288,28 +287,6 @@ export default function MenuBuilder({ initialData, onSave, onCancel }: MenuBuild
                     {menuData.theme?.secondaryColor || '#fb923c'}
                   </span>
                 </div>
-              </div>
-
-              <div className="col-span-2">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={menuData.theme?.useGradient !== false}
-                    onChange={(e) => setMenuData({
-                      ...menuData,
-                      theme: { ...menuData.theme, useGradient: e.target.checked }
-                    })}
-                    className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    Use gradient background
-                  </span>
-                </label>
-                <p className="text-xs text-gray-500 mt-1 ml-7">
-                  {menuData.theme?.useGradient !== false 
-                    ? 'Header will use a gradient from primary to secondary color'
-                    : 'Header will use solid primary color'}
-                </p>
               </div>
             </div>
           </div>

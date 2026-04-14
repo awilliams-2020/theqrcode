@@ -103,7 +103,7 @@ export default function BlogPost() {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">⚡ Quick Summary</h3>
             <ul className="space-y-2 text-gray-700">
               <li><strong>Time needed:</strong> 10-15 minutes for first menu</li>
-              <li><strong>What you need:</strong> Pro or Business plan subscription</li>
+              <li><strong>What you need:</strong> Pro plan subscription</li>
               <li><strong>Cost:</strong> Included with Pro plan ($29/month)</li>
               <li><strong>Best for:</strong> Restaurants wanting professional, easy-to-update digital menus</li>
               <li><strong>Key advantage:</strong> No external hosting needed—everything built-in</li>
@@ -115,7 +115,7 @@ export default function BlogPost() {
             What is the Pro Plan Restaurant Menu QR Code?
           </h2>
           <p className="text-gray-800 mb-6 leading-relaxed">
-            The Pro Plan Restaurant Menu QR Code is a specialized QR code type available exclusively to Pro and Business 
+            The Pro Plan Restaurant Menu QR Code is a specialized QR code type available exclusively to Pro 
             plan subscribers. Instead of linking to an external URL (like a PDF or website), this QR code type includes 
             a built-in menu builder that lets you create, customize, and manage your restaurant menu entirely within 
             TheQRCode.io platform.
@@ -195,7 +195,7 @@ export default function BlogPost() {
                 <tr>
                   <td className="border border-gray-300 px-4 py-3 text-gray-800 font-semibold">Plan Required</td>
                   <td className="border border-gray-300 px-4 py-3 text-gray-800">Free plan available</td>
-                  <td className="border border-gray-300 px-4 py-3 text-gray-800">Pro or Business plan</td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-800">Pro plan</td>
                 </tr>
               </tbody>
             </table>
@@ -207,7 +207,7 @@ export default function BlogPost() {
             <div className="border-l-4 border-blue-500 pl-6">
               <h3 className="text-xl font-bold text-gray-900 mb-3">Step 1: Upgrade to Pro Plan</h3>
               <p className="text-gray-700 mb-3">
-                The Restaurant Menu QR Code type is exclusively available for Pro and Business plan subscribers. 
+                The Restaurant Menu QR Code type is exclusively available for Pro plan subscribers. 
                 If you're on a Free or Starter plan, you'll need to upgrade first.
               </p>
               <div className="bg-blue-50 p-4 rounded-lg mb-4">
@@ -215,7 +215,7 @@ export default function BlogPost() {
                   <li>Log in to your TheQRCode.io account</li>
                   <li>Navigate to your dashboard</li>
                   <li>Click "Upgrade" or go to Settings → Billing</li>
-                  <li>Select Pro plan ($29/month) or Business plan</li>
+                  <li>Select Pro plan ($29/month)</li>
                   <li>Complete the upgrade process</li>
                 </ol>
               </div>
@@ -243,7 +243,7 @@ export default function BlogPost() {
               <div className="bg-yellow-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-700">
                   <strong>Note:</strong> If you don't see "Restaurant Menu" in the dropdown, make sure you're on a Pro 
-                  or Business plan. Free and Starter plan users will see an upgrade prompt instead.
+                  . Free and Starter plan users will see an upgrade prompt instead.
                 </p>
               </div>
             </div>
@@ -551,7 +551,7 @@ export default function BlogPost() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-2">Problem: Can't see "Restaurant Menu" option</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• Verify you're on a Pro or Business plan (check Settings → Billing)</li>
+                <li>• Verify you're on a Pro plan (check Settings → Billing)</li>
                 <li>• Refresh the page and try again</li>
                 <li>• Contact support if the issue persists</li>
               </ul>
@@ -588,7 +588,7 @@ export default function BlogPost() {
           <div className="bg-blue-50 p-6 rounded-lg mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Quick Recap:</h3>
             <ol className="list-decimal pl-6 space-y-2 text-gray-700">
-              <li>Upgrade to Pro or Business plan</li>
+              <li>Upgrade to Pro plan</li>
               <li>Select "Restaurant Menu" from QR code type dropdown</li>
               <li>Build your menu using the built-in menu builder</li>
               <li>Customize colors and branding</li>

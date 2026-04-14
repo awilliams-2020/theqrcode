@@ -913,6 +913,69 @@ export const trackEngagement = {
 };
 
 /**
+ * Dashboard page tracking (client-side)
+ */
+export const trackDashboard = {
+  /**
+   * Track click on "Create QR Code" CTA on dashboard
+   */
+  clickCreateQRCodeCTA() {
+    clientTrackEvent({
+      category: MatomoEventCategory.ENGAGEMENT,
+      action: MatomoEventAction.CLICK_CTA,
+      name: 'Create QR Code - dashboard',
+      customDimensions: createCustomDimensions({
+        CTA_LOCATION: 'dashboard',
+      }),
+    });
+  },
+
+  /**
+   * Track QR generator modal closed without submitting
+   */
+  modalClosed() {
+    clientTrackEvent({
+      category: MatomoEventCategory.ENGAGEMENT,
+      action: MatomoEventAction.CLICK_CTA,
+      name: 'QR Modal - Closed - dashboard',
+      customDimensions: createCustomDimensions({
+        CTA_LOCATION: 'dashboard',
+      }),
+    });
+  },
+
+  /**
+   * Track QR generator modal submitted (type and analytics/dynamic)
+   */
+  modalSubmitted(type: string, analytics: boolean) {
+    clientTrackEvent({
+      category: MatomoEventCategory.FORM,
+      action: MatomoEventAction.SUBMIT_FORM,
+      name: 'QR Modal - Submitted - dashboard',
+      customDimensions: createCustomDimensions({
+        QR_CODE_TYPE: type,
+        QR_CODE_DYNAMIC: analytics ? 'true' : 'false',
+        CTA_LOCATION: 'dashboard',
+      }),
+    });
+  },
+
+  /**
+   * Track navbar CTA click from dashboard (Analytics or Settings)
+   */
+  clickNavCTA(itemName: 'Analytics' | 'Settings') {
+    clientTrackEvent({
+      category: MatomoEventCategory.ENGAGEMENT,
+      action: MatomoEventAction.CLICK_CTA,
+      name: `${itemName} - navbar - dashboard`,
+      customDimensions: createCustomDimensions({
+        CTA_LOCATION: 'navbar',
+      }),
+    });
+  },
+};
+
+/**
  * Comprehensive Signup tracking functions
  */
 export const trackSignup = {
@@ -1035,6 +1098,7 @@ export const trackSignup = {
 
   /**
    * Track signup form submission error (client-side)
+   * Use for API/signin/network errors. For validation-blocked submits use signupFormValidationBlocked.
    */
   errorSignupForm(method: 'google' | 'github' | 'password', errorType: string, plan?: string) {
     clientTrackEvent({
@@ -1046,6 +1110,23 @@ export const trackSignup = {
         PAYMENT_PLAN: plan,
         CONVERSION_TYPE: 'signup_form_error',
         ERROR_TYPE: errorType,
+      }),
+    });
+  },
+
+  /**
+   * Track signup form submit attempted but blocked by client-side validation (empty/weak password).
+   * Fired as FORM event, not ERROR, so funnel reports can show "attempted submit, validation blocked" without inflating error counts.
+   */
+  signupFormValidationBlocked(method: 'google' | 'github' | 'password', plan?: string) {
+    clientTrackEvent({
+      category: MatomoEventCategory.FORM,
+      action: MatomoEventAction.SUBMIT_FORM,
+      name: `signup_form_validation_blocked_${method}`,
+      value: 0,
+      customDimensions: createCustomDimensions({
+        PAYMENT_PLAN: plan,
+        CONVERSION_TYPE: 'signup_form_validation_blocked',
       }),
     });
   },

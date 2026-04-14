@@ -25,20 +25,8 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY . .
 
-# Accept build arguments for Stripe environment variables
-ARG STRIPE_SECRET_KEY
-ARG STRIPE_STARTER_PRICE_ID
-ARG STRIPE_PRO_PRICE_ID
-ARG STRIPE_BUSINESS_PRICE_ID
-ARG STRIPE_WEBHOOK_SECRET
-
-# Set environment variables for build
+# Set build environment (NO SECRETS HERE - they're injected at runtime via env_file)
 ENV NODE_ENV=production
-ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
-ENV STRIPE_STARTER_PRICE_ID=$STRIPE_STARTER_PRICE_ID
-ENV STRIPE_PRO_PRICE_ID=$STRIPE_PRO_PRICE_ID
-ENV STRIPE_BUSINESS_PRICE_ID=$STRIPE_BUSINESS_PRICE_ID
-ENV STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET
 
 # Generate Prisma client with cache mount
 RUN --mount=type=cache,target=/root/.npm \

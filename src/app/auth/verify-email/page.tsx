@@ -8,6 +8,7 @@ function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const plan = searchParams.get('plan') // starter or pro — applied after verification for free trial
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
@@ -24,10 +25,14 @@ function VerifyEmailContent() {
 
     const verifyEmail = async () => {
       try {
+        const body: { token: string; plan?: string } = { token: token! }
+        if (plan && ['starter', 'pro'].includes(plan)) {
+          body.plan = plan
+        }
         const response = await fetch('/api/auth/verify-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify(body),
         })
 
         const data = await response.json()
@@ -51,7 +56,7 @@ function VerifyEmailContent() {
     }
 
     verifyEmail()
-  }, [token, router])
+  }, [token, plan, router])
 
   const handleResendVerification = async (e: React.FormEvent) => {
     e.preventDefault()

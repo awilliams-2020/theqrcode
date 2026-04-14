@@ -1,9 +1,10 @@
 import { Metadata } from 'next'
 import WiFiQRLanding from '@/components/landing/WiFiQRLanding'
+import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'WiFi QR Code Generator | Create WiFi QR Code Password - Free & Easy',
-  description: 'Create WiFi QR codes in seconds. Generate QR codes for WiFi passwords - guests scan to connect instantly. Perfect for restaurants, hotels, offices, and events. Free WiFi QR code generator. No signup required!',
+  title: 'WiFi QR Code Generator – Share WiFi in One Scan | Free – TheQRCode.io',
+  description: 'Create a WiFi QR code in seconds. Guests scan to connect — no typing. Free. For restaurants, hotels, offices, events. No signup required.',
   keywords: [
     'wifi qr code', 'wifi qr codes', 'wifi qr code generator', 
     'share wifi qr code', 'restaurant wifi qr', 'hotel wifi qr', 
@@ -16,8 +17,8 @@ export const metadata: Metadata = {
     'generate wifi qr code', 'wifi qr share', 'wi fi qr code'
   ],
   openGraph: {
-    title: 'WiFi QR Code Generator | Share Your Network Instantly',
-    description: 'Create WiFi QR codes for easy guest access to your network. Perfect for restaurants, hotels, offices, and events. Free to use!',
+    title: 'WiFi QR Code Generator – Share WiFi in One Scan',
+    description: 'Create a WiFi QR code in seconds. Guests scan to connect. Free. For restaurants, hotels, offices, events.',
     type: 'website',
     url: 'https://theqrcode.io/wifi-qr-code-generator',
   },
@@ -27,6 +28,22 @@ export const metadata: Metadata = {
 }
 
 export default function WiFiQRLandingPage() {
-  return <WiFiQRLanding />
+  return (
+    <>
+      <StructuredData
+        type="HowTo"
+        data={{
+          name: 'How to create a WiFi QR code',
+          description: 'Create a WiFi QR code so guests can connect to your network by scanning — no typing the password.',
+          steps: [
+            { name: 'Enter your WiFi details', text: 'Type your network name (SSID) and password into the WiFi QR code generator.', url: 'https://theqrcode.io/wifi-qr-code-generator' },
+            { name: 'Generate the QR code', text: 'Click generate to create your WiFi QR code image.', url: 'https://theqrcode.io/wifi-qr-code-generator' },
+            { name: 'Download or print', text: 'Download the QR code or print it and place it where guests can scan to connect instantly.', url: 'https://theqrcode.io/wifi-qr-code-generator' },
+          ]
+        }}
+      />
+      <WiFiQRLanding />
+    </>
+  )
 }
 

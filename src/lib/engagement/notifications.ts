@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
@@ -29,7 +30,7 @@ export async function createNotification(data: NotificationData) {
     const hasProAccess = await hasProPlanAccess(data.userId)
     if (!hasProAccess) {
       // Don't create pro tip notifications for non-pro users
-      console.log(`Skipping pro tip notification for user ${data.userId} - not on pro plan`)
+      logger.debug('NOTIFICATION', 'Skipping pro tip notification - user not on pro plan', { userId: data.userId })
       return null
     }
   }
@@ -47,7 +48,7 @@ export async function createNotification(data: NotificationData) {
     
     if (!hasAnalyticsAccess) {
       // Don't create analytics notifications for free users
-      console.log(`Skipping analytics notification for user ${data.userId} - not on paid plan`)
+      logger.debug('NOTIFICATION', 'Skipping analytics notification - user not on paid plan', { userId: data.userId })
       return null
     }
   }

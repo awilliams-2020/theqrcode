@@ -55,11 +55,13 @@ export default async function SharePage({ params, searchParams }: SharePageProps
   }
 
   // Generate QR code image
+  // Dynamic QR codes encode the shortUrl (a short redirect), not the raw content
+  const qrContent = qrCode.isDynamic && qrCode.shortUrl ? qrCode.shortUrl : qrCode.content
   let qrCodeImage: string | null = null
   try {
     qrCodeImage = await QRGeneratorServer.generateQRCode({
       type: qrCode.type as any,
-      content: qrCode.content,
+      content: qrContent,
       size: 300,
       color: { dark: '#000000', light: '#FFFFFF' },
       frame: (qrCode.settings as any)?.frame || undefined

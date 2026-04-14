@@ -23,7 +23,7 @@ async function getApiKeys(req: NextRequest): Promise<NextResponse> {
     })
 
     const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || subscription?.plan === 'business' || (isTrialActive && (subscription?.plan === 'pro' || subscription?.plan === 'business'))
+    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
 
     if (!hasApiAccess) {
       return NextResponse.json({ 
@@ -80,7 +80,7 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
     })
 
     const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || subscription?.plan === 'business' || (isTrialActive && (subscription?.plan === 'pro' || subscription?.plan === 'business'))
+    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
 
     if (!hasApiAccess) {
       return NextResponse.json({ 
@@ -100,7 +100,7 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
     let planPermissions: string[]
     let planRateLimit: number
     
-    if (isTrialActive && (effectivePlan === 'pro' || effectivePlan === 'business')) {
+    if (isTrialActive && (effectivePlan === 'pro')) {
       // Trial users get the same permissions as their trial plan
       planPermissions = ApiKeyManager.getPlanPermissions(effectivePlan)
       planRateLimit = ApiKeyManager.getPlanRateLimit(effectivePlan)

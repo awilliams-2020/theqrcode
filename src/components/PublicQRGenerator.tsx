@@ -5,6 +5,8 @@ import { QrCode, Download } from 'lucide-react'
 import { QRGenerator } from '@/lib/qr-generator'
 import WiFiInput from './WiFiInput'
 import VCardInput from './VCardInput'
+import { trackEvent } from '@/lib/matomo'
+import { MatomoEventCategory, MatomoEventAction, createCustomDimensions } from '@/lib/matomo-config'
 
 interface PublicQRGeneratorProps {
   defaultType?: 'url' | 'wifi' | 'contact' | 'text' | 'email' | 'menu'
@@ -83,6 +85,17 @@ export default function PublicQRGenerator({
 
   const handleDownload = () => {
     if (qrImage) {
+      // Track PNG download
+      trackEvent({
+        category: MatomoEventCategory.QR_CODE,
+        action: MatomoEventAction.DOWNLOAD,
+        name: `download_png_${qrData.type}`,
+        customDimensions: createCustomDimensions({
+          QR_CODE_TYPE: qrData.type,
+          LANDING_PAGE: 'qr-code-generator',
+        }),
+      });
+      
       const link = document.createElement('a')
       link.href = qrImage
       link.download = `qrcode-${Date.now()}.png`
@@ -122,7 +135,7 @@ export default function PublicQRGenerator({
     {
       title: 'Email Address',
       type: 'email' as const,
-      description: 'Pre-filled email messages',
+      description: 'Email address',
       emoji: '📧',
       planRequired: 'starter' as 'free' | 'starter' | 'pro' | null
     },
@@ -148,6 +161,17 @@ export default function PublicQRGenerator({
       return
     }
     // Note: Email (Starter+) can still be generated on public generator, badge just indicates paid feature
+    
+    // Track QR type selection
+    trackEvent({
+      category: MatomoEventCategory.QR_CODE,
+      action: MatomoEventAction.CREATE,
+      name: `select_type_${type}`,
+      customDimensions: createCustomDimensions({
+        QR_CODE_TYPE: type,
+        LANDING_PAGE: 'qr-code-generator',
+      }),
+    });
     
     // Set default content based on type
     let defaultContent = ''

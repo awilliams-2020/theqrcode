@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { QrCode, ExternalLink, BarChart3 } from 'lucide-react'
+import { QrCode, ExternalLink, BarChart3, Utensils } from 'lucide-react'
+import MenuPreview from '@/components/MenuPreview'
 import { QRGenerator } from '@/lib/qr-generator'
 
 interface PageProps {
@@ -95,6 +96,8 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
         }
         
         window.location.href = redirectUrl
+      } else if (qrCodeData?.type === 'menu') {
+        router.push(`/menu/${shortCode}`)
       } else if (qrCodeData?.type === 'wifi') {
         // For WiFi QR codes, show connection instructions
         // The user is already on the display page with WiFi info
@@ -250,6 +253,14 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
             >
               <ExternalLink className="h-4 w-4" />
               <span>Open Link</span>
+            </button>
+          ) : qrCodeData?.type === 'menu' ? (
+            <button
+              onClick={handleScan}
+              className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <Utensils className="h-4 w-4" />
+              <span>View Menu</span>
             </button>
           ) : null}
           
@@ -564,6 +575,8 @@ export default function QRCodeDisplayPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+          ) : qrCodeData?.type === 'menu' && qrCodeData?.content ? (
+            <MenuPreview content={qrCodeData.content} />
           ) : qrCodeData?.type === 'url' && qrCodeData?.content && (
             <div className="text-xs text-gray-500">
               <p>This QR code will take you to:</p>

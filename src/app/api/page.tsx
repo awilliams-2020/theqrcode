@@ -1,14 +1,15 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Code, Key, Zap, Shield, BarChart3, Webhook } from 'lucide-react'
+import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'API Documentation - QR Code Generator API',
-  description: 'Complete API documentation for TheQRCode.io QR code generation, analytics, and management. RESTful API with examples and SDKs.',
-  keywords: ['QR code API', 'API documentation', 'QR code REST API', 'QR code SDK', 'API integration'],
+  title: 'QR Code API | TheQRCode.io – Docs, Examples & OpenAPI',
+  description: 'TheQRCode.io API: generate QR codes via REST. Public endpoint needs no auth. Docs, examples, OpenAPI spec. URL, WiFi, Contact, Text, Email.',
+  keywords: ['QR code API', 'API documentation', 'QR code REST API', 'QR code SDK', 'API integration', 'TheQRCode.io API'],
   openGraph: {
-    title: 'API Documentation - QR Code Generator API',
-    description: 'Complete API documentation for TheQRCode.io QR code generation, analytics, and management.',
+    title: 'QR Code API | TheQRCode.io – Docs & Examples',
+    description: 'TheQRCode.io API: generate QR codes via REST. No auth for public endpoint. Docs, examples, OpenAPI.',
     type: 'website',
   },
 }
@@ -477,6 +478,16 @@ const features = [
 export default function APIDocumentationPage() {
   return (
     <div className="min-h-screen bg-white">
+      <StructuredData
+        type="FAQPage"
+        data={{
+          faqs: [
+            { question: "Does TheQRCode.io's API require authentication?", answer: "The public QR code generation endpoint does not require authentication — use it for up to 100 requests per hour per IP. The full REST API for managing QR codes requires an API key (Pro plan and above)." },
+            { question: "What is the API rate limit?", answer: "The public endpoint is limited to 100 requests per hour per IP. Authenticated API usage limits depend on your plan (e.g. Pro: higher limits)." },
+            { question: "Which QR code types does the API support?", answer: "The API supports URL, WiFi, Contact (vCard), Text, and Email QR codes. Menu QR codes are available on paid plans." },
+          ]
+        }}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4">
@@ -492,15 +503,107 @@ export default function APIDocumentationPage() {
         </div>
       </section>
 
+      {/* Public API for AI Assistants */}
+      <section className="py-16 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+              🤖 Public API for AI Assistants
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+              Generate QR codes instantly without authentication. Perfect for AI assistants, chatbots, and automated integrations.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mb-8">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Features</h3>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>No authentication required</strong> - Start generating QR codes immediately</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Rate limited</strong> - 100 requests per hour per IP address</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Multiple QR types</strong> - URL, WiFi, Contact (vCard), Text, Email</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>Instant results</strong> - Returns QR code image data URL and shareable URL</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span><strong>OpenAPI spec</strong> - Full API documentation available</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Example</h3>
+                <div className="bg-gray-900 rounded-lg p-4 text-white">
+                  <pre className="text-green-400 text-xs sm:text-sm overflow-x-auto whitespace-pre-wrap break-all">
+{`POST /api/public/qr-codes
+Content-Type: application/json
+
+{
+  "type": "url",
+  "data": "https://example.com",
+  "settings": {
+    "size": 256,
+    "color": {
+      "dark": "#000000",
+      "light": "#FFFFFF"
+    }
+  }
+}`}
+                  </pre>
+                </div>
+                <div className="mt-4">
+                  <Link
+                    href="/api/public/qr-codes"
+                    className="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                  >
+                    View Public API Docs →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">📚 Resources for AI Assistants</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Link href="/api/public/qr-codes" className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h4 className="font-semibold text-gray-900 mb-2">Public API Endpoint</h4>
+                <p className="text-sm text-gray-600">Generate QR codes without authentication</p>
+              </Link>
+              <Link href="/api/public/qr-codes/openapi.json" className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h4 className="font-semibold text-gray-900 mb-2">OpenAPI Specification</h4>
+                <p className="text-sm text-gray-600">Complete API documentation in OpenAPI format</p>
+              </Link>
+              <Link href="/api/public/qr-codes/.well-known/ai-plugin.json" className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h4 className="font-semibold text-gray-900 mb-2">AI Plugin Manifest</h4>
+                <p className="text-sm text-gray-600">OpenAI plugin format for AI assistant integration</p>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Quick Start */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Quick Start
+              Quick Start (Authenticated API)
             </h2>
             <p className="text-lg sm:text-xl text-gray-600">
-              Get started with our API in minutes
+              Get started with our authenticated API in minutes
             </p>
           </div>
           
@@ -578,7 +681,7 @@ export default function APIDocumentationPage() {
           </div>
           
           <div className="space-y-6 sm:space-y-8">
-            {endpoints.filter(endpoint => endpoint.tier !== 'Business').map((endpoint, index) => (
+            {endpoints.map((endpoint, index) => (
               <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="bg-gray-50 px-4 sm:px-6 py-4 border-b">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -597,7 +700,6 @@ export default function APIDocumentationPage() {
                     <div className="flex items-center">
                       <span className={`px-3 py-1 rounded text-sm font-medium ${
                         endpoint.tier === 'Pro' ? 'bg-blue-100 text-blue-800' :
-                        endpoint.tier === 'Business' ? 'bg-purple-100 text-purple-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
                         {endpoint.tier}
@@ -887,6 +989,24 @@ if (signature === expectedSignature) {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* AI Assistants CTA */}
+      <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-600">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            🤖 Building an AI Assistant?
+          </h2>
+          <p className="text-lg sm:text-xl text-purple-100 mb-8">
+            Use our public API to generate QR codes without authentication. Perfect for ChatGPT, Claude, and other AI tools.
+          </p>
+          <Link
+            href="/for-ai-assistants"
+            className="inline-block px-8 py-4 bg-white text-purple-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            Learn More About AI Integration →
+          </Link>
         </div>
       </section>
 

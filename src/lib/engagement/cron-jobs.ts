@@ -14,6 +14,7 @@ import { sendPeriodicAnalyticsSummaries as sendPeriodicAnalyticsSummariesOrigina
 import { PrismaClient } from '@prisma/client'
 import { createTransporter, createEmailOptions } from '../email'
 import { logger } from '../logger'
+import { deleteStripeCustomer } from '../stripe'
 
 const prisma = new PrismaClient()
 
@@ -569,17 +570,35 @@ async function deleteInactiveUsers(): Promise<{ success: boolean; count?: number
           },
         })
 
-        // If user has a subscription, cancel it
+        // If user has a subscription, clear Stripe data and mark canceled (align with delete-account flow)
         if (user.subscription) {
+          const stripeCustomerIdToDelete = user.subscription.stripeCustomerId ?? null
           try {
             await prisma.subscription.update({
               where: { id: user.subscription.id },
               data: {
+                stripeCustomerId: null,
+                stripeSubscriptionId: null,
+                stripePriceId: null,
+                stripeCurrentPeriodEnd: null,
                 status: 'canceled',
+                trialEndsAt: null,
               },
             })
+            if (stripeCustomerIdToDelete) {
+              try {
+                await deleteStripeCustomer(stripeCustomerIdToDelete)
+                logger.info('CRON-JOBS', 'Stripe customer deleted for inactive user', { userId: user.id })
+              } catch (stripeErr) {
+                logger.warn('CRON-JOBS', 'Stripe customer delete failed (subscription already cleared)', {
+                  component: 'deleteInactiveUsers',
+                  userId: user.id,
+                  error: stripeErr instanceof Error ? stripeErr.message : String(stripeErr),
+                })
+              }
+            }
           } catch (subError) {
-            logger.warn('CRON-JOBS', 'Failed to cancel subscription for user', {
+            logger.warn('CRON-JOBS', 'Failed to update subscription for inactive user', {
               component: 'deleteInactiveUsers',
               action: 'cancelSubscription',
               userId: user.id,

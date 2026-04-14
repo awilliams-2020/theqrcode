@@ -145,7 +145,6 @@ export interface MenuData {
   theme?: {
     primaryColor?: string
     secondaryColor?: string
-    useGradient?: boolean // Whether to use gradient or solid background
   }
 }
 
@@ -173,7 +172,7 @@ export interface ShareTemplate {
   category: 'business' | 'wifi' | 'contact' | 'event' | 'email' | 'text' | 'general'
 }
 
-export type PlanType = 'free' | 'starter' | 'pro' | 'business'
+export type PlanType = 'free' | 'starter' | 'pro'
 export type QRCodeType = 'url' | 'text' | 'wifi' | 'contact' | 'email' | 'menu'
 export type FrameStyle = 'square' | 'rounded' | 'circle' | 'dashed'
 export type QRDotType = 'square' | 'dots' | 'rounded' | 'extra-rounded' | 'classy' | 'classy-rounded'

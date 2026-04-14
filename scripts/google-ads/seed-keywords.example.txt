@@ -1,0 +1,9 @@
+# Seed keywords for keyword-ideas.ts (one per line; # = comment)
+# Copy to seed-keywords.txt and edit. Or use --seeds-file path/to/this/file
+
+qr code generator
+qr code generator with tracking
+dynamic QR code
+dynamic QR codes analytics
+trackable QR code
+QR code with analytics

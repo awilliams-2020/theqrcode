@@ -394,7 +394,7 @@ describe('Bulk Operations API (Pro Plan and above)', () => {
       ]
 
       const { prisma } = require('@/lib/prisma')
-      prisma.subscription.findUnique.mockResolvedValue({ plan: 'business' })
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
       prisma.qrCode.count.mockResolvedValue(0)
       prisma.qrCode.create
         .mockResolvedValueOnce(mockQRCodes[0])
@@ -503,7 +503,7 @@ describe('Bulk Operations API (Pro Plan and above)', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
       
       const { prisma } = require('@/lib/prisma')
-      prisma.subscription.findUnique.mockResolvedValue({ plan: 'business' })
+      prisma.subscription.findUnique.mockResolvedValue({ plan: 'pro' })
       prisma.qrCode.count.mockResolvedValue(0)
       prisma.qrCode.create
         .mockResolvedValueOnce({ id: 'qr1', name: 'Success QR', type: 'url', content: 'https://success.com', settings: {}, isDynamic: false, createdAt: new Date(), updatedAt: new Date() })

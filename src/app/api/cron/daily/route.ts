@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dailyEngagementTasks } from '@/lib/engagement/cron-jobs'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    console.log('Running daily engagement tasks...')
+    logger.info('CRON-JOBS', 'Running daily engagement tasks')
     await dailyEngagementTasks()
 
     return NextResponse.json({
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Daily cron job failed:', error)
+    logger.logError(error as Error, 'CRON-JOBS', 'Daily cron job failed')
     return NextResponse.json(
       {
         success: false,

@@ -40,6 +40,9 @@ model User {
   deletedAt     DateTime?
   isDeleted     Boolean       @default(false)
   timezone      String        @default("UTC")
+  gclid         String?
+  /** Plan requested at signup (starter/pro); used so resend verification link includes plan. Cleared after verify. */
+  signupRequestedPlan String?
   accounts      Account[]
   apiKeys       ApiKey[]
   qrCodes       QrCode[]

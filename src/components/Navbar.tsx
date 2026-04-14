@@ -16,7 +16,7 @@ import {
   TrendingUp
 } from 'lucide-react'
 import NotificationBell from './NotificationBell'
-import { trackSignup, trackEngagement } from '@/lib/matomo-tracking'
+import { trackSignup, trackEngagement, trackDashboard } from '@/lib/matomo-tracking'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -188,7 +188,12 @@ export default function Navbar() {
             {navigationItems.map((item) => (
               <button
                 key={item.name}
-                onClick={() => router.push(item.href)}
+                onClick={() => {
+                  if (pathname === '/dashboard' && (item.name === 'Analytics' || item.name === 'Settings')) {
+                    trackDashboard.clickNavCTA(item.name as 'Analytics' | 'Settings')
+                  }
+                  router.push(item.href)
+                }}
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
               >
                 <item.icon className="h-4 w-4" />
@@ -274,7 +279,12 @@ export default function Navbar() {
             {navigationItems.map((item) => (
               <button
                 key={item.name}
-                onClick={() => router.push(item.href)}
+                onClick={() => {
+                  if (pathname === '/dashboard' && (item.name === 'Analytics' || item.name === 'Settings')) {
+                    trackDashboard.clickNavCTA(item.name as 'Analytics' | 'Settings')
+                  }
+                  router.push(item.href)
+                }}
                 className="flex items-center space-x-3 w-full px-3 py-3 text-left text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               >
                 <item.icon className="h-5 w-5" />

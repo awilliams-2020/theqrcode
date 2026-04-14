@@ -3,16 +3,16 @@ import { BarChart3, TrendingUp, Globe, Smartphone, Clock, Users, MapPin, Activit
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'QR Code Analytics | Track & Analyze QR Code Performance - TheQRCode.io',
-  description: 'QR code analytics platform - Track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring. Free analytics included.',
+  title: 'QR Code Analytics – Track Scans, Locations & Devices | TheQRCode.io',
+  description: 'Free QR code analytics: track scans, locations, devices, and trends. Real-time dashboard. No signup required to try. Used by 10,000+ businesses.',
   keywords: [
     'qr-code analytics', 'qr code analytics', 'qr code tracking', 'qr code insights', 
     'qr code metrics', 'qr code performance', 'qr code monitoring',
     'qr code analytics dashboard', 'track qr code scans', 'qr code statistics'
   ],
   openGraph: {
-    title: 'QR Code Analytics | Track & Analyze QR Code Performance',
-    description: 'Powerful QR code analytics to track scans, monitor performance, and understand your audience. Get detailed insights with location data, device breakdowns, and real-time monitoring.',
+    title: 'QR Code Analytics – Track Scans, Locations & Devices',
+    description: 'Free QR code analytics: track scans, locations, devices, and trends. Real-time dashboard. No signup required.',
     type: 'website',
     url: 'https://theqrcode.io/qr-code-analytics',
   },
@@ -231,7 +231,7 @@ export default function QRCodeAnalyticsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Smartphone className="h-5 w-5 text-gray-600" />
-                      <span className="text-sm font-medium">Mobile</span>
+                      <span className="text-sm font-medium text-gray-900">Mobile</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
@@ -243,7 +243,7 @@ export default function QRCodeAnalyticsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Globe className="h-5 w-5 text-gray-600" />
-                      <span className="text-sm font-medium">Desktop</span>
+                      <span className="text-sm font-medium text-gray-900">Desktop</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-24 bg-gray-200 rounded-full h-2">

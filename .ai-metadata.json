@@ -83,7 +83,7 @@
   },
   "api": {
     "available": true,
-    "documentation": "Available in dashboard for Pro/Business subscribers",
+    "documentation": "Available in dashboard for Pro subscribers",
     "endpoints": [
       "QR code CRUD operations",
       "Analytics and tracking",
@@ -110,11 +110,6 @@
         "name": "Pro",
         "price": "$29/month",
         "features": ["Advanced analytics", "API access", "Webhooks"]
-      },
-      {
-        "name": "Business",
-        "price": "$99/month",
-        "features": ["Enterprise features", "Priority support", "Custom integrations"]
       }
     ],
     "trial": "14-day free trial available"

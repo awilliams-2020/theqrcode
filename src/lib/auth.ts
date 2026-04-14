@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { createHmac } from 'crypto'
 import { prisma } from './prisma'
 import { createStripeCustomer } from './stripe'
 import { sendWelcomeEmail } from './engagement/email-automation'
@@ -107,6 +108,35 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: 'lau',
+      name: 'Log in as user (admin)',
+      credentials: { token: { label: 'Token', type: 'text' } },
+      async authorize(credentials) {
+        const token = credentials?.token
+        if (!token || !process.env.LAU_SECRET) return null
+        const parts = token.split('.')
+        if (parts.length !== 3) return null
+        const [header, payload, sig] = parts
+        const expected = createHmac('sha256', process.env.LAU_SECRET)
+          .update(`${header}.${payload}`)
+          .digest('base64url')
+        if (sig !== expected) return null
+        let data: { userId: string; exp: number }
+        try {
+          data = JSON.parse(Buffer.from(payload, 'base64url').toString())
+        } catch {
+          return null
+        }
+        if (Date.now() / 1000 > data.exp || !data.userId) return null
+        const user = await prisma.user.findUnique({
+          where: { id: data.userId },
+          select: { id: true, email: true, name: true, image: true },
+        })
+        if (!user) return null
+        return { id: user.id, email: user.email!, name: user.name, image: user.image }
+      },
+    }),
   ],
   callbacks: {
     async session({ session, token, user }) {
@@ -154,6 +184,7 @@ export const authOptions: NextAuthOptions = {
               name: user.name || null,
               image: user.image || null,
               emailVerified: new Date(), // OAuth users are automatically verified
+              lastLoginAt: new Date(), // First sign-in counts as last login
             }
           })
 
@@ -167,8 +198,8 @@ export const authOptions: NextAuthOptions = {
             }
           })
 
-          // Try to create Stripe customer (only if Stripe is properly configured)
-          if (process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'production') {
+          // Create Stripe customer when Stripe is configured (use test key in dev for sandbox)
+          if (process.env.STRIPE_SECRET_KEY) {
             try {
               const stripeCustomer = await createStripeCustomer({
                 userId: newUser.id,
@@ -189,8 +220,8 @@ export const authOptions: NextAuthOptions = {
           // Track user signup (async, don't block)
           trackUser.signup(newUser.id).catch(() => {})
 
-          // Send welcome email (async, don't block)
-          sendWelcomeEmail(newUser.id).catch(() => {})
+          // Don't send welcome email here for OAuth: plan is applied later on /auth/setup.
+          // Welcome email is sent from setup-subscription (paid) or dashboard ensure-welcome (free).
 
           token.sub = newUser.id
         }

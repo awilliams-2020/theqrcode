@@ -1,0 +1,15 @@
+# Seed keywords for keyword-ideas.ts
+# One per line. # = comment. Use: npx tsx scripts/google-ads/keyword-ideas.ts --seeds-file scripts/google-ads/seed-keywords.txt
+
+qr code generator
+qr code generator with tracking
+dynamic QR code
+dynamic QR codes analytics
+trackable QR code
+QR code with analytics
+QR code generator with analytics
+free QR code generator
+QR code maker with tracking
+dynamic QR code generator
+QR code analytics
+create QR code with tracking

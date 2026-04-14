@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const { plan } = await request.json()
     
     // Validate plan
-    if (!['free', 'starter', 'pro', 'business'].includes(plan)) {
+    if (!['free', 'starter', 'pro'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 

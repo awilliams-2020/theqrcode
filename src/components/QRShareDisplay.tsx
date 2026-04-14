@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { QrCode, Copy, Download, Share2, BarChart3, Mail, Phone, Globe, Wifi, User } from 'lucide-react'
+import { QrCode, Copy, Download, Share2, BarChart3, Mail, Globe, Wifi, User, Utensils } from 'lucide-react'
 import { QRCode as QRCodeType } from '@/types'
+import MenuPreview from './MenuPreview'
 
 interface QRShareDisplayProps {
   qrCode: QRCodeType & {
@@ -53,6 +54,8 @@ export default function QRShareDisplay({ qrCode, qrCodeImage, message }: QRShare
         return <Mail className="h-5 w-5" />
       case 'url':
         return <Globe className="h-5 w-5" />
+      case 'menu':
+        return <Utensils className="h-5 w-5" />
       default:
         return <QrCode className="h-5 w-5" />
     }
@@ -77,8 +80,10 @@ export default function QRShareDisplay({ qrCode, qrCodeImage, message }: QRShare
     }
   }
 
-  const displayUrl = qrCode.isDynamic && qrCode.shortUrl 
-    ? qrCode.shortUrl.replace('/r/', '/display/') 
+  const displayUrl = qrCode.isDynamic && qrCode.shortUrl
+    ? qrCode.type === 'menu'
+      ? qrCode.shortUrl.replace('/r/', '/menu/')
+      : qrCode.shortUrl.replace('/r/', '/display/')
     : qrCode.content
 
   return (
@@ -242,6 +247,23 @@ export default function QRShareDisplay({ qrCode, qrCodeImage, message }: QRShare
                     <p className="text-sm text-gray-900">{qrCode.content}</p>
                   </div>
                 </div>
+              )}
+
+              {qrCode.type === 'menu' && (
+                <>
+                  <MenuPreview content={qrCode.content} className="w-full max-w-md" />
+                  {displayUrl && (
+                    <a
+                      href={displayUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <Utensils className="h-3.5 w-3.5" />
+                      View Full Menu
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>

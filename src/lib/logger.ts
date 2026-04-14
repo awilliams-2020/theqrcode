@@ -3,8 +3,10 @@
  * Provides consistent log formatting with category support
  */
 
+import { pushToLoki } from './grafana-loki'
+
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
-export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR' | 'CRON-JOBS' | 'SERVER-ACTION'
+export type LogCategory = 'BOT-DETECTION' | 'API' | 'AUTH' | 'QR-CODE' | 'ANALYTICS' | 'NOTIFICATION' | 'PAYMENT' | 'SYSTEM' | 'MATOMO' | 'ERROR' | 'CRON-JOBS' | 'SERVER-ACTION' | 'PUBLIC-API' | 'WEBHOOK' | 'GOOGLE-ADS'
 
 interface LogContext {
   userId?: string
@@ -24,38 +26,43 @@ class Logger {
     const timestamp = new Date().toISOString()
     const categoryTag = `[${category}]`
     const levelTag = `[${level}]`
-    
+
     let logMessage = `[${timestamp}] ${levelTag} ${categoryTag} ${message}`
-    
+
     // Add additional context if provided
     if (context) {
       const contextParts: string[] = []
-      
+
       if (context.userId) contextParts.push(`user:${context.userId}`)
       if (context.requestId) contextParts.push(`req:${context.requestId}`)
       if (context.component) contextParts.push(`comp:${context.component}`)
       if (context.action) contextParts.push(`action:${context.action}`)
       if (context.ipAddress) contextParts.push(`ip:${context.ipAddress}`)
       if (context.userAgent) contextParts.push(`ua:${context.userAgent}`)
-      
-      // Add any other custom context
+
+      // Add any other custom context (stringify objects/arrays so we don't get [object Object])
       Object.entries(context).forEach(([key, value]) => {
         if (!['userId', 'requestId', 'component', 'action', 'ipAddress', 'userAgent'].includes(key)) {
-          contextParts.push(`${key}:${value}`)
+          const displayValue =
+            value !== undefined && value !== null && typeof value === 'object'
+              ? JSON.stringify(value)
+              : String(value)
+          contextParts.push(`${key}:${displayValue}`)
         }
       })
-      
+
       if (contextParts.length > 0) {
         logMessage += ` | ${contextParts.join(', ')}`
       }
     }
-    
+
     return logMessage
   }
 
   private log(level: LogLevel, category: LogCategory, message: string, context?: LogContext): void {
     const logMessage = this.formatLogMessage(level, category, message, context)
     console.log(logMessage)
+    pushToLoki(level, category, message, context)
   }
 
   // Public logging methods
@@ -120,7 +127,7 @@ class Logger {
   logError(error: Error | unknown, category: LogCategory, message: string, context?: LogContext): void {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const fullMessage = `${message}: ${errorMessage}`
-    
+
     this.error(category, fullMessage, {
       ...context,
       error: errorMessage,

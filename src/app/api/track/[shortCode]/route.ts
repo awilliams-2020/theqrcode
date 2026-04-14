@@ -9,6 +9,8 @@ import { runAnalyticsChecks } from '@/lib/engagement/analytics-notifications'
 import { trackQRCode } from '@/lib/matomo-tracking'
 import { captureException } from '@/lib/sentry'
 import { escapeHtml, escapeJsString, safeUrl, safeMailtoUrl, escapeJsForAttribute } from '@/lib/escape-utils'
+import { checkScanLimit } from '@/lib/scan-limits'
+import { logger } from '@/lib/logger'
 
 // Helper function to generate scan tracking script
 function generateScanTrackingScript(shortCode: string): string {
@@ -67,45 +69,6 @@ function generateScanTrackingScript(shortCode: string): string {
     </script>`;
 }
 
-// Plan limits configuration
-const PLAN_LIMITS = {
-  free: { qrCodes: 10, scans: 1000 },
-  starter: { qrCodes: 100, scans: 10000 },
-  pro: { qrCodes: 500, scans: 500000 },
-  business: { qrCodes: -1, scans: -1 }
-} as const
-
-// Helper function to check if user has exceeded scan limits
-async function checkScanLimit(userId: string): Promise<{ allowed: boolean; currentCount: number; limit: number }> {
-  // Get user's subscription
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId }
-  })
-
-  const currentPlan = subscription?.plan || 'free'
-  const limits = PLAN_LIMITS[currentPlan as keyof typeof PLAN_LIMITS]
-
-  // Business plan has unlimited scans
-  if (limits.scans === -1) {
-    return { allowed: true, currentCount: 0, limit: -1 }
-  }
-
-  // Count total scans across all user's QR codes
-  const totalScans = await prisma.scan.count({
-    where: {
-      qrCode: {
-        userId: userId
-      }
-    }
-  })
-
-  return {
-    allowed: totalScans < limits.scans,
-    currentCount: totalScans,
-    limit: limits.scans
-  }
-}
-
 // Helper function to record a scan
 async function recordScan(qrCode: any, headersList: any) {
   const userAgent = headersList.get('user-agent') || ''
@@ -146,9 +109,9 @@ async function recordScan(qrCode: any, headersList: any) {
     )
     
     // Note: Real-time broadcasting removed as polling is used instead
-    console.log('Scan recorded for QR code:', qrCode.name)
+    logger.info('QR-CODE', 'Scan recorded', { qrCodeName: qrCode.name, qrCodeId: qrCode.id })
   } catch (error) {
-    console.error('Error processing scan data:', error)
+    logger.logError(error as Error, 'QR-CODE', 'Error processing scan data', { qrCodeId: qrCode.id })
     // Don't fail the scan recording if data processing fails
   }
 
@@ -165,14 +128,14 @@ export async function GET(
     shortCode = code
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
     
-    console.log('Track API Debug:', { shortCode, shortUrl })
+    logger.debug('API', 'Track API request', { shortCode, shortUrl })
     
     // Find the QR code by short URL
     const qrCode = await prisma.qrCode.findUnique({
       where: { shortUrl }
     })
 
-    console.log('QR Code found:', qrCode ? 'Yes' : 'No', qrCode?.name)
+    logger.debug('API', 'QR code lookup', { shortCode, found: !!qrCode, name: qrCode?.name })
 
     // Check if QR code exists and if it's been soft deleted
     if (!qrCode || qrCode.isDeleted) {
@@ -1191,7 +1154,7 @@ export async function GET(
       return NextResponse.redirect(`${baseUrl}/display/${shortCode}`)
     }
   } catch (error) {
-    console.error('Error tracking scan:', error)
+    logger.logError(error as Error, 'API', 'Error tracking scan (GET)', { shortCode })
     captureException(error, {
       endpoint: '/api/track/[shortCode]',
       method: 'GET',
@@ -1263,21 +1226,15 @@ export async function POST(
   try {
     const { shortCode: code } = await params
     shortCode = code
-    console.log('POST /api/track called with shortCode:', shortCode)
     const shortUrl = URLShortener.getFullShortUrl(shortCode)
-    console.log('Generated shortUrl:', shortUrl)
     
-    // Find the QR code by short URL
-    console.log('Searching for QR code with shortUrl:', shortUrl)
     let qrCode
     try {
-      console.log('Attempting database query...')
       qrCode = await prisma.qrCode.findUnique({
         where: { shortUrl }
       })
-      console.log('QR code found:', qrCode ? 'Yes' : 'No')
     } catch (dbError) {
-      console.error('Database error details:', {
+      logger.logError(dbError as Error, 'API', 'Database error in track POST', {
         message: (dbError as any).message,
         code: (dbError as any).code,
         stack: (dbError as any).stack
@@ -1290,13 +1247,13 @@ export async function POST(
 
     // Check if QR code exists or has been soft deleted
     if (!qrCode || qrCode.isDeleted) {
-      console.log('QR code not found or deleted for shortCode:', shortCode)
+      logger.info('API', 'QR code not found or deleted', { shortCode, shortUrl })
       return NextResponse.json({ error: 'QR code not found', shortCode, shortUrl }, { status: 404 })
     }
 
     // If tracking is disabled (isDynamic is false), don't record scans but allow redirect
     if (!qrCode.isDynamic) {
-      console.log('Tracking disabled for QR code, skipping scan recording')
+      logger.debug('API', 'Tracking disabled for QR code, skipping scan recording', { shortCode, qrCodeId: qrCode.id })
       return NextResponse.json({ success: true, message: 'Tracking disabled, scan not recorded' })
     }
 
@@ -1329,7 +1286,7 @@ export async function POST(
       })
 
       if (recentScan) {
-        console.log('Exact duplicate scan detected (same IP + UA within 2 minutes), skipping recording')
+        logger.debug('API', 'Exact duplicate scan detected, skipping recording', { shortCode, qrCodeId: qrCode.id })
         return NextResponse.json({ success: true, message: 'Duplicate scan detected, not recorded' })
       }
     }
@@ -1339,7 +1296,7 @@ export async function POST(
     
     if (scanLimitCheck.allowed) {
       // Record the scan if within limits
-      console.log('Recording scan for QR code:', qrCode.id)
+      logger.debug('API', 'Recording scan for QR code', { qrCodeId: qrCode.id })
       try {
         // Get headers and device/location info
         const headersList = await headers()
@@ -1352,7 +1309,7 @@ export async function POST(
         
         // Record the scan
         await recordScan(qrCode, headersList)
-        console.log('Scan recorded successfully')
+        logger.info('QR-CODE', 'Scan recorded successfully', { qrCodeId: qrCode.id })
         
         // Check for scan milestones (asynchronous, don't block response)
         const totalScans = await prisma.scan.count({
@@ -1367,7 +1324,7 @@ export async function POST(
         const scanMilestones = [100, 500, 1000, 5000, 10000, 50000]
         if (scanMilestones.includes(totalScans)) {
           notifyMilestone(qrCode.userId, 'scans', totalScans).catch(err =>
-            console.error('Failed to send scan milestone notification:', err)
+            logger.logError(err as Error, 'NOTIFICATION', 'Failed to send scan milestone notification', { userId: qrCode.userId, totalScans })
           )
         }
         
@@ -1379,7 +1336,7 @@ export async function POST(
           country: locationInfo.country,
           city: locationInfo.city
         }).catch(err => {
-          console.error('Failed to run analytics checks:', err)
+          logger.logError(err as Error, 'ANALYTICS', 'Failed to run analytics checks', { userId: qrCode.userId, qrCodeId: qrCode.id })
         })
         
         // Track QR code scan in Matomo (async, don't block response)
@@ -1395,16 +1352,17 @@ export async function POST(
             country: locationInfo.country || undefined,
             device: deviceInfo.device,
           }
-        ).catch(err => console.error('Failed to track QR scan in Matomo:', err))
+        ).catch(err => logger.logError(err as Error, 'MATOMO', 'Failed to track QR scan in Matomo', { qrCodeId: qrCode.id }))
         
         return NextResponse.json({ success: true, message: 'Scan recorded' })
       } catch (recordError) {
-        console.error('Error recording scan:', recordError)
+        logger.logError(recordError as Error, 'API', 'Error recording scan', { qrCodeId: qrCode.id })
         return NextResponse.json({ error: 'Failed to record scan' }, { status: 500 })
       }
     } else {
       // Limit exceeded - return error with details
-      console.log(`Scan limit exceeded for user ${qrCode.userId}:`, {
+      logger.warn('API', 'Scan limit exceeded', {
+        userId: qrCode.userId,
         currentCount: scanLimitCheck.currentCount,
         limit: scanLimitCheck.limit
       })
@@ -1418,7 +1376,7 @@ export async function POST(
       }, { status: 403 })
     }
   } catch (error) {
-    console.error('Error tracking scan:', error)
+    logger.logError(error as Error, 'API', 'Error tracking scan (POST)', { shortCode })
     captureException(error, {
       endpoint: '/api/track/[shortCode]',
       method: 'POST',

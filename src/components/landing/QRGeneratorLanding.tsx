@@ -3,8 +3,10 @@
 import { QrCode, Palette, Download, BarChart3, Shield, Zap, CheckCircle2, Wifi, Mail, User, FileText, Clock, Users, Award, Utensils } from 'lucide-react'
 import Link from 'next/link'
 import PublicQRGenerator from '../PublicQRGenerator'
+import { useLandingPageTracking } from '@/hooks/useLandingPageTracking'
 
 export default function QRGeneratorLanding() {
+  const { trackCTA, trackPricingView } = useLandingPageTracking('qr-code-generator');
   const features = [
     {
       icon: QrCode,
@@ -43,7 +45,7 @@ export default function QRGeneratorLanding() {
     { icon: FileText, name: 'Plain Text', description: 'Any text content or message', planRequired: null as 'free' | 'starter' | 'pro' | null },
     { icon: Wifi, name: 'WiFi', description: 'Share network access instantly', planRequired: null as 'free' | 'starter' | 'pro' | null },
     { icon: User, name: 'vCard', description: 'Share contact information', planRequired: null as 'free' | 'starter' | 'pro' | null },
-    { icon: Mail, name: 'Email', description: 'Pre-filled email messages', planRequired: 'starter' as 'free' | 'starter' | 'pro' | null },
+    { icon: Mail, name: 'Email', description: 'Email address', planRequired: 'starter' as 'free' | 'starter' | 'pro' | null },
     { icon: Utensils, name: 'Menu', description: 'Create digital restaurant menus with categories and items', planRequired: 'pro' as 'free' | 'starter' | 'pro' | null },
   ]
 
@@ -195,7 +197,10 @@ export default function QRGeneratorLanding() {
                 </li>
               </ul>
               <button
-                onClick={() => window.location.href = '/auth/signup?plan=pro&utm_source=google&utm_medium=cpc&utm_campaign=qr-generator'}
+                onClick={() => {
+                  trackCTA('Get Started Free', 'hero', 'pro');
+                  window.location.href = '/auth/signup?plan=pro&utm_source=google&utm_medium=cpc&utm_campaign=qr-generator';
+                }}
                 className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-lg"
               >
                 Get Started Free →
@@ -245,13 +250,19 @@ export default function QRGeneratorLanding() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => window.location.href = '/auth/signup?plan=pro&utm_source=google&utm_medium=cpc&utm_campaign=qr-generator'}
+              onClick={() => {
+                trackCTA('Start Free Trial', 'footer', 'pro');
+                window.location.href = '/auth/signup?plan=pro&utm_source=google&utm_medium=cpc&utm_campaign=qr-generator';
+              }}
               className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
             >
               Start Free Trial →
             </button>
             <button
-              onClick={() => window.location.href = '/pricing'}
+              onClick={() => {
+                trackPricingView();
+                window.location.href = '/pricing';
+              }}
               className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg font-semibold rounded-lg hover:border-gray-400 transition-colors bg-white"
             >
               View Pricing

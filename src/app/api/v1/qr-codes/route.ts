@@ -116,11 +116,10 @@ async function createQRCode(req: NextRequest, auth: any): Promise<NextResponse> 
       free: { qrCodes: 10 },
       starter: { qrCodes: 100 },
       pro: { qrCodes: 500 },
-      business: { qrCodes: -1 }
     }
 
     const currentPlan = subscription?.plan || 'free'
-    const limits = planLimits[currentPlan as keyof typeof planLimits]
+    const limits = planLimits[currentPlan as keyof typeof planLimits] ?? planLimits.pro
 
     if (limits.qrCodes !== -1 && auth.environment === 'production') {
       // Only check limits for production environment

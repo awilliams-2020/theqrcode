@@ -100,7 +100,7 @@ Complete reference of the database schema and data models for TheQRCode.io.
 - `stripeCustomerId` (String?, unique) - Stripe customer ID
 - `stripeSubscriptionId` (String?, unique) - Stripe subscription ID
 - `stripePriceId` (String?) - Stripe price ID
-- `plan` (String) - Plan name: "free", "starter", "pro", "business"
+- `plan` (String) - Plan name: "free", "starter", "pro"
 - `status` (String) - Status: "active", "canceled", "trialing", etc.
 - `stripeCurrentPeriodEnd` (DateTime?) - Current billing period end
 - `trialEndsAt` (DateTime?) - Trial expiration date
@@ -119,7 +119,6 @@ Complete reference of the database schema and data models for TheQRCode.io.
 - `free` - Free tier (limited features)
 - `starter` - $9/month (enhanced analytics)
 - `pro` - $29/month (API access, webhooks)
-- `business` - $99/month (enterprise features)
 
 ## Authentication Models
 
@@ -395,7 +394,7 @@ Complete reference of the database schema and data models for TheQRCode.io.
 - `name` (String) - Campaign name
 - `subject` (String) - Email subject
 - `template` (String) - Email template/content
-- `targetAudience` (String) - "all", "free", "starter", "pro", "business", "trial_ending", "inactive"
+- `targetAudience` (String) - "all", "free", "starter", "pro", "trial_ending", "inactive"
 - `status` (String) - "draft", "scheduled", "sent", "cancelled"
 - `scheduledFor` (DateTime?) - Scheduled send time
 - `sentAt` (DateTime?) - Actual send time

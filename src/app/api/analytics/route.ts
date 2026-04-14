@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
 
     const hasAdvancedAccess = subscription?.plan === 'starter' || 
                              subscription?.plan === 'pro' || 
-                             subscription?.plan === 'business' ||
                              subscription?.status === 'trialing'
 
     if (!hasAdvancedAccess) {

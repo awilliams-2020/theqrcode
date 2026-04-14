@@ -4,15 +4,15 @@ import { useState } from 'react'
 const faqs = [
   {
     question: "How quickly do you respond to support requests?",
-    answer: "We respond to email support requests within 24 hours. Live chat is available during business hours for immediate assistance. Pro and Business plan users get priority support with faster response times."
+    answer: "We respond to email support requests within 24 hours. Live chat is available during business hours for immediate assistance. Pro plan users get priority support with faster response times."
   },
   {
     question: "Do you offer phone support?",
-    answer: "Yes! Phone support is available for Pro and Business plan subscribers during business hours. Free and Starter plan users can access email and live chat support."
+    answer: "Yes! Phone support is available for Pro plan subscribers during business hours. Free and Starter plan users can access email and live chat support."
   },
   {
     question: "Can I get help with custom integrations?",
-    answer: "Absolutely! Our support team can help with API integrations, custom implementations, and technical questions. Business plan users get dedicated support for complex integrations."
+    answer: "Absolutely! Our support team can help with API integrations, custom implementations, and technical questions. Pro plan users get dedicated support for complex integrations."
   },
   {
     question: "Is there a knowledge base or documentation?",

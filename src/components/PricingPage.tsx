@@ -63,24 +63,6 @@ const plans = [
     buttonText: 'Subscribe',
     featured: true,
   },
-  {
-    id: 'business',
-    name: 'Business',
-    price: 99,
-    description: 'For large enterprises',
-    features: [
-      'Unlimited QR codes',
-      'Unlimited scans',
-      'Enterprise analytics',
-      'All QR code types',
-      'White label options',
-      '24/7 support',
-      'Full API access',
-      'Custom integrations',
-    ],
-    buttonText: 'Subscribe',
-    featured: false,
-  },
 ]
 
 // Detailed feature comparison
@@ -245,8 +227,11 @@ export default function PricingPage({ session }: PricingPageProps) {
 
       const data = await response.json()
 
+      if (response.ok && data.startTrial) {
+        window.location.href = '/dashboard'
+        return
+      }
       if (response.ok && data.url) {
-        // Redirect to Stripe checkout
         window.location.href = data.url
       } else {
         throw new Error(data.error || 'Failed to create checkout session')
@@ -283,7 +268,7 @@ export default function PricingPage({ session }: PricingPageProps) {
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {plans.filter(p => p.id !== 'business').map((plan) => (
+          {plans.map((plan) => (
             <div
               key={plan.id}
               className={`bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-200 hover:scale-105 ${
@@ -396,7 +381,7 @@ export default function PricingPage({ session }: PricingPageProps) {
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">Ready to get started?</p>
             <div className="flex justify-center gap-4">
-              {plans.filter(p => p.id !== 'business').map((plan) => (
+              {plans.map((plan) => (
                 <button
                   key={plan.id}
                   onClick={() => handleSubscribe(plan.id)}

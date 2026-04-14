@@ -29,6 +29,7 @@ function SignUpForm() {
     trackSignupFormStart,
     trackSignupFormSuccess,
     trackSignupFormError,
+    trackSignupFormValidationBlocked,
     trackSignupAbandonment,
   } = useSignupTracking({
     pageName: 'signup',
@@ -38,7 +39,6 @@ function SignUpForm() {
   useEffect(() => {
     // Get plan from URL parameters
     const plan = searchParams?.get('plan')
-    // Business plan is temporarily hidden
     if (plan && ['free', 'starter', 'pro'].includes(plan)) {
       setSelectedPlan(plan)
       trackPlanSelection(plan)
@@ -72,6 +72,9 @@ function SignUpForm() {
         })
       }
       
+      // Store plan:method for Matomo goal attribution when user returns from OAuth
+      document.cookie = `matomo_signup_pending=${encodeURIComponent(selectedPlan)}:google; path=/; max-age=600; samesite=lax`
+      
       // Use standard OAuth flow
       await signIn('google', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
@@ -104,6 +107,9 @@ function SignUpForm() {
         })
       }
       
+      // Store plan:method for Matomo goal attribution when user returns from OAuth
+      document.cookie = `matomo_signup_pending=${encodeURIComponent(selectedPlan)}:github; path=/; max-age=600; samesite=lax`
+      
       // Use standard OAuth flow
       await signIn('github', {
         callbackUrl: selectedPlan !== 'free' ? `/auth/setup?plan=${selectedPlan}` : '/dashboard'
@@ -117,12 +123,25 @@ function SignUpForm() {
   }
 
 
+  // Client-side validation: match server rules so we don't fire errors for empty/weak password
+  const passwordMeetsRules =
+    password.length >= 8 &&
+    password.length <= 128 &&
+    /\d/.test(password) &&
+    /[a-zA-Z]/.test(password)
+  const canSubmitPassword = email.trim().length > 0 && passwordMeetsRules
+
   const handlePasswordSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError('Please enter your email and password')
-      trackSignupFormError('password', 'validation_error')
+      trackSignupFormValidationBlocked('password')
+      return
+    }
+    if (!passwordMeetsRules) {
+      setError('Password must be at least 8 characters with a number and a letter')
+      trackSignupFormValidationBlocked('password')
       return
     }
 
@@ -134,11 +153,11 @@ function SignUpForm() {
       trackAuthMethodSelection('password')
       trackSignupFormStart('password')
 
-      // Create account with password
+      // Create account with password (include selected plan so subscription is set correctly)
       const response = await fetch('/api/auth/signup-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, plan: selectedPlan !== 'free' ? selectedPlan : undefined }),
       })
 
       const data = await response.json()
@@ -172,7 +191,18 @@ function SignUpForm() {
       } else if (result?.ok) {
         // Track successful signup
         trackSignupFormSuccess('password')
-        
+        // Persist gclid to DB now that we have a session (API requires auth)
+        const gclidRow = document.cookie.split('; ').find((row) => row.startsWith('gclid='))
+        const gclid = gclidRow ? gclidRow.slice(gclidRow.indexOf('=') + 1).trim() : null
+        if (gclid) {
+          fetch('/api/user/save-gclid', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gclid }),
+          })
+            .then((r) => r.ok && typeof sessionStorage !== 'undefined' && sessionStorage.setItem('gclid-sent', '1'))
+            .catch(() => {})
+        }
         await getSession()
         if (selectedPlan !== 'free') {
           router.push(`/auth/setup?plan=${selectedPlan}`)
@@ -228,25 +258,13 @@ function SignUpForm() {
       'Priority support',
       'API access',
       '14-day free trial'
-    ],
-    business: [
-      'Unlimited QR codes',
-      'Unlimited scans',
-      'Enterprise analytics',
-      'All QR code types',
-      'White label options',
-      '24/7 support',
-      'Full API access',
-      'Custom integrations',
-      '14-day free trial'
     ]
   }
 
   const planNames = {
     free: 'Free',
     starter: 'Starter',
-    pro: 'Pro',
-    business: 'Business'
+    pro: 'Pro'
   }
 
   const features = planFeatures[selectedPlan as keyof typeof planFeatures] || planFeatures.free
@@ -420,14 +438,16 @@ function SignUpForm() {
                   placeholder="••••••••"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
+                  minLength={8}
+                  autoComplete="new-password"
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  At least 8 characters with a number and letter
+                <p className={`mt-1 text-xs ${password.length > 0 && !passwordMeetsRules ? 'text-amber-600' : 'text-gray-500'}`}>
+                  At least 8 characters with a number and a letter
                 </p>
               </div>
               <button
                 type="submit"
-                disabled={isPasswordLoading}
+                disabled={isPasswordLoading || !canSubmitPassword}
                 className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPasswordLoading ? (

@@ -37,7 +37,7 @@ For businesses, marketers, and developers:
 - **Bulk Operations** - Create and manage multiple QR codes simultaneously
 
 ### Business Features
-- **Subscription Management** - Free, Starter ($9/mo), Pro ($29/mo), Business ($99/mo) plans
+- **Subscription Management** - Free, Starter ($9/mo), Pro ($29/mo) plans
 - **Stripe Integration** - Payment processing, webhooks, and subscription portal
 - **Google OAuth** - Social authentication for easy signup
 - **Email Automation** - Welcome emails, trial reminders, usage insights, feature announcements
@@ -45,10 +45,20 @@ For businesses, marketers, and developers:
 
 ### Developer Features
 - **RESTful API** - Comprehensive API with authentication, rate limiting, and webhooks
+- **Public API** - Generate QR codes without authentication - perfect for AI assistants and quick integrations
 - **API Documentation** - Full documentation with examples and integration guides
 - **Webhook Support** - Real-time notifications for QR code events
 - **Rate Limiting** - Built-in rate limiting and API monitoring
 - **100% Test Coverage** - Comprehensive test suite for API endpoints
+
+### AI Assistant Integration
+- **Public API Endpoint** - `/api/public/qr-codes` - No authentication required
+- **OpenAPI Specification** - `/api/public/qr-codes/openapi.json` - Full API documentation
+- **AI Plugin Manifest** - `/api/public/qr-codes/.well-known/ai-plugin.json` - OpenAI plugin format
+- **Rate Limited** - 100 requests per hour per IP address
+- **Multiple QR Types** - URL, WiFi, Contact (vCard), Text, Email
+- **Instant Generation** - Returns data URL image (`qrImage`) and shareable URL (`imageUrl`) - perfect for sharing with users
+- **Short URLs** - `imageUrl` uses 12-character codes to avoid URL length limits, expires after 1 hour
 
 ### Technical Features
 - **Docker Deployment** - Containerized application with cron jobs
@@ -157,7 +167,7 @@ docker exec theqrcode nc -zv mail.redbudway.com 465
 - **WiFi Sharing** - Generate WiFi QR codes to easily share your network password
 - **Contact Cards** - Create vCard QR codes for your business card
 - **Quick Links** - Generate QR codes for URLs to share offline
-- **Email QR Codes** - Create QR codes that open email with pre-filled subject and body
+- **Email QR Codes** - Create QR codes for email addresses
 - **Text QR Codes** - Share messages, notes, or instructions via QR code
 
 ### For Businesses
@@ -226,7 +236,7 @@ The API provides comprehensive endpoints for:
 - Webhook configuration
 - Bulk operations
 
-API documentation is available in the dashboard for Pro and Business plan subscribers.
+API documentation is available in the dashboard for Pro plan subscribers.
 
 ## 📚 Documentation
 

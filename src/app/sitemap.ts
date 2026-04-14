@@ -84,6 +84,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
     
+    // Comparison and alternative landing pages
+    {
+      url: `${baseUrl}/qr-code-alternative`,
+      lastModified: recentUpdate,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+
     // Niche landing pages (high priority for conversion and SEO)
     {
       url: `${baseUrl}/qr-code-for-restaurants`,
@@ -207,6 +215,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.85,
     },
+    // Public API endpoints for AI assistant and search engine discovery
+    {
+      url: `${baseUrl}/api/public/qr-codes`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.95, // Very high priority for AI assistant discovery
+    },
+    {
+      url: `${baseUrl}/for-ai-assistants`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9, // High priority for AI assistant discovery
+    },
+    {
+      url: `${baseUrl}/api/public/qr-codes/openapi.json`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9, // OpenAPI spec for API discovery
+    },
+    {
+      url: `${baseUrl}/api/public/qr-codes/.well-known/ai-plugin.json`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9, // AI plugin manifest for OpenAI and other AI assistants
+    },
     {
       url: `${baseUrl}/contact-qr-code-generator`,
       lastModified: new Date(),
@@ -296,10 +329,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/blog/best-qr-code-generators-2025`,
-      lastModified: recentUpdate,
+      url: `${baseUrl}/blog/best-qr-code-generators-2026`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.75, // High impressions (79), 0 clicks - needs CTR improvement
+      priority: 0.75, // High impressions, updated for 2026
     },
     {
       url: `${baseUrl}/blog/do-qr-codes-expire`,

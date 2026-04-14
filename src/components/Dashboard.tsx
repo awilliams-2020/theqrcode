@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { QrCode, Plus, BarChart3, Download, Settings, Shield } from 'lucide-react'
 import QRGeneratorModal from './QRGeneratorModal'
-import QRCodeCard from './QRCodeCard'
-import SelectableQRCodeCard from './SelectableQRCodeCard'
+import QRCodeTableRow from './QRCodeTableRow'
 import BulkOperations from './BulkOperations'
 import TrialBanner from './TrialBanner'
 import { useToast } from '@/hooks/useToast'
@@ -13,6 +12,7 @@ import { useSubscriptionRefresh } from '@/hooks/useSubscriptionRefresh'
 import { QRCode, QRCodeFormData, Subscription, DashboardProps } from '@/types'
 import { createQRCode, updateQRCode, deleteQRCode } from '@/utils/api'
 import { captureException } from '@/lib/sentry'
+import { trackDashboard } from '@/lib/matomo-tracking'
 
 export default function Dashboard({ qrCodes, subscription, totalScans, limits, currentPlan, isTrialActive, planDisplayName }: DashboardProps) {
   const router = useRouter()
@@ -22,9 +22,14 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
   const [selectedQRIds, setSelectedQRIds] = useState<string[]>([])
   const [showBulkMode, setShowBulkMode] = useState(false)
   
+  // Ensure welcome email sent for OAuth free signups (they skip setup-subscription)
+  useEffect(() => {
+    fetch('/api/user/ensure-welcome-email', { method: 'POST' }).catch(() => {})
+  }, [])
+
   // Auto-enable bulk mode for Pro users when they have QR codes
   useEffect(() => {
-    const hasProAccess = currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'business'))
+    const hasProAccess = currentPlan === 'pro' || (isTrialActive && currentPlan === 'pro')
     if (hasProAccess && qrCodes.length > 0) {
       setShowBulkMode(true)
     }
@@ -64,6 +69,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
   }
 
   const handleCloseGenerator = () => {
+    trackDashboard.modalClosed()
     setShowGenerator(false)
     setSelectedQR(null)
   }
@@ -144,6 +150,8 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
         throw new Error(response.error || `Failed to ${isEdit ? 'update' : 'save'} QR code`)
       }
 
+      trackDashboard.modalSubmitted(qrData.type, qrData.isDynamic)
+
       showSuccess(
         isEdit ? 'QR Code Updated' : 'QR Code Created',
         `${qrData.name} has been ${isEdit ? 'updated' : 'saved'} successfully!`
@@ -199,15 +207,21 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
           status={subscription?.status || 'active'}
           currentPlan={currentPlan}
           onUpgrade={async () => {
+            // Redirect to Stripe for the plan they're trialing (starter or pro), not always pro
+            const plan = currentPlan === 'starter' ? 'starter' : 'pro'
             try {
               const response = await fetch('/api/stripe/checkout', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ plan: 'pro' }),
+                body: JSON.stringify({ plan }),
               })
               const data = await response.json()
+              if (response.ok && data.startTrial) {
+                window.location.href = '/dashboard'
+                return
+              }
               if (response.ok && data.url) {
                 window.location.href = data.url
               } else {
@@ -215,7 +229,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
               }
             } catch (error) {
               console.error('Error creating checkout:', error)
-              captureException(error, { component: 'Dashboard', action: 'create-checkout', plan: 'pro' })
+              captureException(error, { component: 'Dashboard', action: 'create-checkout', plan })
               showError('Checkout Failed', 'Unable to start checkout. Please try again.')
             }
           }}
@@ -345,7 +359,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {(currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'business'))) && (
+                {(currentPlan === 'starter' || currentPlan === 'pro' || (isTrialActive && (currentPlan === 'starter' || currentPlan === 'pro'))) && (
                   <button
                     onClick={() => router.push('/analytics')}
                     className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium self-start sm:self-center"
@@ -358,6 +372,7 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                 
                 <button
                   onClick={() => {
+                    trackDashboard.clickCreateQRCodeCTA()
                     setSelectedQR(null)
                     setShowGenerator(true)
                   }}
@@ -379,27 +394,47 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
               </p>
             </div>
           ) : (
-            <div className="p-6">
+            <div>
               {/* Bulk Operations Component */}
-              <BulkOperations
-                qrCodes={qrCodes}
-                selectedIds={selectedQRIds}
-                onSelectionChange={setSelectedQRIds}
-                onBulkDelete={handleBulkDelete}
-                onBulkDownload={handleBulkDownload}
-                currentPlan={currentPlan}
-                isTrialActive={isTrialActive}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {qrCodes.map((qr) => (
-                  showBulkMode ? (
-                    <SelectableQRCodeCard
+              <div className="px-6 pt-4">
+                <BulkOperations
+                  qrCodes={qrCodes}
+                  selectedIds={selectedQRIds}
+                  onSelectionChange={setSelectedQRIds}
+                  onBulkDelete={handleBulkDelete}
+                  onBulkDownload={handleBulkDownload}
+                  currentPlan={currentPlan}
+                  isTrialActive={isTrialActive}
+                />
+              </div>
+
+              {/*
+               * Responsive table using CSS block display transform (best practice).
+               * Mobile/tablet (< lg): table elements switch to block — each row
+               *   becomes a standalone card with no horizontal scroll.
+               * Desktop (lg+): standard table layout restored.
+               */}
+              <table className="w-full text-sm block lg:table">
+                <thead className="hidden lg:table-header-group">
+                  <tr className="border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {showBulkMode && <th className="px-4 py-3 w-8" />}
+                    <th className="px-4 py-3 w-12 text-left">QR</th>
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-left">Type</th>
+                    <th className="px-4 py-3 text-right">Scans</th>
+                    <th className="px-4 py-3 text-right">This Week</th>
+                    <th className="px-4 py-3 text-left">Created</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="block lg:table-row-group px-4 py-3 lg:px-0 lg:py-0">
+                  {qrCodes.map((qr) => (
+                    <QRCodeTableRow
                       key={qr.id}
                       qr={qr}
                       onEdit={() => handleEditQR(qr)}
                       onDelete={() => handleDeleteQR(qr.id)}
-                      onShare={() => {}} // Share functionality is handled within QRCodeCard
+                      showSelection={showBulkMode}
                       isSelected={selectedQRIds.includes(qr.id)}
                       onToggleSelection={() => {
                         if (selectedQRIds.includes(qr.id)) {
@@ -408,19 +443,10 @@ export default function Dashboard({ qrCodes, subscription, totalScans, limits, c
                           setSelectedQRIds([...selectedQRIds, qr.id])
                         }
                       }}
-                      showSelection={showBulkMode}
                     />
-                  ) : (
-                    <QRCodeCard
-                      key={qr.id}
-                      qr={qr}
-                      onEdit={() => handleEditQR(qr)}
-                      onDelete={() => handleDeleteQR(qr.id)}
-                      onShare={() => {}} // Share functionality is handled within QRCodeCard
-                    />
-                  )
-                ))}
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -257,7 +257,7 @@ export default function QRCodeCard({ qr, onEdit, onDelete, onShare }: QRCodeCard
 
       {/* Footer */}
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Created {formatTimeAgoInTimezone(qr.createdAt, userTimezone)}</span>
+        <span suppressHydrationWarning>Created {formatTimeAgoInTimezone(qr.createdAt, userTimezone)}</span>
         {qr.isDynamic && qr.shortUrl && (
           <span className="truncate max-w-32" title={qr.shortUrl}>
             {qr.shortUrl}

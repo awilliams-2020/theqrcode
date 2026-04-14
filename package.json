@@ -99,7 +99,6 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
     "@prisma/client": "^6.16.2",
-    "@sentry/nextjs": "^10.20.0",
     "@stripe/stripe-js": "^7.9.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/qrcode": "^1.5.5",
@@ -109,6 +108,7 @@
     "critters": "^0.0.23",
     "date-fns": "^4.1.0",
     "googleapis": "^144.0.0",
+    "ioredis": "^5.9.2",
     "lucide-react": "^0.544.0",
     "next": "^15.5.9",
     "next-auth": "^4.24.11",
@@ -128,6 +128,7 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@types/ioredis": "^4.28.10",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.2",

@@ -75,7 +75,7 @@ export default function RestaurantLandingPage() {
             },
             {
               question: "How much does a restaurant QR code cost?",
-              answer: "Our free plan includes 10 QR codes perfect for small restaurants. Paid plans start at $9/month (Starter: 100 QR codes) and $29/month (Pro: 500 QR codes), with advanced analytics, custom branding, and priority support. Business plan offers unlimited QR codes. No setup fees or long-term contracts."
+              answer: "Our free plan includes 10 QR codes perfect for small restaurants. Paid plans start at $9/month (Starter: 100 QR codes) and $29/month (Pro: 500 QR codes), with advanced analytics, custom branding, and priority support. No setup fees or long-term contracts."
             },
             {
               question: "Do customers need to download an app to scan?",

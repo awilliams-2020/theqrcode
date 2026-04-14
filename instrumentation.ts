@@ -3,11 +3,11 @@
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('Instrumentation registered for Node.js runtime')
-    
+    const { logger } = await import('./src/lib/logger')
+    logger.info('SYSTEM', 'Instrumentation registered for Node.js runtime')
+
     // Import monitoring setup
     const { setupGlobalMonitoring } = await import('./src/lib/monitoring-setup')
     setupGlobalMonitoring()
   }
 }
-

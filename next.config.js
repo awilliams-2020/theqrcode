@@ -11,6 +11,16 @@ const nextConfig = {
       },
     ]
   },
+  // SEO redirects for renamed/updated URLs
+  async redirects() {
+    return [
+      {
+        source: '/blog/best-qr-code-generators-2025',
+        destination: '/blog/best-qr-code-generators-2026',
+        permanent: true,
+      },
+    ]
+  },
   images: {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif'],

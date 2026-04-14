@@ -127,7 +127,7 @@ export default function HelpPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Is there a limit to the number of QR codes I can create?</h3>
               <p className="text-gray-600">
                 QR code limits vary by plan. The free plan includes 10 QR codes, Starter plan includes 100 QR codes, 
-                Pro plan includes 500 QR codes, and Business plan offers unlimited QR codes. You can upgrade your plan 
+                Pro plan includes 500 QR codes. You can upgrade your plan 
                 at any time to increase your limit. <Link href="/pricing" className="text-blue-600 hover:text-blue-700 underline">View our pricing plans</Link> for details.
               </p>
             </div>

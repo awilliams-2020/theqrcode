@@ -57,9 +57,15 @@ export async function markEmailVerificationTokenUsed(token: string): Promise<voi
 }
 
 // Send email verification email
-export async function sendVerificationEmail(email: string, token: string): Promise<void> {
+// Optional plan (starter, pro) is included in the link so verify-email API can apply trialing after verification
+export async function sendVerificationEmail(
+  email: string,
+  token: string,
+  options?: { plan?: string }
+): Promise<void> {
   const transporter = createTransporter()
-  const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`
+  const baseUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`
+  const verificationUrl = options?.plan ? `${baseUrl}&plan=${encodeURIComponent(options.plan)}` : baseUrl
 
   const mailOptions = createEmailOptions({
     to: email,

@@ -3,10 +3,11 @@ import Link from 'next/link'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import BlogArticleSchema from '@/components/BlogArticleSchema'
 import RelatedContent from '@/components/RelatedContent'
+import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'Restaurant QR Code Menu Setup in 5 Minutes [2025 Guide] | Free & Easy',
-  description: '✅ Set up QR code menus for your restaurant in just 5 minutes. FREE QR code generator included. Step-by-step tutorial with screenshots. No tech skills required! Perfect for contactless dining. Start free today!',
+  title: 'Restaurant QR Code Menu: Free 5-Minute Setup Guide [2026]',
+  description: 'Set up restaurant QR code menus in 5 minutes FREE! Step-by-step guide with screenshots. No tech skills needed. Instant download. Start now →',
   keywords: [
     'restaurant QR code menu',
     'QR code menu setup',
@@ -20,22 +21,24 @@ export const metadata: Metadata = {
     'free restaurant QR code',
     'restaurant menu qr code',
     'qr code restaurant menu',
-    'scan qr code for menu'
+    'scan qr code for menu',
+    'restaurant qr code 2026',
+    'free qr code menu generator'
   ],
   openGraph: {
-    title: 'Restaurant QR Code Menu Setup in 5 Minutes [FREE Guide]',
-    description: '✅ Complete step-by-step guide with screenshots. Set up QR code menus in 5 minutes. FREE QR code generator included. No tech skills required! Perfect for contactless dining.',
+    title: 'Restaurant QR Code Menu: Free 5-Minute Setup Guide [2026]',
+    description: 'Set up restaurant QR code menus in 5 minutes FREE! Step-by-step guide with screenshots. No tech skills needed. Instant download. Start now!',
     images: ['/og-restaurant-qr-menu.jpg'],
     type: 'article',
-    publishedTime: '2024-01-25T00:00:00.000Z',
-    modifiedTime: '2024-01-25T00:00:00.000Z',
+    publishedTime: '2026-02-06T00:00:00.000Z',
+    modifiedTime: '2026-02-06T00:00:00.000Z',
   },
   alternates: {
     canonical: '/blog/restaurant-qr-code-menu-setup-5-minutes',
   },
 }
 
-const publishDate = '2024-01-25T00:00:00.000Z'
+const publishDate = '2026-02-06T00:00:00.000Z'
 const articleUrl = '/blog/restaurant-qr-code-menu-setup-5-minutes'
 
 export default function RestaurantQRCodeMenuPage() {
@@ -50,6 +53,40 @@ export default function RestaurantQRCodeMenuPage() {
         wordCount={1200}
         timeRequired="PT5M"
         proficiencyLevel="Beginner"
+      />
+      <StructuredData 
+        type="HowTo" 
+        data={{
+          name: "How to Set Up Restaurant QR Code Menu in 5 Minutes",
+          description: "Complete step-by-step guide to create QR code menus for restaurants in just 5 minutes",
+          image: "https://theqrcode.io/og-restaurant-qr-menu.jpg",
+          steps: [
+            {
+              name: "Create Your Digital Menu",
+              text: "Choose your platform (Google Docs, Canva, or website builder), design your menu with all items and prices, add your branding (logo, colors), and ensure it's mobile-friendly.",
+              url: articleUrl + "#step-1",
+              image: "https://theqrcode.io/images/restaurant-menu-step1.jpg"
+            },
+            {
+              name: "Publish Your Menu Online",
+              text: "Upload to your website, use Google Drive and share the link, create a simple webpage with free tools, or get the URL to your digital menu.",
+              url: articleUrl + "#step-2",
+              image: "https://theqrcode.io/images/restaurant-menu-step2.jpg"
+            },
+            {
+              name: "Generate Your QR Code",
+              text: "Go to our free QR code generator, select 'URL' as the QR code type, paste your menu URL, customize colors to match your brand, and download the QR code image.",
+              url: articleUrl + "#step-3",
+              image: "https://theqrcode.io/images/restaurant-menu-step3.jpg"
+            },
+            {
+              name: "Print and Display",
+              text: "Print the QR code (2\" x 2\" minimum for table tents, 3\" x 3\" for window displays), add 'Scan for Menu' instructions, and place strategically on tables, windows, or at the entrance.",
+              url: articleUrl + "#step-4",
+              image: "https://theqrcode.io/images/restaurant-menu-step4.jpg"
+            }
+          ]
+        }} 
       />
       
       <div className="min-h-screen bg-white">
@@ -67,7 +104,7 @@ export default function RestaurantQRCodeMenuPage() {
               Restaurant Menu QR Code Setup in 5 Minutes
             </h1>
             <div className="flex items-center text-sm text-gray-600 space-x-4">
-              <time dateTime={publishDate}>January 25, 2024</time>
+              <time dateTime={publishDate}>February 6, 2026</time>
               <span>•</span>
               <span>5 min read</span>
             </div>

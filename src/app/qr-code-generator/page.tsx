@@ -3,8 +3,8 @@ import QRGeneratorLanding from '@/components/landing/QRGeneratorLanding'
 import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'Free QR Code Generator | Create QR Codes Online - No Signup Required',
-  description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration, no account needed. Generate QR codes for URLs, WiFi, contacts, and more. Track scans with real-time analytics. Start creating free QR codes now!',
+  title: 'Free QR Code Generator - Create & Download Instantly [2026]',
+  description: 'Free QR code generator - create custom QR codes in seconds! No signup needed. Instant download. Track scans with analytics. Perfect for business, menus, WiFi. Start free →',
   keywords: [
     'free qr code generator', 'qr code generator', 'create qr code', 'qr code maker', 'free qr code', 
     'custom qr code', 'qr code creator', 'qr code builder', 'qr code tool',
@@ -18,8 +18,8 @@ export const metadata: Metadata = {
     'best qr code generator', 'top qr code generator', 'what is the best qr code generator'
   ],
   openGraph: {
-    title: 'Free QR Code Generator | Create QR Codes Online - No Signup Required',
-    description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration needed. Generate QR codes for URLs, WiFi, contacts, and more.',
+    title: 'Free QR Code Generator - Create & Download Instantly [2026]',
+    description: 'Free QR code generator - create custom QR codes in seconds! No signup needed. Instant download. Track scans with analytics. Perfect for business.',
     type: 'website',
     url: 'https://theqrcode.io/qr-code-generator',
     images: [
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Free QR Code Generator | Create QR Codes Online - No Signup',
-    description: 'Free QR code generator - Create custom QR codes instantly. No signup, no registration needed. Start creating free QR codes now!',
+    title: 'Free QR Code Generator - Create & Download Instantly [2026]',
+    description: 'Free QR code generator - create custom QR codes in seconds! No signup needed. Instant download. Start creating free QR codes now!',
     images: ['https://theqrcode.io/og-generator'],
   },
   alternates: {
