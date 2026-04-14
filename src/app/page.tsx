@@ -5,18 +5,17 @@ import LandingPage from '@/components/LandingPage'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'QR Code IO | Free QR Code Generator with Analytics - TheQRCode.io',
-  description: 'QR Code IO (qr.io) — free QR code generator with analytics. Create & track QR codes instantly. No signup required. Used by 10,000+ businesses. Restaurants, events, WiFi. Start free →',
+  title: 'TheQRCode.io | QR Code API for Developers & AI Agents',
+  description: 'QR code API built for developers and AI agents. No auth required. MCP ready for Claude and Cursor. REST API, OpenAPI spec, 100 req/hr free. Integrate in 60 seconds.',
   keywords: [
-    'qr code io', 'qr io', 'qrcode io', 'qr-code.io', 'qr code generator', 
-    'qr code analytics', 'free qr code generator', 'qr code maker',
-    'qr code tracker', 'restaurant qr code', 'event qr code', 'wifi qr code',
-    'contact qr code', 'qr code creator', 'dynamic qr code', 'qr code with analytics',
-    'qr code i o', 'qrcodeio', 'io qr code', 'qr code.io', 'qr.io'
+    'qr code api', 'qr code mcp', 'qr code for developers', 'qr code ai agent',
+    'free qr code api', 'qr code rest api', 'qr code generator', 'free qr code generator',
+    'qr code no auth', 'qr code mcp server', 'claude qr code', 'cursor qr code',
+    'qr code io', 'qr io', 'theqrcode', 'dynamic qr code', 'qr code analytics',
   ],
   openGraph: {
-    title: 'QR Code IO | Free QR Code Generator with Analytics',
-    description: 'QR Code IO (qr.io) — create custom QR codes in seconds. Track scans with analytics. Perfect for businesses, restaurants, and events. No signup required.',
+    title: 'TheQRCode.io | QR Code API for Developers & AI Agents',
+    description: 'QR code API built for developers and AI agents. No auth required. MCP ready. Integrate in 60 seconds.',
     type: 'website',
     url: 'https://theqrcode.io',
   },
