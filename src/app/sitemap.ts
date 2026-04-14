@@ -223,6 +223,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95, // Very high priority for AI assistant discovery
     },
     {
+      url: `${baseUrl}/mcp`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    {
       url: `${baseUrl}/for-ai-assistants`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
