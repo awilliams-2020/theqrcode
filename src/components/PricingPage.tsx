@@ -53,10 +53,10 @@ const plans = [
     description: 'API-first plan for builders & integrators',
     features: [
       '500 QR codes',
-      '250,000 scans per month',
+      '500,000 scans per month',
       'Full analytics via API',
       'All QR code types',
-      'REST API — 2,000 req/hr',
+      'REST API — 5,000 req/hr',
       'API key management (production + sandbox)',
       'Authenticated MCP server (Claude, Cursor)',
       'list_qr_codes & get_analytics MCP tools',
@@ -111,9 +111,9 @@ const featureCategories = [
     features: [
       { name: 'Basic analytics', free: true, starter: true, developer: true, pro: true },
       { name: 'Dynamic QR codes', free: true, starter: true, developer: true, pro: true },
-      { name: 'Device analytics', free: false, starter: true, developer: 'Via API', pro: true },
-      { name: 'Location tracking', free: false, starter: true, developer: 'Via API', pro: true },
-      { name: 'Time-based analytics', free: false, starter: true, developer: 'Via API', pro: true },
+      { name: 'Device analytics', free: false, starter: true, developer: true, pro: true },
+      { name: 'Location tracking', free: false, starter: true, developer: true, pro: true },
+      { name: 'Time-based analytics', free: false, starter: true, developer: true, pro: true },
       { name: 'Real-time dashboards', free: false, starter: false, developer: false, pro: true },
       { name: 'Data export (CSV)', free: false, starter: false, developer: false, pro: true },
     ]
@@ -134,7 +134,7 @@ const featureCategories = [
     name: 'Performance & Limits',
     icon: TrendingUp,
     features: [
-      { name: 'Scans per month', free: '1,000', starter: '10,000', developer: '250,000', pro: '500,000' },
+      { name: 'Scans per month', free: '1,000', starter: '10,000', developer: '500,000', pro: '500,000' },
       { name: 'Bulk operations', free: false, starter: false, developer: true, pro: true },
     ]
   },
@@ -152,7 +152,7 @@ const featureCategories = [
     features: [
       { name: 'Public API (no auth)', free: '100 req/hr', starter: '100 req/hr', developer: '100 req/hr', pro: '100 req/hr' },
       { name: 'Authenticated REST API', free: false, starter: false, developer: true, pro: true },
-      { name: 'API rate limit (authenticated)', free: false, starter: false, developer: '2,000 req/hr', pro: '5,000 req/hr' },
+      { name: 'API rate limit (authenticated)', free: false, starter: false, developer: '5,000 req/hr', pro: '5,000 req/hr' },
       { name: 'API key management', free: false, starter: false, developer: true, pro: true },
       { name: 'Sandbox environment', free: false, starter: false, developer: true, pro: true },
       { name: 'Webhooks', free: false, starter: false, developer: true, pro: true },

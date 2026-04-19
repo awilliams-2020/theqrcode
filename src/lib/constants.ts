@@ -46,17 +46,17 @@ export const PLANS = {
     description: 'Headless Pro — full API access, no dashboard UI',
     features: [
       '500 QR codes',
-      '250,000 scans per month',
+      '500,000 scans per month',
       'Full analytics via API',
       'All QR code types',
-      'REST API — 2,000 req/hr',
+      'REST API — 5,000 req/hr',
       'API key management (production + sandbox)',
       'Authenticated MCP server',
       'Webhooks',
     ],
     limits: {
       qrCodes: 500,
-      scans: 250000,
+      scans: 500000,
     },
   },
   pro: {

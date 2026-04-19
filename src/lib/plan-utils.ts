@@ -53,7 +53,7 @@ export function hasWebhooks(plan: string): boolean {
 /** API key rate limit in requests per hour. */
 export function getApiRateLimit(plan: string): number {
   switch (plan) {
-    case PLANS.DEVELOPER: return 2_000
+    case PLANS.DEVELOPER: return 5_000
     case PLANS.PRO:       return 5_000
     default:              return 0
   }
@@ -88,7 +88,7 @@ export function getScanLimit(plan: string): number {
   switch (plan) {
     case PLANS.FREE:      return 1_000
     case PLANS.STARTER:   return 10_000
-    case PLANS.DEVELOPER: return 250_000
+    case PLANS.DEVELOPER: return 500_000
     case PLANS.PRO:       return 500_000
     default:              return 0
   }

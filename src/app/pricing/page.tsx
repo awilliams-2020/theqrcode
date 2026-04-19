@@ -82,7 +82,7 @@ export default async function Pricing() {
         type="Product"
         data={{
           name: "QR Code Generator - Developer Plan",
-          description: "500 QR codes, 50,000 scans per month, full REST API access at 2,000 req/hr, authenticated MCP server for Claude and Cursor, webhooks and sandbox. Built for developers and AI integrations.",
+          description: "500 QR codes, 500,000 scans per month, full REST API access at 5,000 req/hr, authenticated MCP server for Claude and Cursor, webhooks and sandbox. Built for developers and AI integrations.",
           url: "https://theqrcode.io/pricing",
           image: "https://theqrcode.io/og",
           brand: {

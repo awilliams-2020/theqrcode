@@ -25,7 +25,7 @@ export const welcomeEmail: EmailTemplate = {
       features.push('Customize colors and styles')
     } else if (plan === 'developer') {
       features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 500 QR codes')
-      features.push('Full API access with 2,000 requests/hr')
+      features.push('Full API access with 5,000 requests/hr')
       features.push('MCP server access for AI agent integration')
       features.push('Webhooks and sandbox environment')
     } else if (plan === 'pro') {
@@ -134,7 +134,7 @@ export const welcomeEmail: EmailTemplate = {
       features.push('Customize colors and styles')
     } else if (plan === 'developer') {
       features.push(data.qrCodeLimit ? `Create up to ${data.qrCodeLimit} QR codes` : 'Create up to 500 QR codes')
-      features.push('Full API access with 2,000 requests/hr')
+      features.push('Full API access with 5,000 requests/hr')
       features.push('MCP server access for AI agent integration')
       features.push('Webhooks and sandbox environment')
     } else if (plan === 'pro') {
@@ -181,7 +181,7 @@ export const trialEndingEmail: EmailTemplate = {
       features.push('Customize colors and styles')
     } else if (plan === 'developer') {
       features.push('Create up to 500 QR codes')
-      features.push('Full API access with 2,000 requests/hr')
+      features.push('Full API access with 5,000 requests/hr')
       features.push('MCP server access for AI agent integration')
     } else if (plan === 'pro') {
       features.push('Create up to 500 QR codes')
@@ -294,7 +294,7 @@ export const trialEndingEmail: EmailTemplate = {
       features.push('Customize colors and styles')
     } else if (plan === 'developer') {
       features.push('Create up to 500 QR codes')
-      features.push('Full API access with 2,000 requests/hr')
+      features.push('Full API access with 5,000 requests/hr')
       features.push('MCP server access for AI agent integration')
     } else if (plan === 'pro') {
       features.push('Create up to 500 QR codes')

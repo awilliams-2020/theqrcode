@@ -45,11 +45,11 @@ const faqs = [
   },
   {
     question: "What is the Developer plan?",
-    answer: "The Developer plan ($19/mo) is Headless Pro — you get the same full analytics, all QR code types, and the same API access as Pro, but everything is managed through code rather than a visual dashboard. There is no bulk management UI, no real-time visual charts, and no CSV/SVG/PDF export UI. Instead you get a dev console with API keys, usage counters, and docs. You also get all three MCP tools (generate, list_qr_codes, get_analytics), 250,000 scans/month, 2,000 API req/hr, and a sandbox environment plus webhooks. If you manage QR codes through code, choose Developer. If you manage them through a browser, choose Pro."
+    answer: "The Developer plan ($19/mo) is Headless Pro — you get the same full analytics, all QR code types, and the same scans and API rate limits as Pro, but everything is managed through code rather than a visual dashboard. There is no bulk management UI, no real-time visual charts, and no CSV/SVG/PDF export UI. Instead you get a dev console with API keys, usage counters, and docs. You also get all three MCP tools (generate, list_qr_codes, get_analytics), 500,000 scans/month, 5,000 API req/hr, and a sandbox environment plus webhooks. If you manage QR codes through code, choose Developer. If you manage them through a browser, choose Pro."
   },
   {
     question: "Do you offer API access?",
-    answer: "Yes! Both the Developer plan ($19/mo) and the Pro plan ($29/mo) include authenticated API access. The Developer plan is specifically designed for API-first use — it gives you 2,000 req/hr, full analytics via the API, all three MCP tools (including list_qr_codes and get_analytics), and a sandbox environment. The Pro plan gives you 5,000 req/hr and the MCP generate tool, alongside the full visual dashboard. All plans also include the public API at 100 req/hr with no authentication required."
+    answer: "Yes! Both the Developer plan ($19/mo) and the Pro plan ($29/mo) include authenticated API access at 5,000 req/hr. The Developer plan is specifically designed for API-first use — it gives you full analytics via the API, all three MCP tools (including list_qr_codes and get_analytics), and a sandbox environment, with no visual dashboard. The Pro plan gives you the same API limits alongside the full visual dashboard and MCP generate tool. All plans also include the public API at 100 req/hr with no authentication required."
   },
   {
     question: "Can I use QR codes for marketing campaigns?",

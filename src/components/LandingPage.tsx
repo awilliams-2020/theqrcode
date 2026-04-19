@@ -37,10 +37,10 @@ export default function LandingPage() {
       description: 'Headless Pro — full API access, no dashboard',
       features: [
         '500 QR codes',
-        '250,000 scans per month',
+        '500,000 scans per month',
         'Full analytics via API',
         'All QR code types',
-        'REST API — 2,000 req/hr',
+        'REST API — 5,000 req/hr',
         'API keys (production + sandbox)',
         'Authenticated MCP (Claude, Cursor)',
         'list_qr_codes & get_analytics tools',
@@ -224,12 +224,12 @@ export default function LandingPage() {
 
       {/* ── Pricing ── */}
       <section className="px-4 py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Simple pricing</h2>
             <p className="text-gray-500">Free to start. Developer unlocks the full API — Pro adds the visual dashboard.</p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {pricingPlans.map((plan, index) => (
               <div
                 key={index}

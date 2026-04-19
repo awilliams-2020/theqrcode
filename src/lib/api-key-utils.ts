@@ -259,7 +259,7 @@ export class ApiKeyManager {
    */
   static getPlanRateLimit(plan: string): number {
     switch (plan) {
-      case 'developer': return 2_000
+      case 'developer': return 5_000
       case 'pro':       return 5_000
       case 'business':  return 10_000
       default:          return 0
