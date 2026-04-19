@@ -58,8 +58,8 @@ export default async function Pricing() {
           }
         }} 
       />
-      <StructuredData 
-        type="Product" 
+      <StructuredData
+        type="Product"
         data={{
           name: "QR Code Generator - Starter Plan",
           description: "100 QR codes, 10,000 scans per month, advanced analytics, all QR code types. Great for small businesses.",
@@ -76,10 +76,30 @@ export default async function Pricing() {
             "availability": "https://schema.org/InStock",
             "url": "https://theqrcode.io/pricing"
           }
-        }} 
+        }}
       />
-      <StructuredData 
-        type="Product" 
+      <StructuredData
+        type="Product"
+        data={{
+          name: "QR Code Generator - Developer Plan",
+          description: "500 QR codes, 50,000 scans per month, full REST API access at 2,000 req/hr, authenticated MCP server for Claude and Cursor, webhooks and sandbox. Built for developers and AI integrations.",
+          url: "https://theqrcode.io/pricing",
+          image: "https://theqrcode.io/og",
+          brand: {
+            "@type": "Brand",
+            "name": "TheQRCode.io"
+          },
+          offers: {
+            "@type": "Offer",
+            "price": "19",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://theqrcode.io/pricing"
+          }
+        }}
+      />
+      <StructuredData
+        type="Product"
         data={{
           name: "QR Code Generator - Pro Plan",
           description: "500 QR codes, 500,000 scans per month, real-time analytics, API access. Best for growing companies.",

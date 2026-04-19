@@ -47,10 +47,30 @@ const plans = [
     featured: false,
   },
   {
+    id: 'developer',
+    name: 'Developer',
+    price: 19,
+    description: 'API-first plan for builders & integrators',
+    features: [
+      '500 QR codes',
+      '250,000 scans per month',
+      'Full analytics via API',
+      'All QR code types',
+      'REST API — 2,000 req/hr',
+      'API key management (production + sandbox)',
+      'Authenticated MCP server (Claude, Cursor)',
+      'list_qr_codes & get_analytics MCP tools',
+      'Webhooks',
+    ],
+    buttonText: 'Subscribe',
+    featured: false,
+    badge: 'API & MCP',
+  },
+  {
     id: 'pro',
     name: 'Pro',
     price: 29,
-    description: 'For developers and growing companies',
+    description: 'Full dashboard for growing companies',
     features: [
       '500 QR codes',
       '500,000 scans per month',
@@ -58,13 +78,14 @@ const plans = [
       'All QR code types',
       'Advanced customization',
       'Priority support',
-      'REST API access — 5,000 req/hr',
+      'REST API — 5,000 req/hr',
       'API key authentication',
       'MCP server (Claude, Cursor)',
       'Bulk generation endpoint',
     ],
     buttonText: 'Subscribe',
     featured: true,
+    badge: null,
   },
 ]
 
@@ -75,67 +96,70 @@ const featureCategories = [
     name: 'QR Code Creation',
     icon: Image,
     features: [
-      { name: 'QR codes per account', free: '10', starter: '100', pro: '500' },
-      { name: 'URL QR codes', free: true, starter: true, pro: true },
-      { name: 'Text QR codes', free: true, starter: true, pro: true },
-      { name: 'WiFi QR codes', free: true, starter: true, pro: true },
-      { name: 'Contact/VCard QR codes', free: true, starter: true, pro: true },
-      { name: 'Email QR codes', free: false, starter: true, pro: true },
-      { name: 'Menu QR codes', free: false, starter: true, pro: true },
+      { name: 'QR codes per account', free: '10', starter: '100', developer: '500', pro: '500' },
+      { name: 'URL QR codes', free: true, starter: true, developer: true, pro: true },
+      { name: 'Text QR codes', free: true, starter: true, developer: true, pro: true },
+      { name: 'WiFi QR codes', free: true, starter: true, developer: true, pro: true },
+      { name: 'Contact/VCard QR codes', free: true, starter: true, developer: true, pro: true },
+      { name: 'Email QR codes', free: false, starter: true, developer: true, pro: true },
+      { name: 'Menu QR codes', free: false, starter: true, developer: true, pro: true },
     ]
   },
   {
     name: 'Dynamic QR Codes & Analytics',
     icon: BarChart3,
     features: [
-      { name: 'Basic analytics', free: true, starter: true, pro: true },
-      { name: 'Dynamic QR codes', free: true, starter: true, pro: true },
-      { name: 'Device analytics', free: false, starter: true, pro: true },
-      { name: 'Location tracking', free: false, starter: true, pro: true },
-      { name: 'Time-based analytics', free: false, starter: true, pro: true },
-      { name: 'Real-time dashboards', free: false, starter: false, pro: true },
-      { name: 'Data export (CSV)', free: false, starter: false, pro: true },
+      { name: 'Basic analytics', free: true, starter: true, developer: true, pro: true },
+      { name: 'Dynamic QR codes', free: true, starter: true, developer: true, pro: true },
+      { name: 'Device analytics', free: false, starter: true, developer: 'Via API', pro: true },
+      { name: 'Location tracking', free: false, starter: true, developer: 'Via API', pro: true },
+      { name: 'Time-based analytics', free: false, starter: true, developer: 'Via API', pro: true },
+      { name: 'Real-time dashboards', free: false, starter: false, developer: false, pro: true },
+      { name: 'Data export (CSV)', free: false, starter: false, developer: false, pro: true },
     ]
   },
   {
     name: 'Customization',
     icon: Palette,
     features: [
-      { name: 'Basic color customization', free: false, starter: true, pro: true },
-      { name: 'Custom colors', free: false, starter: true, pro: true },
-      { name: 'Size customization', free: false, starter: true, pro: true },
-      { name: 'Logo embedding', free: false, starter: true, pro: true },
-      { name: 'Advanced styling (dots, corners)', free: false, starter: false, pro: true },
-      { name: 'SVG & PDF downloads', free: false, starter: false, pro: true },
+      { name: 'Basic color customization', free: false, starter: true, developer: true, pro: true },
+      { name: 'Custom colors', free: false, starter: true, developer: true, pro: true },
+      { name: 'Size customization', free: false, starter: true, developer: true, pro: true },
+      { name: 'Logo embedding', free: false, starter: true, developer: true, pro: true },
+      { name: 'Advanced styling (dots, corners)', free: false, starter: false, developer: false, pro: true },
+      { name: 'SVG & PDF downloads', free: false, starter: false, developer: false, pro: true },
     ]
   },
   {
     name: 'Performance & Limits',
     icon: TrendingUp,
     features: [
-      { name: 'Scans per month', free: '1,000', starter: '10,000', pro: '500,000' },
-      { name: 'Bulk operations', free: false, starter: false, pro: true },
+      { name: 'Scans per month', free: '1,000', starter: '10,000', developer: '250,000', pro: '500,000' },
+      { name: 'Bulk operations', free: false, starter: false, developer: true, pro: true },
     ]
   },
   {
     name: 'Support',
     icon: Shield,
     features: [
-      { name: 'Email support', free: 'Community', starter: 'Business days', pro: 'Priority' },
-      { name: 'GDPR compliance', free: true, starter: true, pro: true },
+      { name: 'Email support', free: 'Community', starter: 'Business days', developer: 'Business days', pro: 'Priority' },
+      { name: 'GDPR compliance', free: true, starter: true, developer: true, pro: true },
     ]
   },
   {
     name: 'API & Developer',
     icon: Code,
     features: [
-      { name: 'Public API (no auth)', free: '100 req/hr', starter: '100 req/hr', pro: '100 req/hr' },
-      { name: 'Authenticated REST API', free: false, starter: false, pro: true },
-      { name: 'API rate limit (authenticated)', free: false, starter: false, pro: '5,000 req/hr' },
-      { name: 'API key management', free: false, starter: false, pro: true },
-      { name: 'MCP server (Claude, Cursor, AI agents)', free: false, starter: false, pro: true },
-      { name: 'Bulk generation endpoint', free: false, starter: false, pro: true },
-      { name: 'OpenAPI spec', free: true, starter: true, pro: true },
+      { name: 'Public API (no auth)', free: '100 req/hr', starter: '100 req/hr', developer: '100 req/hr', pro: '100 req/hr' },
+      { name: 'Authenticated REST API', free: false, starter: false, developer: true, pro: true },
+      { name: 'API rate limit (authenticated)', free: false, starter: false, developer: '2,000 req/hr', pro: '5,000 req/hr' },
+      { name: 'API key management', free: false, starter: false, developer: true, pro: true },
+      { name: 'Sandbox environment', free: false, starter: false, developer: true, pro: true },
+      { name: 'Webhooks', free: false, starter: false, developer: true, pro: true },
+      { name: 'MCP server (Claude, Cursor, AI agents)', free: false, starter: false, developer: true, pro: true },
+      { name: 'MCP extended tools (list, analytics)', free: false, starter: false, developer: true, pro: false },
+      { name: 'Bulk generation endpoint', free: false, starter: false, developer: true, pro: true },
+      { name: 'OpenAPI spec', free: true, starter: true, developer: true, pro: true },
     ]
   },
 ]
@@ -276,7 +300,7 @@ export default function PricingPage({ session }: PricingPageProps) {
 
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <div
               key={plan.id}
@@ -288,6 +312,12 @@ export default function PricingPage({ session }: PricingPageProps) {
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-center py-2 font-semibold flex items-center justify-center gap-2">
                   <Zap size={16} />
                   Most Popular
+                </div>
+              )}
+              {(plan as any).badge && !plan.featured && (
+                <div className="bg-gradient-to-r from-violet-500 to-purple-600 text-white text-center py-2 font-semibold flex items-center justify-center gap-2">
+                  <Code size={16} />
+                  {(plan as any).badge}
                 </div>
               )}
               
@@ -353,9 +383,10 @@ export default function PricingPage({ session }: PricingPageProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-4 px-6 font-semibold text-gray-900 w-1/3">Features</th>
+                  <th className="text-left py-4 px-6 font-semibold text-gray-900 w-1/4">Features</th>
                   <th className="text-center py-4 px-6 font-semibold text-gray-900">Free</th>
                   <th className="text-center py-4 px-6 font-semibold text-gray-900">Starter</th>
+                  <th className="text-center py-4 px-6 font-semibold text-violet-600 bg-violet-50">Developer</th>
                   <th className="text-center py-4 px-6 font-semibold text-blue-600 bg-blue-50">Pro</th>
                 </tr>
               </thead>
@@ -364,7 +395,7 @@ export default function PricingPage({ session }: PricingPageProps) {
                   <React.Fragment key={categoryIndex}>
                     {/* Category Header */}
                     <tr className="bg-gray-50 border-y border-gray-200">
-                      <td colSpan={4} className="py-3 px-6">
+                      <td colSpan={5} className="py-3 px-6">
                         <div className="flex items-center gap-2">
                           <category.icon className="h-5 w-5 text-blue-600" />
                           <span className="font-semibold text-gray-900">{category.name}</span>
@@ -377,6 +408,7 @@ export default function PricingPage({ session }: PricingPageProps) {
                         <td className="py-4 px-6 text-gray-700">{feature.name}</td>
                         <td className="py-4 px-6 text-center">{renderFeatureValue(feature.free)}</td>
                         <td className="py-4 px-6 text-center">{renderFeatureValue(feature.starter)}</td>
+                        <td className="py-4 px-6 text-center bg-violet-50/30">{renderFeatureValue((feature as any).developer)}</td>
                         <td className="py-4 px-6 text-center bg-blue-50/30">{renderFeatureValue(feature.pro)}</td>
                       </tr>
                     ))}
@@ -422,9 +454,11 @@ export default function PricingPage({ session }: PricingPageProps) {
                 Everything you need to build with QR codes
               </h2>
               <p className="text-gray-400 text-sm mb-4">
-                Pro unlocks the authenticated REST API (5,000 req/hr), API key management,
-                the MCP server for Claude and Cursor, and the bulk endpoint. The public API
-                (100 req/hr, no auth) stays free on all plans.
+                Both Developer and Pro unlock authenticated API access and the MCP server for
+                Claude and Cursor. Developer ($19/mo) is the headless option — full analytics
+                and all API features accessed entirely through code, no visual dashboard.
+                Pro ($29/mo) adds the visual dashboard, real-time charts, bulk management UI,
+                and SVG/PDF export. The public API (100 req/hr, no auth) stays free on all plans.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a href="/mcp" className="text-sm text-purple-400 hover:text-purple-300 font-medium">
@@ -441,7 +475,7 @@ export default function PricingPage({ session }: PricingPageProps) {
             <div className="shrink-0 bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm font-mono">
               <p className="text-gray-500 text-xs mb-3">Public API — free, no auth</p>
               <p className="text-green-400 mb-4">POST /api/public/qr-codes</p>
-              <p className="text-gray-500 text-xs mb-3">Authenticated API — Pro</p>
+              <p className="text-gray-500 text-xs mb-3">Authenticated API — Developer & Pro</p>
               <p className="text-green-400">POST /api/v1/qr-codes</p>
               <p className="text-gray-500 mt-1 text-xs">Authorization: Bearer &lt;api-key&gt;</p>
             </div>

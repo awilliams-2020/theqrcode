@@ -73,16 +73,16 @@ const features = [
   {
     icon: Users,
     title: 'API Access',
-    description: 'Full API access for developers to integrate QR code generation into applications.',
-    details: ['RESTful API', 'Developer tools', 'API documentation', 'Webhook support', 'Integration ready'],
-    available: 'Pro'
+    description: 'Authenticated REST API and MCP server for developers to integrate QR code generation into applications and AI agents.',
+    details: ['RESTful API', 'API key management', 'MCP server (Claude, Cursor)', 'Webhook support', 'Sandbox environment'],
+    available: 'Developer / Pro'
   },
   {
     icon: Settings,
     title: 'Bulk Operations',
     description: 'Create and manage multiple QR codes at once with bulk generation and management tools.',
     details: ['Bulk creation', 'Batch processing', 'CSV import/export', 'Mass updates', 'Efficient workflows'],
-    available: 'Pro'
+    available: 'Developer / Pro'
   }
 ]
 

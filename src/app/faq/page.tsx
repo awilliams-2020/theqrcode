@@ -44,8 +44,12 @@ const faqs = [
     answer: "You can download your QR codes in PNG format on all plans. Pro plan also supports SVG and PDF formats, giving you more flexibility for different use cases and print requirements."
   },
   {
+    question: "What is the Developer plan?",
+    answer: "The Developer plan ($19/mo) is Headless Pro — you get the same full analytics, all QR code types, and the same API access as Pro, but everything is managed through code rather than a visual dashboard. There is no bulk management UI, no real-time visual charts, and no CSV/SVG/PDF export UI. Instead you get a dev console with API keys, usage counters, and docs. You also get all three MCP tools (generate, list_qr_codes, get_analytics), 250,000 scans/month, 2,000 API req/hr, and a sandbox environment plus webhooks. If you manage QR codes through code, choose Developer. If you manage them through a browser, choose Pro."
+  },
+  {
     question: "Do you offer API access?",
-    answer: "Yes! Pro plan includes API access with rate limiting and webhook management, allowing you to integrate QR code generation into your own applications and workflows."
+    answer: "Yes! Both the Developer plan ($19/mo) and the Pro plan ($29/mo) include authenticated API access. The Developer plan is specifically designed for API-first use — it gives you 2,000 req/hr, full analytics via the API, all three MCP tools (including list_qr_codes and get_analytics), and a sandbox environment. The Pro plan gives you 5,000 req/hr and the MCP generate tool, alongside the full visual dashboard. All plans also include the public API at 100 req/hr with no authentication required."
   },
   {
     question: "Can I use QR codes for marketing campaigns?",
@@ -57,7 +61,7 @@ const faqs = [
   },
   {
     question: "Can I export my analytics data?",
-    answer: "Yes! All paid plans include the ability to export your analytics data in CSV format. This allows you to perform additional analysis in external tools or create custom reports for stakeholders."
+    answer: "It depends on your plan. Pro plan users can export analytics as CSV directly from the visual dashboard. Developer plan users access the same analytics data programmatically via the get_analytics API and MCP tool — no CSV export UI, but full data access through code. Starter and Free plan users do not have data export."
   },
   {
     question: "How do I get support?",

@@ -31,11 +31,30 @@ export default function LandingPage() {
       popular: false
     },
     {
+      name: 'Developer',
+      price: '$19',
+      period: 'per month',
+      description: 'Headless Pro — full API access, no dashboard',
+      features: [
+        '500 QR codes',
+        '250,000 scans per month',
+        'Full analytics via API',
+        'All QR code types',
+        'REST API — 2,000 req/hr',
+        'API keys (production + sandbox)',
+        'Authenticated MCP (Claude, Cursor)',
+        'list_qr_codes & get_analytics tools',
+        'Webhooks',
+      ],
+      cta: 'Start Building',
+      popular: false
+    },
+    {
       name: 'Pro',
       price: '$29',
       period: 'per month',
-      description: 'For developers and growing companies',
-      features: ['500 QR codes', '500,000 scans per month', 'Real-time analytics', 'All QR code types', 'Advanced customization', 'Priority support', 'REST API — 5,000 req/hr', 'API key auth', 'MCP server (Claude, Cursor)'],
+      description: 'For teams managing QR codes through a visual dashboard',
+      features: ['500 QR codes', '500,000 scans per month', 'Real-time visual analytics', 'All QR code types', 'Advanced customization', 'Bulk management UI', 'SVG & PDF export', 'Priority support', 'REST API — 5,000 req/hr', 'MCP server (generate only)'],
       cta: 'Subscribe',
       popular: true
     }
@@ -188,7 +207,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Terminal, title: 'REST API', desc: 'No-auth public endpoint plus authenticated Pro API. OpenAPI spec included.' },
+              { icon: Terminal, title: 'REST API', desc: 'No-auth public endpoint plus authenticated Developer/Pro API. OpenAPI spec included.' },
               { icon: Cpu, title: 'MCP Server', desc: 'Remote HTTP/SSE server for Claude, Cursor, and any MCP-compatible AI client.' },
               { icon: BarChart3, title: 'Analytics', desc: 'Scan counts, device breakdown, location, and time — all in real-time.' },
               { icon: Shield, title: 'Dynamic codes', desc: 'Edit the destination URL after the code is printed. No reprint needed.' },
@@ -208,9 +227,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Simple pricing</h2>
-            <p className="text-gray-500">Free to start. Pro unlocks the full API.</p>
+            <p className="text-gray-500">Free to start. Developer unlocks the full API — Pro adds the visual dashboard.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {pricingPlans.map((plan, index) => (
               <div
                 key={index}
@@ -292,7 +311,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/pricing" className="bg-gray-50 rounded-xl p-5 border border-gray-200 hover:border-purple-300 hover:shadow-md transition-all">
               <h3 className="font-semibold text-gray-900 mb-1 text-sm">Pricing</h3>
-              <p className="text-gray-500 text-xs">Free forever or upgrade for API + analytics.</p>
+              <p className="text-gray-500 text-xs">Free, Starter, Developer (API), or Pro (dashboard).</p>
             </Link>
           </div>
         </div>
