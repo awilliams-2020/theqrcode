@@ -20,8 +20,9 @@ export async function GET(request: NextRequest) {
       where: { userId: session.user.id }
     })
 
-    const hasAdvancedAccess = subscription?.plan === 'starter' || 
-                             subscription?.plan === 'pro' || 
+    const hasAdvancedAccess = subscription?.plan === 'starter' ||
+                             subscription?.plan === 'developer' ||
+                             subscription?.plan === 'pro' ||
                              subscription?.status === 'trialing'
 
     if (!hasAdvancedAccess) {

@@ -221,10 +221,18 @@ export class ApiKeyManager {
    */
   static getPlanPermissions(plan: string): string[] {
     switch (plan) {
+      case 'developer':
+        return [
+          'qr:read',
+          'qr:write',
+          'analytics:read',
+          'webhooks:manage',
+          'bulk:write'
+        ]
       case 'pro':
         return [
           'qr:read',
-          'qr:write', 
+          'qr:write',
           'analytics:read',
           'webhooks:manage',
           'bulk:write'
@@ -245,16 +253,16 @@ export class ApiKeyManager {
   }
 
   /**
-   * Get plan-based rate limits
+   * Get plan-based rate limits (requests per hour).
+   * Developer gets 2,000/hr — API is their primary interface.
+   * Pro gets 5,000/hr — higher ceiling but dashboard is their primary interface.
    */
   static getPlanRateLimit(plan: string): number {
     switch (plan) {
-      case 'pro':
-        return 5000 // 5,000 requests per hour
-      case 'business':
-        return 10000 // 10,000 requests per hour
-      default:
-        return 0
+      case 'developer': return 2_000
+      case 'pro':       return 5_000
+      case 'business':  return 10_000
+      default:          return 0
     }
   }
 }

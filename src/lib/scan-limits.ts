@@ -7,13 +7,14 @@
 import { PLAN_LIMITS } from '@/lib/constants'
 import { prisma } from '@/lib/prisma'
 
-const PLANS = ['free', 'starter', 'pro'] as const
+const PLANS = ['free', 'starter', 'developer', 'pro'] as const
 type PlanKey = (typeof PLANS)[number]
 
 /** Scan limit config for each plan (same as PLAN_LIMITS from constants). */
 export const SCAN_LIMITS = {
   free: PLAN_LIMITS.free.scans,
   starter: PLAN_LIMITS.starter.scans,
+  developer: PLAN_LIMITS.developer.scans,
   pro: PLAN_LIMITS.pro.scans,
 } as const
 
@@ -31,7 +32,7 @@ export function evaluateScanLimit(
   plan: string,
   currentCount: number
 ): ScanLimitResult {
-  const limit: number = SCAN_LIMITS[plan as PlanKey] ?? SCAN_LIMITS.pro
+  const limit: number = SCAN_LIMITS[plan as PlanKey] ?? SCAN_LIMITS.developer
 
   if (limit === -1) {
     return { allowed: true, currentCount, limit: -1 }
@@ -55,7 +56,7 @@ export async function checkScanLimit(userId: string): Promise<ScanLimitResult> {
   })
 
   const currentPlan = (subscription?.plan || 'free') as PlanKey
-  const limits = PLAN_LIMITS[currentPlan] ?? PLAN_LIMITS.pro
+  const limits = PLAN_LIMITS[currentPlan] ?? PLAN_LIMITS.developer
   const limit: number = limits.scans
 
   if (limit === -1) {

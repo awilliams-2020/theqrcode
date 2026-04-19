@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
           const trialDays = isOnTrial && trialEndsAt
             ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             : undefined
-          const qrCodeLimit = plan === 'pro' ? '500' : plan === 'starter' ? '100' : undefined
+          const qrCodeLimit = (plan === 'pro' || plan === 'developer') ? '500' : plan === 'starter' ? '100' : undefined
           sendWelcomeEmail(session.user.id, {
             plan: sub.plan,
             isOnTrial,
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
           const trialDays = isOnTrial && trialEndsAt
             ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             : undefined
-          const qrCodeLimit = plan === 'pro' ? '500' : plan === 'starter' ? '100' : undefined
+          const qrCodeLimit = (plan === 'pro' || plan === 'developer') ? '500' : plan === 'starter' ? '100' : undefined
           sendWelcomeEmail(session.user.id, {
             plan: sub.plan,
             isOnTrial,

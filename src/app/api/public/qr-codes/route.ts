@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { QRGeneratorServer } from '@/lib/qr-generator-server'
-import { PublicRateLimiter } from '@/lib/public-rate-limiter'
+import { PublicRateLimiter, buildFingerprint } from '@/lib/public-rate-limiter'
 import { QRCache } from '@/lib/qr-cache'
 import { logger } from '@/lib/logger'
 import { recordPerformanceMetric } from '@/lib/monitoring'
@@ -10,13 +10,15 @@ import { trackAPI } from '@/lib/matomo-tracking'
  * Extract IP address from request
  */
 function extractIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  const realIP = request.headers.get('x-real-ip')
+  // cf-connecting-ip is set by Cloudflare and cannot be spoofed by the client,
+  // so check it first. x-forwarded-for is last because it can be faked.
   const cfConnectingIP = request.headers.get('cf-connecting-ip')
-  
-  if (forwarded) return forwarded.split(',')[0].trim()
-  if (realIP) return realIP
+  const realIP         = request.headers.get('x-real-ip')
+  const forwarded      = request.headers.get('x-forwarded-for')
+
   if (cfConnectingIP) return cfConnectingIP
+  if (realIP) return realIP
+  if (forwarded) return forwarded.split(',')[0].trim()
   return 'unknown'
 }
 
@@ -156,8 +158,9 @@ export async function POST(request: NextRequest) {
   })
   
   try {
-    // Check rate limit (100 requests per hour per IP)
-    const rateLimitResult = PublicRateLimiter.checkRateLimit(ipAddress, 100, 60 * 60 * 1000)
+    // Check rate limit — Redis sliding window with composite IP+UA fingerprint
+    const fingerprint    = buildFingerprint(ipAddress, userAgent)
+    const rateLimitResult = await PublicRateLimiter.check(fingerprint, ipAddress)
     
     if (!rateLimitResult.allowed) {
       const responseTime = Date.now() - startTime

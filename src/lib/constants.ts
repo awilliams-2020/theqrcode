@@ -39,6 +39,26 @@ export const PLANS = {
       scans: 10000,
     },
   },
+  developer: {
+    id: 'developer',
+    name: 'Developer',
+    price: 19,
+    description: 'Headless Pro — full API access, no dashboard UI',
+    features: [
+      '500 QR codes',
+      '250,000 scans per month',
+      'Full analytics via API',
+      'All QR code types',
+      'REST API — 2,000 req/hr',
+      'API key management (production + sandbox)',
+      'Authenticated MCP server',
+      'Webhooks',
+    ],
+    limits: {
+      qrCodes: 500,
+      scans: 250000,
+    },
+  },
   pro: {
     id: 'pro',
     name: 'Pro',
@@ -68,6 +88,7 @@ export const PLANS = {
 export const PLAN_LIMITS = {
   free: PLANS.free.limits,
   starter: PLANS.starter.limits,
+  developer: PLANS.developer.limits,
   pro: PLANS.pro.limits,
 } as const
 
@@ -75,6 +96,7 @@ export const PLAN_LIMITS = {
 export const PLAN_DISPLAY_NAMES = {
   free: PLANS.free.name,
   starter: PLANS.starter.name,
+  developer: PLANS.developer.name,
   pro: PLANS.pro.name,
 } as const
 
@@ -82,6 +104,7 @@ export const PLAN_DISPLAY_NAMES = {
 export const PLAN_PRICING = {
   free: { price: '$0', period: 'forever' },
   starter: { price: '$9', period: 'per month' },
+  developer: { price: '$19', period: 'per month' },
   pro: { price: '$29', period: 'per month' },
 } as const
 

@@ -288,7 +288,7 @@ describe('API Keys Management', () => {
       const data = await response.json()
 
       expect(response.status).toBe(403)
-      expect(data.error).toContain('API access requires Pro plan')
+      expect(data.error).toContain('API access requires Developer or Pro plan')
     })
 
     it('should return 403 for invalid permissions', async () => {

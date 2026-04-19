@@ -9,11 +9,17 @@ export const stripe = process.env.STRIPE_SECRET_KEY
   : null
 
 // Stripe price IDs for each plan (set these in your Stripe dashboard)
+// Add STRIPE_DEVELOPER_PRICE_ID to .env once the price is created in Stripe.
 export const STRIPE_PLANS = {
   starter: {
     priceId: process.env.STRIPE_STARTER_PRICE_ID || 'price_starter',
     name: 'Starter',
     price: 9,
+  },
+  developer: {
+    priceId: process.env.STRIPE_DEVELOPER_PRICE_ID || 'price_developer',
+    name: 'Developer',
+    price: 19,
   },
   pro: {
     priceId: process.env.STRIPE_PRO_PRICE_ID || 'price_pro',

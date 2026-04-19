@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { ApiKeyManager } from '@/lib/api-key-utils'
 import { prisma } from '@/lib/prisma'
 import { captureException } from '@/lib/sentry'
+import { hasApiAccess, isTrialActive, effectivePlan } from '@/lib/plan-utils'
 
 /**
  * GET /api/v1/api-keys
@@ -22,16 +23,16 @@ async function getApiKeys(req: NextRequest): Promise<NextResponse> {
       where: { userId: session.user.id }
     })
 
-    const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
+    const trialActive = isTrialActive(subscription)
+    const apiAccess   = hasApiAccess(subscription?.plan ?? '')
 
-    if (!hasApiAccess) {
-      return NextResponse.json({ 
-        error: 'API access requires Pro plan or active trial',
+    if (!apiAccess) {
+      return NextResponse.json({
+        error: 'API access requires Developer or Pro plan',
         details: {
           plan: subscription?.plan,
           status: subscription?.status,
-          isTrialActive,
+          trialActive,
           trialEndsAt: subscription?.trialEndsAt
         }
       }, { status: 403 })
@@ -79,36 +80,24 @@ async function createApiKey(req: NextRequest): Promise<NextResponse> {
       where: { userId: session.user.id }
     })
 
-    const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
+    const trialActive = isTrialActive(subscription)
+    const apiAccess   = hasApiAccess(subscription?.plan ?? '')
 
-    if (!hasApiAccess) {
-      return NextResponse.json({ 
-        error: 'API access requires Pro plan or active trial',
+    if (!apiAccess) {
+      return NextResponse.json({
+        error: 'API access requires Developer or Pro plan',
         details: {
           plan: subscription?.plan,
           status: subscription?.status,
-          isTrialActive,
+          trialActive,
           trialEndsAt: subscription?.trialEndsAt
         }
       }, { status: 403 })
     }
 
-    const effectivePlan = subscription?.plan || 'free'
-    
-    // Determine permissions based on plan and trial status
-    let planPermissions: string[]
-    let planRateLimit: number
-    
-    if (isTrialActive && (effectivePlan === 'pro')) {
-      // Trial users get the same permissions as their trial plan
-      planPermissions = ApiKeyManager.getPlanPermissions(effectivePlan)
-      planRateLimit = ApiKeyManager.getPlanRateLimit(effectivePlan)
-    } else {
-      // Regular plan permissions
-      planPermissions = ApiKeyManager.getPlanPermissions(effectivePlan)
-      planRateLimit = ApiKeyManager.getPlanRateLimit(effectivePlan)
-    }
+    const plan = effectivePlan(subscription)
+    const planPermissions = ApiKeyManager.getPlanPermissions(plan)
+    const planRateLimit   = ApiKeyManager.getPlanRateLimit(plan)
 
     // Use provided permissions or default to plan permissions
     const finalPermissions = permissions || planPermissions

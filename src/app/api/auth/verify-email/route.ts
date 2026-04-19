@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
           plan,
           isOnTrial: !!appliedTrialEndsAt,
           trialDays: appliedTrialEndsAt ? Math.ceil((appliedTrialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : undefined,
-          qrCodeLimit: plan === 'pro' ? '500' : plan === 'starter' ? '100' : undefined,
+          qrCodeLimit: (plan === 'pro' || plan === 'developer') ? '500' : plan === 'starter' ? '100' : undefined,
         }
       : undefined
     try {

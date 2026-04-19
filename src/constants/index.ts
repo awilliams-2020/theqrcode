@@ -12,6 +12,7 @@ export const QR_CODE_TYPES = {
 export const PLAN_TYPES = {
   FREE: 'free',
   STARTER: 'starter',
+  DEVELOPER: 'developer',
   PRO: 'pro',
   BUSINESS: 'business'
 } as const
@@ -84,6 +85,7 @@ export const API_ENDPOINTS = {
 export const PLAN_LIMITS = {
   [PLAN_TYPES.FREE]: { qrCodes: 10, scans: 1000 },
   [PLAN_TYPES.STARTER]: { qrCodes: 100, scans: 10000 },
+  [PLAN_TYPES.DEVELOPER]: { qrCodes: 500, scans: 250000 },
   [PLAN_TYPES.PRO]: { qrCodes: 500, scans: 500000 },
   [PLAN_TYPES.BUSINESS]: { qrCodes: -1, scans: -1 }
 } as const
@@ -91,6 +93,7 @@ export const PLAN_LIMITS = {
 export const PLAN_DISPLAY_NAMES = {
   [PLAN_TYPES.FREE]: 'Free',
   [PLAN_TYPES.STARTER]: 'Starter',
+  [PLAN_TYPES.DEVELOPER]: 'Developer',
   [PLAN_TYPES.PRO]: 'Pro',
   [PLAN_TYPES.BUSINESS]: 'Business'
 } as const

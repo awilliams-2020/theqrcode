@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { ApiKeyManager } from '@/lib/api-key-utils'
 import { RateLimiter } from '@/lib/rate-limiter'
 import { prisma } from '@/lib/prisma'
+import { hasApiAccess, isTrialActive } from '@/lib/plan-utils'
 
 /**
  * GET /api/v1/api-keys/[id]
@@ -23,11 +24,8 @@ async function getApiKey(req: NextRequest, context: { params: Promise<{ id: stri
       where: { userId: session.user.id }
     })
 
-    const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
-
-    if (!hasApiAccess) {
-      return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })
+    if (!hasApiAccess(subscription?.plan ?? '')) {
+      return NextResponse.json({ error: 'API access requires Developer or Pro plan' }, { status: 403 })
     }
 
     // Get API key details
@@ -73,11 +71,8 @@ async function updateApiKey(req: NextRequest, context: { params: Promise<{ id: s
       where: { userId: session.user.id }
     })
 
-    const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
-
-    if (!hasApiAccess) {
-      return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })
+    if (!hasApiAccess(subscription?.plan ?? '')) {
+      return NextResponse.json({ error: 'API access requires Developer or Pro plan' }, { status: 403 })
     }
 
     const planPermissions = ApiKeyManager.getPlanPermissions(subscription?.plan || 'free')
@@ -129,11 +124,8 @@ async function deleteApiKey(req: NextRequest, context: { params: Promise<{ id: s
       where: { userId: session.user.id }
     })
 
-    const isTrialActive = subscription?.status === 'trialing' && subscription?.trialEndsAt && new Date(subscription.trialEndsAt) > new Date()
-    const hasApiAccess = subscription?.plan === 'pro' || (isTrialActive && subscription?.plan === 'pro')
-
-    if (!hasApiAccess) {
-      return NextResponse.json({ error: 'API access requires Pro plan or active trial' }, { status: 403 })
+    if (!hasApiAccess(subscription?.plan ?? '')) {
+      return NextResponse.json({ error: 'API access requires Developer or Pro plan' }, { status: 403 })
     }
 
     const deleted = await ApiKeyManager.deleteApiKey(session.user.id, id)
