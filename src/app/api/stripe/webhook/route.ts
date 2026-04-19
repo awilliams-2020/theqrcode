@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const signature = headersList.get('stripe-signature')
 
     if (!signature) {
-      logger.error('WEBHOOK', 'No Stripe signature found in headers', { headers: JSON.stringify(Object.fromEntries(headersList.entries())) })
+      logger.error('WEBHOOK', 'No Stripe signature found in headers')
       return NextResponse.json(
         { error: 'No signature' },
         { status: 400 }

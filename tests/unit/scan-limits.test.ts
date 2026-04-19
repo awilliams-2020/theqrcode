@@ -36,15 +36,21 @@ describe('Scan limits (evaluateScanLimit)', () => {
       expect(r.limit).toBe(10000)
     })
 
+    it('developer plan has limit 250000', () => {
+      expect(SCAN_LIMITS.developer).toBe(250000)
+      const r = evaluateScanLimit('developer', 0)
+      expect(r.limit).toBe(250000)
+    })
+
     it('pro plan has limit 500000', () => {
       expect(SCAN_LIMITS.pro).toBe(500000)
       const r = evaluateScanLimit('pro', 0)
       expect(r.limit).toBe(500000)
     })
 
-    it('unknown plan falls back to pro limit', () => {
+    it('unknown plan falls back to developer limit', () => {
       const r = evaluateScanLimit('unknown', 0)
-      expect(r.limit).toBe(500000)
+      expect(r.limit).toBe(250000)
     })
   })
 
@@ -84,6 +90,19 @@ describe('Scan limits (evaluateScanLimit)', () => {
 
     it('blocks scan when over limit', () => {
       expect(evaluateScanLimit('starter', 10001).allowed).toBe(false)
+    })
+  })
+
+  describe('developer plan workflow', () => {
+    it('allows scan when under limit', () => {
+      expect(evaluateScanLimit('developer', 0).allowed).toBe(true)
+      expect(evaluateScanLimit('developer', 249999).allowed).toBe(true)
+    })
+
+    it('blocks scan when at limit', () => {
+      const r = evaluateScanLimit('developer', 250000)
+      expect(r.allowed).toBe(false)
+      expect(r.limit).toBe(250000)
     })
   })
 
@@ -183,6 +202,17 @@ describe('Scan limits (checkScanLimit workflow per plan)', () => {
 
     expect(result.allowed).toBe(false)
     expect(result.limit).toBe(10000)
+  })
+
+  it('developer plan: allows when under limit', async () => {
+    prisma.subscription.findUnique.mockResolvedValue({ plan: 'developer' })
+    prisma.scan.count.mockResolvedValue(100000)
+
+    const result = await checkScanLimit('user-dev')
+
+    expect(result.allowed).toBe(true)
+    expect(result.currentCount).toBe(100000)
+    expect(result.limit).toBe(250000)
   })
 
   it('pro plan: allows when under limit', async () => {
