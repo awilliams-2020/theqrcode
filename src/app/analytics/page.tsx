@@ -65,10 +65,10 @@ export default function AnalyticsPage() {
     return null
   }
 
-  const hasAnalyticsAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || (isTrialActive && (userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business'))
-  
-  // Live Analytics is only available for trialing users or pro+ users with active status
-  const hasLiveAnalyticsAccess = (isTrialActive && (userPlan === 'pro' || userPlan === 'business')) || (subscriptionStatus === 'active' && (userPlan === 'pro' || userPlan === 'business'))
+  const hasAnalyticsAccess = userPlan === 'starter' || userPlan === 'developer' || userPlan === 'pro' || (isTrialActive && (userPlan === 'starter' || userPlan === 'developer' || userPlan === 'pro'))
+
+  // Live Analytics (real-time dashboard) is Pro-only — Developer accesses analytics via API
+  const hasLiveAnalyticsAccess = (isTrialActive && userPlan === 'pro') || (subscriptionStatus === 'active' && userPlan === 'pro')
 
   const tabs = [
     {
@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Analytics Not Available</h2>
             <p className="text-gray-600 mb-6">
-              Advanced analytics are available with Starter, Pro, or Business plans.
+              Analytics are available on Starter, Developer, and Pro plans.
             </p>
             <button
               onClick={() => router.push('/pricing')}

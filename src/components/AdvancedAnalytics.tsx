@@ -128,7 +128,7 @@ export default function AdvancedAnalytics({ userPlan, isTrialActive }: AdvancedA
   }, [])
 
   // Check if user has access to advanced analytics
-  const hasAdvancedAccess = userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business' || (isTrialActive && (userPlan === 'starter' || userPlan === 'pro' || userPlan === 'business'))
+  const hasAdvancedAccess = userPlan === 'starter' || userPlan === 'developer' || userPlan === 'pro' || (isTrialActive && (userPlan === 'starter' || userPlan === 'developer' || userPlan === 'pro'))
 
   useEffect(() => {
     if (hasAdvancedAccess) {

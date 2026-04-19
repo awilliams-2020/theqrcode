@@ -28,8 +28,7 @@ export default function BulkOperations({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { showSuccess, showError, showWarning } = useToast()
 
-  // Check if user has Pro plan access
-  const hasProAccess = currentPlan === 'pro' || currentPlan === 'business' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'business'))
+  const hasProAccess = currentPlan === 'pro' || currentPlan === 'developer' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'developer'))
 
   // Select all QR codes
   const handleSelectAll = () => {

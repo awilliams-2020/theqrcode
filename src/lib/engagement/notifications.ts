@@ -11,7 +11,7 @@ async function hasProPlanAccess(userId: string): Promise<boolean> {
   })
   
   const plan = subscription?.plan || 'free'
-  return ['pro', 'business'].includes(plan)
+  return ['developer', 'pro'].includes(plan)
 }
 
 
@@ -44,7 +44,7 @@ export async function createNotification(data: NotificationData) {
     })
     
     const plan = subscription?.plan || 'free'
-    const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+    const hasAnalyticsAccess = ['starter', 'developer', 'pro'].includes(plan)
     
     if (!hasAnalyticsAccess) {
       // Don't create analytics notifications for free users
@@ -73,8 +73,8 @@ export async function getUserNotifications(userId: string, unreadOnly = false, c
   })
   
   const plan = subscription?.plan || 'free'
-  const hasProAccess = ['pro', 'business'].includes(plan)
-  const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+  const hasProAccess = ['developer', 'pro'].includes(plan)
+  const hasAnalyticsAccess = ['starter', 'developer', 'pro'].includes(plan)
   
   // Define analytics notification types
   const analyticsTypes = ['analytics_spike', 'analytics_location', 'analytics_trend', 'analytics_summary', 'analytics_record']
@@ -204,8 +204,8 @@ export async function sendUsageTip(userId: string) {
   })
   
   const plan = subscription?.plan || 'free'
-  const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
-  const hasProAccess = ['pro', 'business'].includes(plan)
+  const hasAnalyticsAccess = ['starter', 'developer', 'pro'].includes(plan)
+  const hasProAccess = ['developer', 'pro'].includes(plan)
   
   // Only send pro tips to pro and business plan users
   if (!hasProAccess) {

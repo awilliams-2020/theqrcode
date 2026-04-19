@@ -87,8 +87,7 @@ export default function Settings({
   const { showSuccess, showError, showWarning } = useToast()
   const router = useRouter()
 
-  // Check if user has Pro plan or is in trial with Pro plan
-  const hasApiAccess = currentPlan === 'pro' || (isTrialActive && currentPlan === 'pro')
+  const hasApiAccess = currentPlan === 'pro' || currentPlan === 'developer' || (isTrialActive && (currentPlan === 'pro' || currentPlan === 'developer'))
 
   // Load API keys on component mount if user has API access
   useEffect(() => {
@@ -921,15 +920,13 @@ function CreateApiKeyModal({
   const getAvailablePermissions = () => {
     const effectivePlan = currentPlan
     
-    // Only show permissions for Pro plans or Pro trial plans
-    if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
+    if (effectivePlan === 'pro' || effectivePlan === 'developer' || (isTrialActive && (effectivePlan === 'pro' || effectivePlan === 'developer'))) {
       return [
         { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
         { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
         { id: 'analytics:read', name: 'Read Analytics', description: 'Access basic analytics data' }
       ]
     }
-    // Free plan or free trial - no API access
     return []
   }
 
@@ -1081,7 +1078,7 @@ function CreateApiKeyModal({
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'starter' ? 'Starter' : 'Free'}
+                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'developer' ? 'Developer' : currentPlan === 'starter' ? 'Starter' : 'Free'}
                   {isTrialActive && ' (Trial)'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
@@ -1137,15 +1134,13 @@ function EditApiKeyModal({ apiKey, currentPlan, isTrialActive, onClose, onUpdate
   const getAvailablePermissions = () => {
     const effectivePlan = currentPlan
     
-    // Only show permissions for Pro plans or Pro trial plans
-    if (effectivePlan === 'pro' || (isTrialActive && effectivePlan === 'pro')) {
+    if (effectivePlan === 'pro' || effectivePlan === 'developer' || (isTrialActive && (effectivePlan === 'pro' || effectivePlan === 'developer'))) {
       return [
         { id: 'qr:read', name: 'Read QR Codes', description: 'View and retrieve QR code data' },
         { id: 'qr:write', name: 'Write QR Codes', description: 'Create, update, and delete QR codes' },
         { id: 'analytics:read', name: 'Read Analytics', description: 'Access basic analytics data' }
       ]
     }
-    // Free plan or free trial - no API access
     return []
   }
 
@@ -1233,7 +1228,7 @@ function EditApiKeyModal({ apiKey, currentPlan, isTrialActive, onClose, onUpdate
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'starter' ? 'Starter' : 'Free'}
+                  <strong>Plan:</strong> {currentPlan === 'pro' ? 'Pro' : currentPlan === 'developer' ? 'Developer' : currentPlan === 'starter' ? 'Starter' : 'Free'}
                   {isTrialActive && ' (Trial)'}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">

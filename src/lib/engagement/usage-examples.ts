@@ -82,7 +82,7 @@ export async function onQrCodeScanned(userId: string, totalScans: number) {
       select: { plan: true }
     })
     const plan = subscription?.plan || 'free'
-    const hasAnalyticsAccess = ['starter', 'pro', 'business'].includes(plan)
+    const hasAnalyticsAccess = ['starter', 'developer', 'pro'].includes(plan)
     
     if (hasAnalyticsAccess) {
       // Paid users: encourage them to check analytics (use sendUsageTip for pro users)
